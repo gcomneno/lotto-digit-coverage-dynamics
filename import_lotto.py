@@ -11,11 +11,127 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from html.parser import HTMLParser
 from pathlib import Path
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
 
 
-SOURCE_URL = (
-    "https://www.estrazionedellotto.it/risultati/archivio-lotto-2026"
+ARCHIVE_URL_TEMPLATE = (
+    "https://www.estrazionedellotto.it/"
+    "risultati/archivio-lotto-{year}"
 )
+
+DOWNLOAD_TIMEOUT_SECONDS = 30
+
+DOWNLOAD_USER_AGENT = (
+    "Mozilla/5.0 "
+    "(compatible; lotto-digit-coverage-dynamics/1.0)"
+)
+
+
+def current_system_year() -> int:
+    return datetime.now().year
+
+
+def archive_url(year: int) -> str:
+    return ARCHIVE_URL_TEMPLATE.format(year=year)
+
+
+def archive_source_path(year: int) -> Path:
+    return Path(f"_work/archive-{year}.html")
+
+
+def archive_database_path(year: int) -> Path:
+    return Path(f"data/lotto-{year}.sqlite3")
+
+
+def parse_year(value: str) -> int:
+    normalized = value.strip()
+
+    if not re.fullmatch(r"\d{4}", normalized):
+        raise argparse.ArgumentTypeError(
+            "--year deve essere un anno espresso con quattro cifre."
+        )
+
+    year = int(normalized)
+    current_year = current_system_year()
+
+    if year < 1900:
+        raise argparse.ArgumentTypeError(
+            "--year deve essere maggiore o uguale a 1900."
+        )
+
+    if year > current_year:
+        raise argparse.ArgumentTypeError(
+            f"--year non può essere successivo al {current_year}."
+        )
+
+    return year
+
+
+def download_archive(
+    source_url: str,
+    destination: Path,
+) -> bytes:
+    request = Request(
+        source_url,
+        headers={
+            "User-Agent": DOWNLOAD_USER_AGENT,
+            "Accept": "text/html,application/xhtml+xml",
+        },
+    )
+
+    try:
+        with urlopen(
+            request,
+            timeout=DOWNLOAD_TIMEOUT_SECONDS,
+        ) as response:
+            status = getattr(response, "status", 200)
+
+            if status != 200:
+                raise RuntimeError(
+                    "Download archivio fallito: "
+                    f"HTTP {status}."
+                )
+
+            content = response.read()
+
+    except HTTPError as error:
+        raise RuntimeError(
+            "Download archivio fallito: "
+            f"HTTP {error.code}."
+        ) from error
+    except URLError as error:
+        raise RuntimeError(
+            "Download archivio fallito: "
+            f"{error.reason}."
+        ) from error
+
+    if not content:
+        raise RuntimeError(
+            "Il server ha restituito un archivio vuoto."
+        )
+
+    destination.parent.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    temporary_path = destination.with_suffix(
+        destination.suffix + ".tmp"
+    )
+
+    temporary_path.write_bytes(content)
+    temporary_path.replace(destination)
+
+    return content
+
+
+DEFAULT_YEAR = current_system_year()
+SOURCE_URL = archive_url(DEFAULT_YEAR)
+SOURCE_PATH = archive_source_path(DEFAULT_YEAR)
+DATABASE_PATH = archive_database_path(DEFAULT_YEAR)
+IMPORT_LIMIT: int | None = None
+
 
 EXPECTED_WHEELS = (
     "Bari",
@@ -31,9 +147,6 @@ EXPECTED_WHEELS = (
     "Nazionale",
 )
 
-SOURCE_PATH = Path("_work/archive-2026.html")
-DATABASE_PATH = Path("data/lotto-2026.sqlite3")
-IMPORT_LIMIT = 60
 
 
 @dataclass(frozen=True)
@@ -281,6 +394,42 @@ def parse_archive(html: str) -> list[Draw]:
     )
 
 
+def validate_archive_year(
+    draws: list[Draw],
+    expected_year: int,
+) -> None:
+    mismatches: list[tuple[int, str]] = []
+
+    for draw in draws:
+        try:
+            draw_year = datetime.strptime(
+                draw.date,
+                "%Y-%m-%d",
+            ).year
+        except ValueError as error:
+            raise ValueError(
+                f"Estrazione {draw.number}: "
+                f"data non valida {draw.date!r}."
+            ) from error
+
+        if draw_year != expected_year:
+            mismatches.append(
+                (draw.number, draw.date)
+            )
+
+    if mismatches:
+        examples = ", ".join(
+            f"n. {number} ({date})"
+            for number, date in mismatches[:5]
+        )
+
+        raise ValueError(
+            f"L'archivio richiesto per il {expected_year} "
+            "contiene estrazioni di un altro anno: "
+            f"{examples}."
+        )
+
+
 def create_schema(connection: sqlite3.Connection) -> None:
     connection.executescript(
         """
@@ -360,6 +509,7 @@ def import_draws(
     source_url: str,
     source_path: Path,
     import_limit: int,
+    archive_year: int,
 ) -> None:
     imported_at = datetime.now(timezone.utc).isoformat(
         timespec="seconds"
@@ -463,6 +613,7 @@ def import_draws(
                 )
 
         metadata = {
+            "archive_year": str(archive_year),
             "source_url": source_url,
             "source_file": str(source_path),
             "source_sha256": source_hash,
@@ -614,29 +765,46 @@ def parse_import_limit(value: str) -> int | None:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
-            "Importa un archivio annuale del Lotto "
+            "Scarica e importa un archivio annuale del Lotto "
             "in un database SQLite separato."
         )
     )
 
     parser.add_argument(
+        "--year",
+        type=parse_year,
+        default=current_system_year(),
+        metavar="YYYY",
+        help=(
+            "Anno dell'archivio espresso con quattro cifre "
+            "(default: anno corrente del sistema)."
+        ),
+    )
+
+    parser.add_argument(
         "--source",
         type=Path,
-        default=SOURCE_PATH,
-        help=f"File HTML sorgente (default: {SOURCE_PATH})",
+        help=(
+            "File HTML locale da usare senza effettuare il download. "
+            "Se omesso, viene scaricato _work/archive-YYYY.html."
+        ),
     )
 
     parser.add_argument(
         "--database",
         type=Path,
-        default=DATABASE_PATH,
-        help=f"Database SQLite destinazione (default: {DATABASE_PATH})",
+        help=(
+            "Database SQLite destinazione. "
+            "Se omesso, usa data/lotto-YYYY.sqlite3."
+        ),
     )
 
     parser.add_argument(
         "--source-url",
-        default=SOURCE_URL,
-        help="URL originale dell'archivio.",
+        help=(
+            "URL alternativo dell'archivio. "
+            "Se omesso, viene derivato da --year."
+        ),
     )
 
     parser.add_argument(
@@ -646,7 +814,7 @@ def build_parser() -> argparse.ArgumentParser:
         metavar="N|all",
         help=(
             "Numero delle estrazioni più recenti da importare "
-            f"(default: {IMPORT_LIMIT}); usare 'all' per tutto l'archivio."
+            "(default: all)."
         ),
     )
 
@@ -656,97 +824,170 @@ def build_parser() -> argparse.ArgumentParser:
 def main() -> int:
     args = build_parser().parse_args()
 
-    source_path: Path = args.source
-    database_path: Path = args.database
+    year: int = args.year
+
+    source_path = (
+        args.source
+        if args.source is not None
+        else archive_source_path(year)
+    )
+
+    database_path = (
+        args.database
+        if args.database is not None
+        else archive_database_path(year)
+    )
+
+    source_url = (
+        args.source_url
+        if args.source_url is not None
+        else archive_url(year)
+    )
+
     requested_limit: int | None = args.limit
 
-    if not source_path.is_file():
+    try:
+        if args.source is None:
+            print("===== DOWNLOAD ARCHIVIO =====")
+            print(f"Anno:                {year}")
+            print(f"URL:                 {source_url}")
+            print(f"Destinazione:        {source_path}")
+
+            html_bytes = download_archive(
+                source_url,
+                source_path,
+            )
+
+            print(
+                f"Byte scaricati:      {len(html_bytes)}"
+            )
+        else:
+            if not source_path.is_file():
+                raise FileNotFoundError(
+                    f"File sorgente assente: {source_path}"
+                )
+
+            print("===== ARCHIVIO LOCALE =====")
+            print(f"Anno atteso:         {year}")
+            print(f"Sorgente:            {source_path}")
+
+            html_bytes = source_path.read_bytes()
+
+        html = html_bytes.decode(
+            "utf-8",
+            errors="replace",
+        )
+
+        source_hash = hashlib.sha256(
+            html_bytes
+        ).hexdigest()
+
+        all_draws = parse_archive(html)
+
+        if not all_draws:
+            raise ValueError(
+                "L'archivio non contiene estrazioni valide."
+            )
+
+        validate_archive_year(
+            all_draws,
+            expected_year=year,
+        )
+
+        if requested_limit is None:
+            selected_draws = all_draws
+        else:
+            if len(all_draws) < requested_limit:
+                raise ValueError(
+                    "L'archivio contiene soltanto "
+                    f"{len(all_draws)} estrazioni valide; "
+                    f"ne servono {requested_limit}."
+                )
+
+            selected_draws = all_draws[
+                :requested_limit
+            ]
+
+        effective_limit = len(selected_draws)
+
+        selected_numbers = [
+            draw.number
+            for draw in selected_draws
+        ]
+
+        expected_sequence = list(
+            range(
+                max(selected_numbers),
+                min(selected_numbers) - 1,
+                -1,
+            )
+        )
+
+        if selected_numbers != expected_sequence:
+            raise ValueError(
+                f"Le {effective_limit} estrazioni selezionate "
+                "non formano una sequenza numerica continua."
+            )
+
+        database_path.parent.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+
+        connection = sqlite3.connect(
+            database_path
+        )
+
+        try:
+            create_schema(connection)
+
+            import_draws(
+                connection,
+                selected_draws,
+                source_hash,
+                source_url=source_url,
+                source_path=source_path,
+                import_limit=effective_limit,
+                archive_year=year,
+            )
+
+            verify_database(
+                connection,
+                expected_draw_count=effective_limit,
+            )
+        finally:
+            connection.close()
+
+        print("\n===== IMPORTAZIONE COMPLETATA =====")
+        print(f"Anno:                {year}")
         print(
-            f"ERRORE: file sorgente assente: {source_path}",
+            f"Archivio analizzato: {len(all_draws)} estrazioni"
+        )
+        print(
+            "Intervallo importato: "
+            f"n. {selected_draws[-1].number}–"
+            f"{selected_draws[0].number}"
+        )
+        print(
+            f"File sorgente:       {source_path.resolve()}"
+        )
+        print(
+            f"Database:            {database_path.resolve()}"
+        )
+        print(f"SHA-256 sorgente:    {source_hash}")
+
+    except (
+        FileNotFoundError,
+        OSError,
+        RuntimeError,
+        sqlite3.Error,
+        ValueError,
+    ) as error:
+        print(
+            f"ERRORE: {error}",
             file=sys.stderr,
         )
         return 1
-
-    html_bytes = source_path.read_bytes()
-    html = html_bytes.decode("utf-8", errors="replace")
-    source_hash = hashlib.sha256(html_bytes).hexdigest()
-
-    all_draws = parse_archive(html)
-
-    if requested_limit is None:
-        selected_draws = all_draws
-    else:
-        if len(all_draws) < requested_limit:
-            raise ValueError(
-                f"L'archivio contiene soltanto {len(all_draws)} "
-                f"estrazioni valide; ne servono {requested_limit}."
-            )
-
-        selected_draws = all_draws[:requested_limit]
-
-    effective_limit = len(selected_draws)
-
-    if effective_limit == 0:
-        raise ValueError(
-            "L'archivio non contiene estrazioni valide."
-        )
-
-    selected_numbers = [
-        draw.number
-        for draw in selected_draws
-    ]
-
-    expected_sequence = list(
-        range(
-            max(selected_numbers),
-            min(selected_numbers) - 1,
-            -1,
-        )
-    )
-
-    if selected_numbers != expected_sequence:
-        raise ValueError(
-            f"Le {effective_limit} estrazioni selezionate "
-            "non formano una sequenza numerica continua."
-        )
-
-    database_path.parent.mkdir(
-        parents=True,
-        exist_ok=True,
-    )
-
-    connection = sqlite3.connect(database_path)
-
-    try:
-        create_schema(connection)
-
-        import_draws(
-            connection,
-            selected_draws,
-            source_hash,
-            source_url=args.source_url,
-            source_path=source_path,
-            import_limit=effective_limit,
-        )
-
-        verify_database(
-            connection,
-            expected_draw_count=effective_limit,
-        )
-    finally:
-        connection.close()
-
-    print("\n===== IMPORTAZIONE COMPLETATA =====")
-    print(
-        f"Archivio analizzato: {len(all_draws)} estrazioni"
-    )
-    print(
-        "Intervallo importato: "
-        f"n. {selected_draws[-1].number}–"
-        f"{selected_draws[0].number}"
-    )
-    print(f"Database:            {database_path.resolve()}")
-    print(f"SHA-256 sorgente:    {source_hash}")
 
     return 0
 
