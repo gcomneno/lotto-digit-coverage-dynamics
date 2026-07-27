@@ -260,9 +260,217 @@ def expected_remaining_draws(
     return _expected_remaining_draws(state)
 
 
+@lru_cache(maxsize=None)
+def _second_moment_remaining_draws(
+    state_tuple: tuple[int, ...],
+) -> float:
+    state = normalize_state(state_tuple)
+
+    if not state:
+        return 0.0
+
+    distribution = _transition_distribution(
+        tuple(sorted(state))
+    )
+
+    self_probability = dict(distribution).get(
+        state,
+        0.0,
+    )
+
+    if self_probability >= 1.0:
+        raise RuntimeError(
+            f"Stato non assorbibile: {sorted(state)}."
+        )
+
+    expected_after_next = sum(
+        probability
+        * _expected_remaining_draws(
+            tuple(sorted(next_state))
+        )
+        for next_state, probability in distribution
+    )
+
+    second_moment_after_progress = sum(
+        probability
+        * _second_moment_remaining_draws(
+            tuple(sorted(next_state))
+        )
+        for next_state, probability in distribution
+        if next_state != state
+    )
+
+    return (
+        1.0
+        + 2.0 * expected_after_next
+        + second_moment_after_progress
+    ) / (
+        1.0 - self_probability
+    )
+
+
+def second_moment_remaining_draws(
+    missing_digits: Iterable[int],
+) -> float:
+    state = tuple(sorted(normalize_state(missing_digits)))
+
+    return _second_moment_remaining_draws(state)
+
+
+def variance_remaining_draws(
+    missing_digits: Iterable[int],
+) -> float:
+    state = normalize_state(missing_digits)
+    mean = expected_remaining_draws(state)
+    second_moment = second_moment_remaining_draws(
+        state
+    )
+
+    variance = second_moment - mean**2
+
+    if abs(variance) < 1e-12:
+        return 0.0
+
+    if variance < 0.0:
+        raise RuntimeError(
+            "Varianza negativa oltre la tolleranza "
+            f"per lo stato {sorted(state)}: "
+            f"{variance:.15e}."
+        )
+
+    return variance
+
+
+def absorption_probability_mass(
+    missing_digits: Iterable[int],
+    max_draws: int,
+) -> dict[int, float]:
+    state = normalize_state(missing_digits)
+
+    if max_draws < 0:
+        raise ValueError(
+            "L'orizzonte massimo non può essere negativo."
+        )
+
+    if not state:
+        return {0: 1.0}
+
+    previous_cumulative = 0.0
+    mass: dict[int, float] = {}
+
+    for draw in range(1, max_draws + 1):
+        cumulative = completion_probability_within(
+            state,
+            draw,
+        )
+
+        probability = (
+            cumulative
+            - previous_cumulative
+        )
+
+        if probability < 0.0:
+            if probability > -1e-12:
+                probability = 0.0
+            else:
+                raise RuntimeError(
+                    "Massa di probabilità negativa "
+                    f"allo step {draw} per lo stato "
+                    f"{sorted(state)}."
+                )
+
+        mass[draw] = probability
+        previous_cumulative = cumulative
+
+    return mass
+
+
+def absorption_quantiles(
+    missing_digits: Iterable[int],
+    probabilities: Iterable[float] = (
+        0.50,
+        0.90,
+        0.95,
+        0.99,
+    ),
+    *,
+    max_draws: int = 1000,
+) -> dict[float, int]:
+    state = normalize_state(missing_digits)
+
+    normalized_probabilities = tuple(
+        sorted(
+            {
+                float(probability)
+                for probability in probabilities
+            }
+        )
+    )
+
+    if any(
+        probability <= 0.0
+        or probability >= 1.0
+        for probability in normalized_probabilities
+    ):
+        raise ValueError(
+            "I quantili devono essere compresi "
+            "strettamente tra zero e uno."
+        )
+
+    if max_draws <= 0:
+        raise ValueError(
+            "L'orizzonte massimo deve essere positivo."
+        )
+
+    if not state:
+        return {
+            probability: 0
+            for probability
+            in normalized_probabilities
+        }
+
+    result: dict[float, int] = {}
+
+    for draw in range(1, max_draws + 1):
+        cumulative = completion_probability_within(
+            state,
+            draw,
+        )
+
+        for probability in normalized_probabilities:
+            if (
+                probability not in result
+                and cumulative >= probability
+            ):
+                result[probability] = draw
+
+        if len(result) == len(
+            normalized_probabilities
+        ):
+            return result
+
+    missing = [
+        probability
+        for probability in normalized_probabilities
+        if probability not in result
+    ]
+
+    raise RuntimeError(
+        "Quantili non raggiunti entro "
+        f"{max_draws} estrazioni per lo stato "
+        f"{sorted(state)}: {missing}."
+    )
+
+
 def maturity_metrics(
     missing_digits: Iterable[int],
     horizons: Iterable[int] = (1, 2, 3, 5),
+    quantiles: Iterable[float] = (
+        0.50,
+        0.90,
+        0.95,
+        0.99,
+    ),
 ) -> dict[str, object]:
     state = normalize_state(missing_digits)
     normalized_horizons = tuple(sorted(set(horizons)))
@@ -286,5 +494,17 @@ def maturity_metrics(
         },
         "expected_remaining_draws": (
             expected_remaining_draws(state)
+        ),
+        "second_moment_remaining_draws": (
+            second_moment_remaining_draws(state)
+        ),
+        "variance_remaining_draws": (
+            variance_remaining_draws(state)
+        ),
+        "absorption_quantiles": (
+            absorption_quantiles(
+                state,
+                quantiles,
+            )
         ),
     }
