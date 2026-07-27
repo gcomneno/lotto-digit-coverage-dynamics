@@ -3,3 +3,14 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 .coverage
+
+SQLite runtime files
+
+*.sqlite3-journal
+*.sqlite3-wal
+*.sqlite3-shm
+
+Local Python environments
+
+.venv/
+venv/

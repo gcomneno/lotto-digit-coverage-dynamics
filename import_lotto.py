@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import argparse
 import hashlib
 import re
 import sqlite3
@@ -356,6 +357,9 @@ def import_draws(
     connection: sqlite3.Connection,
     draws: list[Draw],
     source_hash: str,
+    source_url: str,
+    source_path: Path,
+    import_limit: int,
 ) -> None:
     imported_at = datetime.now(timezone.utc).isoformat(
         timespec="seconds"
@@ -412,7 +416,7 @@ def import_draws(
                 (
                     draw.number,
                     draw.date,
-                    SOURCE_URL,
+                    source_url,
                     imported_at,
                 ),
             )
@@ -459,11 +463,11 @@ def import_draws(
                 )
 
         metadata = {
-            "source_url": SOURCE_URL,
-            "source_file": str(SOURCE_PATH),
+            "source_url": source_url,
+            "source_file": str(source_path),
             "source_sha256": source_hash,
             "imported_at_utc": imported_at,
-            "import_limit": str(IMPORT_LIMIT),
+            "import_limit": str(import_limit),
             "first_draw_number": str(draws[-1].number),
             "last_draw_number": str(draws[0].number),
         }
@@ -479,7 +483,10 @@ def import_draws(
         )
 
 
-def verify_database(connection: sqlite3.Connection) -> None:
+def verify_database(
+    connection: sqlite3.Connection,
+    expected_draw_count: int,
+) -> None:
     draw_count = connection.execute(
         "SELECT COUNT(*) FROM draws"
     ).fetchone()[0]
@@ -503,12 +510,12 @@ def verify_database(connection: sqlite3.Connection) -> None:
         """
     ).fetchone()[0]
 
-    expected_numbers = IMPORT_LIMIT * 11 * 5
-    expected_wheel_results = IMPORT_LIMIT * 11
+    expected_numbers = expected_draw_count * 11 * 5
+    expected_wheel_results = expected_draw_count * 11
 
-    if draw_count != IMPORT_LIMIT:
+    if draw_count != expected_draw_count:
         raise ValueError(
-            f"Database: attese {IMPORT_LIMIT} estrazioni, "
+            f"Database: attese {expected_draw_count} estrazioni, "
             f"trovate {draw_count}."
         )
 
@@ -583,29 +590,112 @@ def verify_database(connection: sqlite3.Connection) -> None:
         print(f"{wheel:<10} {numbers}")
 
 
+def parse_import_limit(value: str) -> int | None:
+    normalized = value.strip().lower()
+
+    if normalized == "all":
+        return None
+
+    try:
+        parsed = int(normalized)
+    except ValueError as error:
+        raise argparse.ArgumentTypeError(
+            "--limit deve essere un intero positivo oppure 'all'."
+        ) from error
+
+    if parsed <= 0:
+        raise argparse.ArgumentTypeError(
+            "--limit deve essere maggiore di zero."
+        )
+
+    return parsed
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description=(
+            "Importa un archivio annuale del Lotto "
+            "in un database SQLite separato."
+        )
+    )
+
+    parser.add_argument(
+        "--source",
+        type=Path,
+        default=SOURCE_PATH,
+        help=f"File HTML sorgente (default: {SOURCE_PATH})",
+    )
+
+    parser.add_argument(
+        "--database",
+        type=Path,
+        default=DATABASE_PATH,
+        help=f"Database SQLite destinazione (default: {DATABASE_PATH})",
+    )
+
+    parser.add_argument(
+        "--source-url",
+        default=SOURCE_URL,
+        help="URL originale dell'archivio.",
+    )
+
+    parser.add_argument(
+        "--limit",
+        type=parse_import_limit,
+        default=IMPORT_LIMIT,
+        metavar="N|all",
+        help=(
+            "Numero delle estrazioni più recenti da importare "
+            f"(default: {IMPORT_LIMIT}); usare 'all' per tutto l'archivio."
+        ),
+    )
+
+    return parser
+
+
 def main() -> int:
-    if not SOURCE_PATH.is_file():
+    args = build_parser().parse_args()
+
+    source_path: Path = args.source
+    database_path: Path = args.database
+    requested_limit: int | None = args.limit
+
+    if not source_path.is_file():
         print(
-            f"ERRORE: file sorgente assente: {SOURCE_PATH}",
+            f"ERRORE: file sorgente assente: {source_path}",
             file=sys.stderr,
         )
         return 1
 
-    html_bytes = SOURCE_PATH.read_bytes()
+    html_bytes = source_path.read_bytes()
     html = html_bytes.decode("utf-8", errors="replace")
     source_hash = hashlib.sha256(html_bytes).hexdigest()
 
     all_draws = parse_archive(html)
 
-    if len(all_draws) < IMPORT_LIMIT:
+    if requested_limit is None:
+        selected_draws = all_draws
+    else:
+        if len(all_draws) < requested_limit:
+            raise ValueError(
+                f"L'archivio contiene soltanto {len(all_draws)} "
+                f"estrazioni valide; ne servono {requested_limit}."
+            )
+
+        selected_draws = all_draws[:requested_limit]
+
+    effective_limit = len(selected_draws)
+
+    if effective_limit == 0:
         raise ValueError(
-            f"L'archivio contiene soltanto {len(all_draws)} "
-            f"estrazioni valide; ne servono {IMPORT_LIMIT}."
+            "L'archivio non contiene estrazioni valide."
         )
 
-    selected_draws = all_draws[:IMPORT_LIMIT]
+    selected_numbers = [
+        draw.number
+        for draw in selected_draws
+    ]
 
-    selected_numbers = [draw.number for draw in selected_draws]
     expected_sequence = list(
         range(
             max(selected_numbers),
@@ -616,29 +706,46 @@ def main() -> int:
 
     if selected_numbers != expected_sequence:
         raise ValueError(
-            "Le 60 estrazioni selezionate non formano "
-            "una sequenza numerica continua."
+            f"Le {effective_limit} estrazioni selezionate "
+            "non formano una sequenza numerica continua."
         )
 
-    DATABASE_PATH.parent.mkdir(parents=True, exist_ok=True)
+    database_path.parent.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
 
-    connection = sqlite3.connect(DATABASE_PATH)
+    connection = sqlite3.connect(database_path)
 
     try:
         create_schema(connection)
-        import_draws(connection, selected_draws, source_hash)
-        verify_database(connection)
+
+        import_draws(
+            connection,
+            selected_draws,
+            source_hash,
+            source_url=args.source_url,
+            source_path=source_path,
+            import_limit=effective_limit,
+        )
+
+        verify_database(
+            connection,
+            expected_draw_count=effective_limit,
+        )
     finally:
         connection.close()
 
     print("\n===== IMPORTAZIONE COMPLETATA =====")
-    print(f"Archivio analizzato: {len(all_draws)} estrazioni")
+    print(
+        f"Archivio analizzato: {len(all_draws)} estrazioni"
+    )
     print(
         "Intervallo importato: "
         f"n. {selected_draws[-1].number}–"
         f"{selected_draws[0].number}"
     )
-    print(f"Database:            {DATABASE_PATH.resolve()}")
+    print(f"Database:            {database_path.resolve()}")
     print(f"SHA-256 sorgente:    {source_hash}")
 
     return 0
