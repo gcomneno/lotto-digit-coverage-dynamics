@@ -1,0 +1,316 @@
+{
+  "forecast_format_version": 1,
+  "generated_at_utc": "2026-07-27T14:29:17Z",
+  "horizons": [
+    1,
+    2,
+    3,
+    5
+  ],
+  "interpretation": "State-dependent coverage probabilities; not evidence of a gambling advantage.",
+  "model_id": "digit-coverage-markov-v1",
+  "repository_commit": "1990b8b7e28d799336915280bf4306f422980931",
+  "source_database": "data/lotto-2026.sqlite3",
+  "source_database_sha256": "75f9f1c7f9f4a1aca6691d644ae8b7834e6084b339c8fa23c131ba4d16786e9e",
+  "source_latest_date": "2026-07-25",
+  "source_latest_draw": 119,
+  "status": "pending",
+  "target_draw": 120,
+  "wheel_count": 11,
+  "wheels": [
+    {
+      "completed_cycles": 18,
+      "completion_probability_within": {
+        "1": 0.45300531512834297,
+        "2": 0.7007968147221566,
+        "3": 0.83633744795635,
+        "5": 0.9510316431178392
+      },
+      "covered_digits": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "cycle_age": 2,
+      "expected_remaining_draws": 2.2074796180187986,
+      "missing_digits": [
+        9
+      ],
+      "wheel": "Bari",
+      "wheel_order": 1
+    },
+    {
+      "completed_cycles": 17,
+      "completion_probability_within": {
+        "1": 0.0003822589263593883,
+        "2": 0.2125501994225445,
+        "3": 0.6046543646259672,
+        "5": 0.9227689129584422
+      },
+      "covered_digits": [],
+      "cycle_age": 0,
+      "expected_remaining_draws": 3.5061902809609604,
+      "missing_digits": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "wheel": "Cagliari",
+      "wheel_order": 2
+    },
+    {
+      "completed_cycles": 16,
+      "completion_probability_within": {
+        "1": 0.0003822589263593883,
+        "2": 0.2125501994225445,
+        "3": 0.6046543646259672,
+        "5": 0.9227689129584422
+      },
+      "covered_digits": [],
+      "cycle_age": 0,
+      "expected_remaining_draws": 3.5061902809609604,
+      "missing_digits": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "wheel": "Firenze",
+      "wheel_order": 3
+    },
+    {
+      "completed_cycles": 18,
+      "completion_probability_within": {
+        "1": 0.681643298359372,
+        "2": 0.8986490105205002,
+        "3": 0.9677342332812924,
+        "5": 0.9967298326167443
+      },
+      "covered_digits": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "cycle_age": 2,
+      "expected_remaining_draws": 1.4670429569349126,
+      "missing_digits": [
+        0
+      ],
+      "wheel": "Genova",
+      "wheel_order": 4
+    },
+    {
+      "completed_cycles": 16,
+      "completion_probability_within": {
+        "1": 0.681643298359372,
+        "2": 0.8986490105205002,
+        "3": 0.9677342332812924,
+        "5": 0.9967298326167443
+      },
+      "covered_digits": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        7,
+        8,
+        9
+      ],
+      "cycle_age": 3,
+      "expected_remaining_draws": 1.4670429569349126,
+      "missing_digits": [
+        6
+      ],
+      "wheel": "Milano",
+      "wheel_order": 5
+    },
+    {
+      "completed_cycles": 16,
+      "completion_probability_within": {
+        "1": 0.29457953656930075,
+        "2": 0.6250237254003849,
+        "3": 0.8081623784203565,
+        "5": 0.9478661071786985
+      },
+      "covered_digits": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "cycle_age": 2,
+      "expected_remaining_draws": 2.4841442745545903,
+      "missing_digits": [
+        8,
+        9
+      ],
+      "wheel": "Napoli",
+      "wheel_order": 6
+    },
+    {
+      "completed_cycles": 15,
+      "completion_probability_within": {
+        "1": 0.681643298359372,
+        "2": 0.8986490105205002,
+        "3": 0.9677342332812924,
+        "5": 0.9967298326167443
+      },
+      "covered_digits": [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "cycle_age": 2,
+      "expected_remaining_draws": 1.4670429569349126,
+      "missing_digits": [
+        2
+      ],
+      "wheel": "Palermo",
+      "wheel_order": 7
+    },
+    {
+      "completed_cycles": 17,
+      "completion_probability_within": {
+        "1": 0.45300531512834297,
+        "2": 0.7007968147221566,
+        "3": 0.83633744795635,
+        "5": 0.9510316431178392
+      },
+      "covered_digits": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "cycle_age": 2,
+      "expected_remaining_draws": 2.2074796180187986,
+      "missing_digits": [
+        9
+      ],
+      "wheel": "Roma",
+      "wheel_order": 8
+    },
+    {
+      "completed_cycles": 14,
+      "completion_probability_within": {
+        "1": 0.45300531512834297,
+        "2": 0.7007968147221566,
+        "3": 0.83633744795635,
+        "5": 0.9510316431178392
+      },
+      "covered_digits": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "cycle_age": 5,
+      "expected_remaining_draws": 2.2074796180187986,
+      "missing_digits": [
+        9
+      ],
+      "wheel": "Torino",
+      "wheel_order": 9
+    },
+    {
+      "completed_cycles": 19,
+      "completion_probability_within": {
+        "1": 0.0003822589263593883,
+        "2": 0.2125501994225445,
+        "3": 0.6046543646259672,
+        "5": 0.9227689129584422
+      },
+      "covered_digits": [],
+      "cycle_age": 0,
+      "expected_remaining_draws": 3.5061902809609604,
+      "missing_digits": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "wheel": "Venezia",
+      "wheel_order": 10
+    },
+    {
+      "completed_cycles": 16,
+      "completion_probability_within": {
+        "1": 0.29457953656930075,
+        "2": 0.6250237254003849,
+        "3": 0.8081623784203565,
+        "5": 0.9478661071786985
+      },
+      "covered_digits": [
+        0,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "cycle_age": 2,
+      "expected_remaining_draws": 2.4841442745545903,
+      "missing_digits": [
+        1,
+        9
+      ],
+      "wheel": "Nazionale",
+      "wheel_order": 11
+    }
+  ]
+}
