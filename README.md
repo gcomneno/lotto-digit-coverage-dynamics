@@ -1,118 +1,178 @@
-# Lotto Coverage Research
+# Lotto Digit Coverage Dynamics
 
-Laboratorio privato per l'acquisizione e l'analisi esplorativa delle estrazioni
-del Lotto italiano.
+Exact combinatorial and Markov analysis of digit-coverage cycles in Italian
+Lotto draws.
 
-Il progetto studia proprietà descrittive e combinatorie delle cifre decimali
-presenti nei numeri estratti, con particolare attenzione alla copertura delle
-cifre `0–9` su finestre mobili della stessa ruota.
+The project studies how the decimal digits `0–9` accumulate across consecutive
+draws on each Lotto wheel.
 
-## Obiettivi
+Its central question is not:
 
-- importare archivi annuali in database SQLite separati;
-- verificare integrità, continuità e completezza dei dati;
-- analizzare la copertura delle cifre `0–9`;
-- costruire backtest riproducibili;
-- distinguere una percentuale grezza da un vantaggio rispetto al caso;
-- documentare anche ipotesi respinte o confutate.
+> Which number or digit will be drawn next?
 
-## Stato della ricerca
+It is:
 
-La regola principale sottoposta a replica indipendente è stata:
+> Given the digits still missing from the current coverage cycle, how close is
+> that cycle to completion?
 
-> Dopo tre estrazioni consecutive sulla stessa ruota, quando manca esattamente
-> una cifra tra `0–9`, verificare se quella cifra compare nella quarta
-> estrazione.
+The project provides:
 
-Risultato della replica sull'intero archivio 2025:
+- exact combinatorial probabilities;
+- an absorbing Markov-chain model;
+- historical calibration checks;
+- leakage-safe walk-forward replay;
+- immutable live prequential forecasts;
+- reproducible SQLite datasets and Python analyses.
 
-- segnali: 775;
-- hit: 459;
-- tasso osservato: 59,23%;
-- tasso teorico ponderato: 59,82%;
-- delta: −0,59%;
-- prima metà dell'anno: −1,04%;
-- seconda metà dell'anno: −0,16%.
+## Main conclusion
 
-La regola non ha mostrato un vantaggio predittivo replicabile.
+The near-complete coverage of digits after a small number of draws is a real
+combinatorial phenomenon.
 
-Una precedente anomalia osservata su un piccolo campione del 2026 non è stata
-confermata dal campione indipendente 2025. I test di permutazione successivamente
-riconosciuti come contaminati dalla costruzione delle finestre sono stati
-rimossi dal repository.
+No replicable evidence was found that a digit becomes more likely to appear
+merely because it has been absent for several consecutive draws.
 
-## Struttura
+The useful state variable is instead the complete set of digits still missing
+from the current cycle.
+
+> Individual digits do not accumulate probability. Coverage accumulates
+> completeness.
+
+The Markov model measures this completeness through:
+
+- probability of completion within `1`, `2`, `3`, or `5` draws;
+- exact expected number of draws remaining;
+- transition probabilities between missing-digit states.
+
+It does not predict winning numbers and does not establish a gambling
+advantage.
+
+## Current status
+
+The model has been validated through several distinct procedures.
+
+| Validation | Cases | Expected | Observed | Difference |
+|---|---:|---:|---:|---:|
+| 2025 next-draw calibration | 2,248 states | 28.63% | 28.11% | -0.52 pp |
+| 2025 completion within 2 draws | 2,242 states | 57.09% | 56.38% | -0.71 pp |
+| 2025 completion within 3 draws | 2,239 states | 79.53% | 78.29% | -1.23 pp |
+| 2025 completion within 5 draws | 2,238 states | 95.73% | 95.76% | +0.02 pp |
+| 2025 residual expectation | 2,238 states | 2.524 draws | 2.544 draws | +0.020 |
+| 2025 walk-forward replay, draws 101–208 | 1,188 forecasts | 336.994 closures | 334 closures | -2.994 |
+| 2026 through draw 118, next-draw calibration | 617 states | 28.11% | 27.23% | -0.89 pp |
+| 2026 through draw 118, residual expectation | 595 states | 2.534 draws | 2.565 draws | +0.031 |
+| Holdout draw 119 | 11 wheels | 3.607 closures | 3 closures | -0.607 |
+
+The first live immutable prequential forecast has been frozen for draw `120`:
 
 ```text
-data/
-    lotto-2025.sqlite3
-    lotto-2026.sqlite3
-
-strategies/
-    digit_coverage.py
-    twin_digits.py
-
-tests/
-    test_coverage_backtest.py
-    test_digit_coverage.py
-    test_frozen_coverage_rule.py
-    test_twin_digits.py
-    test_two_missing_backtest.py
-
-analyze_digit_coverage.py
-analyze_coverage_backtest.py
-analyze_frozen_coverage_rule.py
-analyze_strategies.py
-analyze_twin_history.py
-analyze_two_missing_backtest.py
-import_lotto.py
+prequential/forecasts/draw-0120.json
 ```
 
-Importazione
+A simple example
 
-Il comportamento predefinito mantiene l'importazione delle ultime 60
-estrazioni del 2026:
+Suppose a wheel has already covered all digits except 9.
 
-python3 import_lotto.py
+The state is:
 
-Per importare un archivio completo in un database separato:
+{9}
 
-python3 import_lotto.py \
-  --source "_work/archive-2025.html" \
-  --database "data/lotto-2025.sqlite3" \
-  --source-url \
-    "https://www.estrazionedellotto.it/risultati/archivio-lotto-2025" \
-  --limit all
-Analisi della copertura
-python3 analyze_digit_coverage.py \
-  --database "data/lotto-2026.sqlite3" \
-  --max-window-size 3
+Its exact model metrics are approximately:
 
-Replica indipendente della regola congelata sul 2025:
+Metric	Value
+Completion on next draw	45.30%
+Completion within 2 draws	70.08%
+Completion within 3 draws	83.63%
+Completion within 5 draws	95.10%
+Expected remaining draws	2.207
 
-python3 analyze_frozen_coverage_rule.py \
-  --database "data/lotto-2025.sqlite3"
-Test
+If the missing state is {3,9}, the next-draw completion probability falls to
+about 29.46%, while the expected remaining duration rises to about 2.484
+draws.
 
-Il progetto usa esclusivamente la libreria standard Python.
+The identity of the missing digits therefore matters, not only their count.
+
+Requirements
+Python 3.11 or newer;
+SQLite support in Python;
+no external Python dependencies for the core analyses.
+
+Run the complete test suite:
 
 python3 -m unittest discover -v
-Dati
+Primary commands
 
-Gli archivi HTML di origine non sono versionati e rimangono sotto _work/.
+Inspect the current coverage state:
 
-Fonti utilizzate:
+python3 analyze_current_coverage.py \
+    --database data/lotto-2026.sqlite3
 
-https://www.estrazionedellotto.it/risultati/archivio-lotto-2025
-https://www.estrazionedellotto.it/risultati/archivio-lotto-2026
+Validate completion probabilities:
 
-I database SQLite contengono una copia strutturata delle estrazioni usata per
-la ricerca privata e riproducibile.
+python3 analyze_coverage_markov_validation.py \
+    --database data/lotto-2025.sqlite3
 
-Avvertenza
+Validate expected residual duration:
 
-Questo progetto è un laboratorio statistico e didattico.
+python3 analyze_coverage_markov_residuals.py \
+    --database data/lotto-2025.sqlite3
 
-Non fornisce sistemi di gioco, previsioni affidabili o garanzie economiche.
-Una regolarità descrittiva, una percentuale elevata o un risultato favorevole
-su un campione limitato non implicano un vantaggio sul gioco futuro.
+Run the historical walk-forward replay:
+
+python3 analyze_prequential_replay.py \
+    --database data/lotto-2025.sqlite3 \
+    --start-target 101 \
+    --end-target 208 \
+    --output _work/prequential-replay-2025-from-0101.json
+
+Freeze the forecast for the next available draw:
+
+python3 create_prequential_forecast.py \
+    --database data/lotto-2026.sqlite3
+
+A forecast file is written exclusively and cannot be overwritten by the same
+command.
+
+Repository structure
+.
+├── analyze_*.py
+├── create_prequential_forecast.py
+├── data/
+│   ├── lotto-2025.sqlite3
+│   └── lotto-2026.sqlite3
+├── docs/
+├── prequential/
+│   └── forecasts/
+├── strategies/
+├── tests/
+└── _work/
+
+_work/ contains reproducible local reports and temporary databases and is not
+committed.
+
+Documentation
+Documentation index
+Research question
+Mathematical model
+Methodology
+Validation results
+Historical walk-forward replay
+Live prequential protocol
+Reproducibility
+Limitations
+Glossary
+Earlier research findings
+Responsible interpretation
+
+This repository is a statistical and software-engineering research project.
+
+It does not:
+
+forecast specific numbers;
+demonstrate a profitable betting strategy;
+alter the probability of any Lotto combination;
+justify increasing gambling expenditure;
+claim that delayed digits are due.
+
+The model describes the natural probability of a coverage process that is
+already implied by random draws.

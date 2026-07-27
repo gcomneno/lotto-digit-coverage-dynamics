@@ -1,1 +1,1 @@
-"""Test del progetto Lotto 2026."""
+"""Test suite for Lotto Digit Coverage Dynamics."""
