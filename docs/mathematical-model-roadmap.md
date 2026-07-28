@@ -11,6 +11,29 @@ and mathematically verifiable:
 
 The objective is understanding and verification, not draw selection.
 
+
+## Completion status
+
+| Phase | Status | Main output |
+|:---|:---|:---|
+| Phase 1 — Formal specification | Complete | `docs/finite-state-model.md` |
+| Phase 2 — Independent transition verification | Complete | `verify_transition_kernel.py` |
+| Phase 3 — Absorption metrics | Complete | `strategies/coverage_markov.py` |
+| Phase 4 — Complete state atlas | Complete | `generated/coverage-state-atlas.csv` and `.json` |
+| Phase 5 — Structural analysis | Next | Set-inclusion structure and identity effects |
+| Phase 6 — Empirical validation | Core comparison complete | `docs/historical-cycle-distribution.md` |
+| Phase 7 — Reproducibility and presentation | In progress | Documentation and final synthesis |
+
+The transition kernel has been verified over all 1,024 states by two
+conceptually independent constructions. The complete atlas contains all 1,023
+non-empty states and is reproducible byte for byte.
+
+The continuous 2023–2025 historical segment contains 1,879 complete natural
+cycles. Its observed mean, variance, selected quantiles and cumulative
+distribution closely match the exact absorption-time benchmark.
+
+Predictive research remains closed.
+
 ## Core object
 
 For one wheel, define the state as the set of decimal digits still missing
@@ -227,20 +250,25 @@ Current roles of the archives:
 The 2022 archive is not presently required. It should remain untouched until
 a specific mathematical validation question justifies an additional sample.
 
-## Immediate milestone
+## Current milestone
 
-The first mathematical milestone is:
+The next mathematical milestone is structural analysis of the verified
+transition system.
 
-> Verify the one-draw transition kernel independently and document the formal
-> finite-state model.
+Primary questions:
 
-Concrete outputs:
+1. characterize monotonicity under subset inclusion;
+2. distinguish proved properties from computationally verified properties;
+3. explain the exact symmetry of digits `0–8` and the asymmetry of digit `9`;
+4. quantify the loss of information in count-only state summaries;
+5. identify the states and digit identities contributing most to long
+   absorption times.
 
-1. `docs/finite-state-model.md`;
-2. an independent transition enumerator;
-3. cross-check tests against the existing Markov implementation;
-4. a report covering all 1,024 states;
-5. zero unexplained discrepancies.
+Acceptance criteria:
 
-Only after this milestone is complete should the project proceed to the full
-absorption-time atlas.
+- every structural claim is either proved or explicitly labelled as a
+  computational result;
+- subset-monotonicity checks cover the complete state space;
+- identity-aware and count-only summaries are compared quantitatively;
+- no structural observation is reinterpreted as a predictive signal;
+- all new computations are deterministic and tested.
