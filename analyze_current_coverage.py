@@ -91,6 +91,81 @@ def limit_draws_to_date(
     return limited
 
 
+def next_draws_after_target(
+    draws_by_wheel: Mapping[
+        str,
+        Sequence[DrawSnapshot],
+    ],
+    *,
+    latest_draw: int,
+    latest_date: str,
+) -> tuple[DrawSnapshot, ...]:
+    target_key = (
+        date.fromisoformat(latest_date),
+        latest_draw,
+    )
+
+    selected: dict[str, DrawSnapshot] = {}
+
+    for wheel, draws in draws_by_wheel.items():
+        candidate = next(
+            (
+                draw
+                for draw in draws
+                if (
+                    date.fromisoformat(draw.draw_date),
+                    draw.draw_number,
+                ) > target_key
+            ),
+            None,
+        )
+
+        if candidate is not None:
+            selected[wheel] = candidate
+
+    if not selected:
+        return ()
+
+    missing_wheels = tuple(
+        wheel
+        for wheel in draws_by_wheel
+        if wheel not in selected
+    )
+
+    if missing_wheels:
+        raise RuntimeError(
+            "Estrazione successiva incompleta per: "
+            + ", ".join(missing_wheels)
+            + "."
+        )
+
+    targets = {
+        (
+            draw.draw_number,
+            draw.draw_date,
+        )
+        for draw in selected.values()
+    }
+
+    if len(targets) != 1:
+        details = ", ".join(
+            f"{wheel}={draw.draw_number}/{draw.draw_date}"
+            for wheel, draw in selected.items()
+        )
+
+        raise RuntimeError(
+            "Le ruote non condividono la stessa "
+            f"estrazione successiva: {details}."
+        )
+
+    return tuple(
+        sorted(
+            selected.values(),
+            key=lambda draw: draw.wheel_order,
+        )
+    )
+
+
 def format_digits(digits: frozenset[int]) -> str:
     return "{" + ",".join(
         str(digit)
@@ -296,6 +371,44 @@ def print_markov_summary(
 
 
 
+def print_next_draw(
+    draws: Sequence[DrawSnapshot],
+) -> None:
+    if not draws:
+        return
+
+    draw_number = draws[0].draw_number
+    draw_date = draws[0].draw_date
+
+    print()
+    print(
+        "===== ESTRAZIONE SUCCESSIVA "
+        "NEL DATABASE ====="
+    )
+    print(
+        "Non utilizzata nei calcoli "
+        "del quadro storico."
+    )
+    print(
+        f"Estrazione: {draw_number} "
+        f"del {draw_date}"
+    )
+    print()
+    print("Ruota       Numeri")
+    print("----------  --------------")
+
+    for draw in draws:
+        numbers = " ".join(
+            f"{number:02d}"
+            for number in draw.numbers
+        )
+
+        print(
+            f"{draw.wheel:<12}"
+            f"{numbers}"
+        )
+
+
 def print_anomaly_history(
     events: Sequence[AnomalyEvent],
     *,
@@ -405,12 +518,12 @@ def main() -> int:
 
     try:
         with LottoRepository(args.database) as repository:
-            draws_by_wheel = load_draws_by_wheel(
+            all_draws_by_wheel = load_draws_by_wheel(
                 repository
             )
 
         draws_by_wheel = limit_draws_to_date(
-            draws_by_wheel,
+            all_draws_by_wheel,
             args.to_date,
         )
 
@@ -440,6 +553,12 @@ def main() -> int:
             states
         )
 
+        next_draws = next_draws_after_target(
+            all_draws_by_wheel,
+            latest_draw=latest_draw,
+            latest_date=latest_date,
+        )
+
         transitions = build_all_transitions(
             draws_by_wheel
         )
@@ -463,6 +582,7 @@ def main() -> int:
         print()
 
         print_markov_summary(states)
+        print_next_draw(next_draws)
         print_anomaly_history(
             events,
             transition_count=len(transitions),

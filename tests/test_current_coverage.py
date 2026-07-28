@@ -11,6 +11,7 @@ from analyze_current_coverage import (
     latest_target,
     limit_draws_to_date,
     maturity_sort_key,
+    next_draws_after_target,
     parse_iso_date,
 )
 from strategies.coverage_completion import (
@@ -352,6 +353,121 @@ class CurrentCoverageStateTests(unittest.TestCase):
             limit_draws_to_date(
                 draws_by_wheel,
                 date(2024, 12, 31),
+            )
+
+    def test_finds_aligned_next_draw(
+        self,
+    ) -> None:
+        bari_draws = (
+            draw(
+                1,
+                (1, 23, 45, 67, 89),
+            ),
+            draw(
+                2,
+                (11, 22, 33, 44, 55),
+            ),
+        )
+        roma_draws = (
+            DrawSnapshot(
+                draw_number=1,
+                draw_date="2025-01-01",
+                wheel="Roma",
+                wheel_order=2,
+                numbers=(2, 24, 46, 68, 90),
+            ),
+            DrawSnapshot(
+                draw_number=2,
+                draw_date="2025-01-02",
+                wheel="Roma",
+                wheel_order=2,
+                numbers=(12, 23, 34, 45, 56),
+            ),
+        )
+
+        following = next_draws_after_target(
+            {
+                "Bari": bari_draws,
+                "Roma": roma_draws,
+            },
+            latest_draw=1,
+            latest_date="2025-01-01",
+        )
+
+        self.assertEqual(
+            tuple(
+                (
+                    item.wheel,
+                    item.draw_number,
+                    item.draw_date,
+                )
+                for item in following
+            ),
+            (
+                (
+                    "Bari",
+                    2,
+                    "2025-01-02",
+                ),
+                (
+                    "Roma",
+                    2,
+                    "2025-01-02",
+                ),
+            ),
+        )
+
+    def test_next_draw_is_empty_at_archive_end(
+        self,
+    ) -> None:
+        draws_by_wheel = {
+            "Bari": (
+                draw(
+                    1,
+                    (1, 23, 45, 67, 89),
+                ),
+            ),
+        }
+
+        self.assertEqual(
+            next_draws_after_target(
+                draws_by_wheel,
+                latest_draw=1,
+                latest_date="2025-01-01",
+            ),
+            (),
+        )
+
+    def test_next_draw_rejects_partial_target(
+        self,
+    ) -> None:
+        draws_by_wheel = {
+            "Bari": (
+                draw(
+                    1,
+                    (1, 23, 45, 67, 89),
+                ),
+                draw(
+                    2,
+                    (11, 22, 33, 44, 55),
+                ),
+            ),
+            "Roma": (
+                DrawSnapshot(
+                    draw_number=1,
+                    draw_date="2025-01-01",
+                    wheel="Roma",
+                    wheel_order=2,
+                    numbers=(2, 24, 46, 68, 90),
+                ),
+            ),
+        }
+
+        with self.assertRaises(RuntimeError):
+            next_draws_after_target(
+                draws_by_wheel,
+                latest_draw=1,
+                latest_date="2025-01-01",
             )
 
     def test_active_anomalies_distinguish_stateful_a1(
