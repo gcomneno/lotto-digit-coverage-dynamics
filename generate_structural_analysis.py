@@ -627,6 +627,7 @@ def write_csv(
             fieldnames=list(
                 documents[0].keys()
             ),
+            lineterminator="\n",
         )
 
         writer.writeheader()
