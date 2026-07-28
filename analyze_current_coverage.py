@@ -227,12 +227,11 @@ def print_cycle_details(
     print("===== DETTAGLIO CICLI =====")
     print()
     print(
-        "Ruota       Cicli completi  Età corrente  "
-        "Coperte         Mancanti"
+        "Ruota       Cicli completi  Età corrente  Mancanti"
     )
     print(
         "----------  --------------  ------------  "
-        "--------------  --------------"
+        "---------------------"
     )
 
     for state in sorted(
@@ -243,7 +242,6 @@ def print_cycle_details(
             f"{state.wheel:<12}"
             f"{state.completed_cycles:<16}"
             f"{state.draws_in_cycle:<14}"
-            f"{format_digits(state.covered_digits):<16}"
             f"{format_digits(state.missing_digits)}"
         )
 
