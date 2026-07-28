@@ -184,6 +184,7 @@ def print_markov_summary(
         f"{'Pos':<5}"
         f"{'Ruota':<12}"
         f"{'Ultimo':<8}"
+        f"{'Cicli':<7}"
         f"{'Età':<5}"
         f"{'Più presenti':<23}"
         f"{'Mancanti':<23}"
@@ -193,6 +194,7 @@ def print_markov_summary(
         f"{'---':<5}"
         f"{'----------':<12}"
         f"{'------':<8}"
+        f"{'-----':<7}"
         f"{'---':<5}"
         f"{'-------------':<23}"
         f"{'-------------':<23}"
@@ -209,6 +211,7 @@ def print_markov_summary(
             f"{position:<5}"
             f"{state.wheel:<12}"
             f"{state.latest_draw:<8}"
+            f"{state.completed_cycles:<7}"
             f"{state.draws_in_cycle:<5}"
             f"{format_digits(state.most_present_digits):<23}"
             f"{format_digits(state.missing_digits):<23}"
@@ -219,31 +222,6 @@ def print_markov_summary(
             f"{metrics['expected_remaining_draws']:>6.3f}"
         )
 
-
-def print_cycle_details(
-    states: Sequence[CurrentCoverageState],
-) -> None:
-    print()
-    print("===== DETTAGLIO CICLI =====")
-    print()
-    print(
-        "Ruota       Cicli completi  Età corrente  Mancanti"
-    )
-    print(
-        "----------  --------------  ------------  "
-        "---------------------"
-    )
-
-    for state in sorted(
-        states,
-        key=lambda current: current.wheel_order,
-    ):
-        print(
-            f"{state.wheel:<12}"
-            f"{state.completed_cycles:<16}"
-            f"{state.draws_in_cycle:<14}"
-            f"{format_digits(state.missing_digits)}"
-        )
 
 
 def print_anomaly_history(
@@ -400,7 +378,6 @@ def main() -> int:
         print()
 
         print_markov_summary(states)
-        print_cycle_details(states)
         print_anomaly_history(
             events,
             transition_count=len(transitions),
