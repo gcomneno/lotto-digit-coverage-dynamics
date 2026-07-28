@@ -2,9 +2,6 @@ from __future__ import annotations
 
 import unittest
 
-from strategies.coverage_completion import (
-    ALL_DIGITS,
-)
 from strategies.coverage_cycle_history import (
     build_wheel_cycle_history,
     flatten_completed_cycles,
@@ -181,7 +178,7 @@ class CoverageCycleHistoryTests(
         )
         self.assertEqual(
             history.right_censored_missing_digits,
-            ALL_DIGITS,
+            frozenset(),
         )
 
     def test_merges_years_by_date_despite_reset_number(
