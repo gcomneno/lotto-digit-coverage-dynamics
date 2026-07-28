@@ -173,6 +173,8 @@ def build_wheel_cycle_history(
         right_censored_draws = len(cycle_draws)
         right_censored_missing_digits = (
             ALL_DIGITS.difference(covered)
+            if cycle_draws
+            else frozenset()
         )
     else:
         initial_left_censored_draws = len(ordered)
