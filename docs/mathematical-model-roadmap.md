@@ -20,7 +20,7 @@ The objective is understanding and verification, not draw selection.
 | Phase 2 — Independent transition verification | Complete | `verify_transition_kernel.py` |
 | Phase 3 — Absorption metrics | Complete | `strategies/coverage_markov.py` |
 | Phase 4 — Complete state atlas | Complete | `generated/coverage-state-atlas.csv` and `.json` |
-| Phase 5 — Structural analysis | Next | Set-inclusion structure and identity effects |
+| Phase 5 — Structural analysis | Complete | Exact symmetry classes, count-only loss and set-inclusion monotonicity |
 | Phase 6 — Empirical validation | Core comparison complete | `docs/historical-cycle-distribution.md` |
 | Phase 7 — Reproducibility and presentation | In progress | Documentation and final synthesis |
 
@@ -252,23 +252,11 @@ a specific mathematical validation question justifies an additional sample.
 
 ## Current milestone
 
-The next mathematical milestone is structural analysis of the verified
-transition system.
+Phase 5 is complete.
 
-Primary questions:
+The next action is analytical rather than architectural: inspect the generated
+state, symmetry-class and historical-cycle statistics before adding further
+machinery.
 
-1. characterize monotonicity under subset inclusion;
-2. distinguish proved properties from computationally verified properties;
-3. explain the exact symmetry of digits `0–8` and the asymmetry of digit `9`;
-4. quantify the loss of information in count-only state summaries;
-5. identify the states and digit identities contributing most to long
-   absorption times.
-
-Acceptance criteria:
-
-- every structural claim is either proved or explicitly labelled as a
-  computational result;
-- subset-monotonicity checks cover the complete state space;
-- identity-aware and count-only summaries are compared quantitatively;
-- no structural observation is reinterpreted as a predictive signal;
-- all new computations are deterministic and tested.
+No new model, generator or research document should be introduced until that
+review identifies a concrete unanswered question.
