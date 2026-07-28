@@ -8,6 +8,7 @@ from analyze_coverage_anomalies import AnomalyEvent
 from analyze_current_coverage import (
     active_anomalies,
     format_digits,
+    format_next_draw_number,
     latest_target,
     limit_draws_to_date,
     maturity_sort_key,
@@ -92,6 +93,35 @@ def anomaly_event(
 
 
 class CurrentCoverageStateTests(unittest.TestCase):
+    def test_formats_colored_next_draw_number(
+        self,
+    ) -> None:
+        self.assertEqual(
+            format_next_draw_number(
+                2,
+                top_digits=frozenset({0}),
+                missing_digits=frozenset({2}),
+                use_color=True,
+            ),
+            (
+                "\033[1;30;46m0\033[0m"
+                "\033[1;30;43m2\033[0m"
+            ),
+        )
+
+    def test_formats_plain_next_draw_number(
+        self,
+    ) -> None:
+        self.assertEqual(
+            format_next_draw_number(
+                12,
+                top_digits=frozenset({1}),
+                missing_digits=frozenset({2}),
+                use_color=False,
+            ),
+            "12",
+        )
+
     def test_latest_completion_starts_empty_new_cycle(
         self,
     ) -> None:

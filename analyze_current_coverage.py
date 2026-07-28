@@ -32,6 +32,10 @@ from strategies.twin_digits import (
 DEFAULT_DATABASE = Path("data/lotto-2026.sqlite3")
 HORIZONS = (1, 2, 3, 5)
 
+ANSI_RESET = "\033[0m"
+ANSI_TOP = "\033[1;30;46m"
+ANSI_MISSING = "\033[1;30;43m"
+
 
 def parse_iso_date(value: str) -> date:
     try:
@@ -164,6 +168,54 @@ def next_draws_after_target(
             key=lambda draw: draw.wheel_order,
         )
     )
+
+
+def format_next_draw_number(
+    number: int,
+    *,
+    top_digits: frozenset[int],
+    missing_digits: frozenset[int],
+    use_color: bool,
+) -> str:
+    if number < 1 or number > 90:
+        raise ValueError(
+            f"Numero Lotto non valido: {number}."
+        )
+
+    overlap = top_digits & missing_digits
+
+    if overlap:
+        raise ValueError(
+            "Le cifre TOP e Mancanti devono essere "
+            "insiemi disgiunti."
+        )
+
+    formatted = f"{number:02d}"
+
+    if not use_color:
+        return formatted
+
+    highlighted: list[str] = []
+
+    for character in formatted:
+        digit = int(character)
+
+        if digit in missing_digits:
+            highlighted.append(
+                f"{ANSI_MISSING}"
+                f"{character}"
+                f"{ANSI_RESET}"
+            )
+        elif digit in top_digits:
+            highlighted.append(
+                f"{ANSI_TOP}"
+                f"{character}"
+                f"{ANSI_RESET}"
+            )
+        else:
+            highlighted.append(character)
+
+    return "".join(highlighted)
 
 
 def format_digits(digits: frozenset[int]) -> str:
@@ -373,12 +425,33 @@ def print_markov_summary(
 
 def print_next_draw(
     draws: Sequence[DrawSnapshot],
+    *,
+    states: Sequence[CurrentCoverageState],
 ) -> None:
     if not draws:
         return
 
+    state_by_wheel = {
+        state.wheel: state
+        for state in states
+    }
+
+    unknown_wheels = tuple(
+        draw.wheel
+        for draw in draws
+        if draw.wheel not in state_by_wheel
+    )
+
+    if unknown_wheels:
+        raise RuntimeError(
+            "Stato Markov assente per: "
+            + ", ".join(unknown_wheels)
+            + "."
+        )
+
     draw_number = draws[0].draw_number
     draw_date = draws[0].draw_date
+    use_color = sys.stdout.isatty()
 
     print()
     print(
@@ -394,12 +467,28 @@ def print_next_draw(
         f"del {draw_date}"
     )
     print()
+
+    if use_color:
+        print(
+            "Legenda cifre: "
+            f"{ANSI_TOP} TOP {ANSI_RESET}  "
+            f"{ANSI_MISSING} MANCANTI {ANSI_RESET}"
+        )
+        print()
+
     print("Ruota       Numeri")
     print("----------  --------------")
 
     for draw in draws:
+        state = state_by_wheel[draw.wheel]
+
         numbers = " ".join(
-            f"{number:02d}"
+            format_next_draw_number(
+                number,
+                top_digits=state.most_present_digits,
+                missing_digits=state.missing_digits,
+                use_color=use_color,
+            )
             for number in draw.numbers
         )
 
@@ -582,7 +671,10 @@ def main() -> int:
         print()
 
         print_markov_summary(states)
-        print_next_draw(next_draws)
+        print_next_draw(
+            next_draws,
+            states=states,
+        )
         print_anomaly_history(
             events,
             transition_count=len(transitions),
