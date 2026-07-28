@@ -108,6 +108,10 @@ class CurrentCoverageStateTests(unittest.TestCase):
             state.missing_digits,
             ALL_DIGITS,
         )
+        self.assertEqual(
+            state.most_present_digits,
+            frozenset(),
+        )
 
     def test_tracks_state_after_completed_cycle(
         self,
@@ -152,6 +156,16 @@ class CurrentCoverageStateTests(unittest.TestCase):
                 7,
                 8,
                 9,
+            }),
+        )
+        self.assertEqual(
+            state.most_present_digits,
+            frozenset({
+                1,
+                2,
+                3,
+                4,
+                5,
             }),
         )
 

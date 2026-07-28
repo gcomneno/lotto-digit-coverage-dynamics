@@ -175,13 +175,27 @@ def print_markov_summary(
         "Classifica: attesa residua crescente; "
         "non rappresenta un vantaggio sul gioco."
     )
+    print(
+        "Più presenti: cifre con il massimo numero "
+        "di occorrenze nel ciclo corrente."
+    )
     print()
     print(
-        "Pos  Ruota       Ultimo  Età  Mancanti       "
+        f"{'Pos':<5}"
+        f"{'Ruota':<12}"
+        f"{'Ultimo':<8}"
+        f"{'Età':<5}"
+        f"{'Più presenti':<23}"
+        f"{'Mancanti':<23}"
         "Entro 1  Entro 2  Entro 3  Entro 5  Attesa"
     )
     print(
-        "---  ----------  ------  ---  -------------  "
+        f"{'---':<5}"
+        f"{'----------':<12}"
+        f"{'------':<8}"
+        f"{'---':<5}"
+        f"{'-------------':<23}"
+        f"{'-------------':<23}"
         "-------  -------  -------  -------  ------"
     )
 
@@ -196,7 +210,8 @@ def print_markov_summary(
             f"{state.wheel:<12}"
             f"{state.latest_draw:<8}"
             f"{state.draws_in_cycle:<5}"
-            f"{format_digits(state.missing_digits):<15}"
+            f"{format_digits(state.most_present_digits):<23}"
+            f"{format_digits(state.missing_digits):<23}"
             f"{completion[1]:>6.2%}  "
             f"{completion[2]:>6.2%}  "
             f"{completion[3]:>6.2%}  "

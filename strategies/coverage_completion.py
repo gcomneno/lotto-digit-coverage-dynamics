@@ -224,6 +224,7 @@ class CurrentCoverageState:
     covered_digits: frozenset[int]
     missing_digits: frozenset[int]
     synchronized: bool
+    most_present_digits: frozenset[int] = frozenset()
 
 
 def current_coverage_state(
@@ -261,19 +262,39 @@ def current_coverage_state(
     )
 
     covered: set[int] = set()
+    digit_occurrences = [0] * 10
     draws_in_cycle = 0
     completed_cycles = 0
     synchronized = False
 
     for draw in ordered:
         covered.update(digits_in_draw(draw))
+
+        for number in draw.numbers:
+            for digit in split_digits(number):
+                digit_occurrences[digit] += 1
+
         draws_in_cycle += 1
 
         if covered == ALL_DIGITS:
             completed_cycles += 1
             synchronized = True
             covered.clear()
+            digit_occurrences = [0] * 10
             draws_in_cycle = 0
+
+    maximum_occurrences = max(
+        digit_occurrences
+    )
+    most_present_digits = frozenset(
+        digit
+        for digit, occurrences
+        in enumerate(digit_occurrences)
+        if (
+            occurrences == maximum_occurrences
+            and occurrences > 0
+        )
+    )
 
     latest = ordered[-1]
 
@@ -287,4 +308,5 @@ def current_coverage_state(
         covered_digits=frozenset(covered),
         missing_digits=ALL_DIGITS.difference(covered),
         synchronized=synchronized,
+        most_present_digits=most_present_digits,
     )
