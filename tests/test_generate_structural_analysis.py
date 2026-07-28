@@ -158,6 +158,41 @@ class GenerateStructuralAnalysisTests(
             places=12,
         )
 
+    def test_csv_outputs_use_lf_line_endings(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+
+            classes_path = root / "classes.csv"
+            cardinality_path = root / "cardinality.csv"
+
+            write_outputs(
+                self.class_rows,
+                self.cardinality_rows,
+                classes_csv=classes_path,
+                cardinality_csv=cardinality_path,
+                json_output=root / "analysis.json",
+                summary_output=root / "summary.md",
+            )
+
+            for path in (
+                classes_path,
+                cardinality_path,
+            ):
+                with self.subTest(path=path.name):
+                    content = path.read_bytes()
+
+                    self.assertIn(
+                        b"\n",
+                        content,
+                    )
+
+                    self.assertNotIn(
+                        b"\r",
+                        content,
+                    )
+
     def test_outputs_are_deterministic(
         self,
     ) -> None:
