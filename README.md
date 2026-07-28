@@ -18,11 +18,13 @@ It is:
 The project provides:
 
 - exact combinatorial probabilities;
-- an absorbing Markov-chain model;
-- historical calibration checks;
-- leakage-safe walk-forward replay;
-- immutable live prequential forecasts;
-- reproducible SQLite datasets and Python analyses.
+- a complete 1,024-state absorbing Markov-chain model;
+- independent verification of the transition kernel;
+- absorption-time moments, distributions and quantiles;
+- a machine-readable atlas of all 1,023 non-empty states;
+- historical calibration and cycle-duration comparisons;
+- reproducible SQLite datasets and Python analyses;
+- a documented record of rejected predictive hypotheses.
 
 ## Main conclusion
 
@@ -40,36 +42,51 @@ from the current cycle.
 
 The Markov model measures this completeness through:
 
-- probability of completion within `1`, `2`, `3`, or `5` draws;
+- probability of completion within `1`, `2`, `3`, `5`, or `10` draws;
 - exact expected number of draws remaining;
-- transition probabilities between missing-digit states.
+- variance and selected absorption-time quantiles;
+- transition probabilities between missing-digit states;
+- a deterministic mathematical difficulty ranking.
 
 It does not predict winning numbers and does not establish a gambling
 advantage.
 
 ## Current status
 
-The model has been validated through several distinct procedures.
+The predictive research line is closed. The maintained project direction is
+exact mathematical modelling, reproducible verification and historical
+description.
 
-| Validation | Cases | Expected | Observed | Difference |
-|---|---:|---:|---:|---:|
-| 2025 next-draw calibration | 2,248 states | 28.63% | 28.11% | -0.52 pp |
-| 2025 completion within 2 draws | 2,242 states | 57.09% | 56.38% | -0.71 pp |
-| 2025 completion within 3 draws | 2,239 states | 79.53% | 78.29% | -1.23 pp |
-| 2025 completion within 5 draws | 2,238 states | 95.73% | 95.76% | +0.02 pp |
-| 2025 residual expectation | 2,238 states | 2.524 draws | 2.544 draws | +0.020 |
-| 2025 walk-forward replay, draws 101–208 | 1,188 forecasts | 336.994 closures | 334 closures | -2.994 |
-| 2026 through draw 118, next-draw calibration | 617 states | 28.11% | 27.23% | -0.89 pp |
-| 2026 through draw 118, residual expectation | 595 states | 2.534 draws | 2.565 draws | +0.031 |
-| Holdout draw 119 | 11 wheels | 3.607 closures | 3 closures | -0.607 |
+| Milestone | Result |
+|:---|:---|
+| Formal specification | Complete finite-state model over all 1,024 states |
+| Independent kernel verification | 58,848 transition entries compared, zero discrepancies above tolerance |
+| Maximum kernel difference | \(2.289 \times 10^{-15}\) |
+| Absorption metrics | Mean, variance, probability mass and quantiles |
+| Complete state atlas | 1,023 non-empty states in CSV and JSON |
+| Continuous historical segment | 1,879 complete cycles from 2023–2025 |
+| Historical mean | 3.480043 observed versus 3.506190 theoretical |
+| Historical quantiles | Q50, Q90, Q95 and Q99 all match the theoretical values |
+| Maximum historical CDF difference | 1.3760 percentage points |
+| Separate partial 2026 segment | 171 complete cycles, analysed independently |
 
-The first live immutable prequential forecast has been frozen for draw `120`:
+The 2026 archive begins at draw 60 on 14 April 2026. It is intentionally kept
+separate from the continuous 2023–2025 segment because draws 1–59 are absent.
 
-```text
-prequential/forecasts/draw-0120.json
-```
+The complete atlas is available in:
 
-A simple example
+- `generated/coverage-state-atlas.csv`;
+- `generated/coverage-state-atlas.json`;
+- `docs/state-atlas-summary.md`.
+
+The detailed historical conclusion is documented in:
+
+- `docs/historical-cycle-distribution.md`.
+
+No historical deviation has been promoted into a prediction, wheel ranking or
+wagering rule.
+
+## A simple example
 
 Suppose a wheel has already covered all digits except 9.
 
