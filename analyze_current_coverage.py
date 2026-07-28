@@ -7,7 +7,8 @@ from __future__ import annotations
 import argparse
 import sys
 from collections import Counter
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
+from datetime import date
 from pathlib import Path
 
 from analyze_coverage_anomalies import (
@@ -22,11 +23,72 @@ from strategies.coverage_completion import (
 )
 from strategies.coverage_markov import maturity_metrics
 from strategies.digit_coverage import load_draws_by_wheel
-from strategies.twin_digits import LottoRepository
+from strategies.twin_digits import (
+    DrawSnapshot,
+    LottoRepository,
+)
 
 
 DEFAULT_DATABASE = Path("data/lotto-2026.sqlite3")
 HORIZONS = (1, 2, 3, 5)
+
+
+def parse_iso_date(value: str) -> date:
+    try:
+        parsed = date.fromisoformat(value)
+
+        if parsed.isoformat() != value:
+            raise ValueError
+    except ValueError as error:
+        raise argparse.ArgumentTypeError(
+            "--to richiede una data valida "
+            "nel formato YYYY-MM-DD."
+        ) from error
+
+    return parsed
+
+
+def limit_draws_to_date(
+    draws_by_wheel: Mapping[
+        str,
+        Sequence[DrawSnapshot],
+    ],
+    cutoff: date | None,
+) -> dict[str, tuple[DrawSnapshot, ...]]:
+    if cutoff is None:
+        return {
+            wheel: tuple(draws)
+            for wheel, draws
+            in draws_by_wheel.items()
+        }
+
+    limited = {
+        wheel: tuple(
+            draw
+            for draw in draws
+            if date.fromisoformat(
+                draw.draw_date
+            ) <= cutoff
+        )
+        for wheel, draws
+        in draws_by_wheel.items()
+    }
+
+    empty_wheels = tuple(
+        wheel
+        for wheel, draws in limited.items()
+        if not draws
+    )
+
+    if empty_wheels:
+        raise RuntimeError(
+            "Nessuna estrazione disponibile entro "
+            f"il {cutoff.isoformat()} per: "
+            + ", ".join(empty_wheels)
+            + "."
+        )
+
+    return limited
 
 
 def format_digits(digits: frozenset[int]) -> str:
@@ -140,6 +202,16 @@ def build_parser() -> argparse.ArgumentParser:
         "--database",
         type=Path,
         default=DEFAULT_DATABASE,
+    )
+    parser.add_argument(
+        "--to",
+        dest="to_date",
+        type=parse_iso_date,
+        metavar="YYYY-MM-DD",
+        help=(
+            "Ferma l'analisi all'ultima estrazione "
+            "non successiva alla data indicata."
+        ),
     )
 
     return parser
@@ -337,6 +409,11 @@ def main() -> int:
                 repository
             )
 
+        draws_by_wheel = limit_draws_to_date(
+            draws_by_wheel,
+            args.to_date,
+        )
+
         states = tuple(
             current_coverage_state(draws)
             for draws in draws_by_wheel.values()
@@ -371,6 +448,14 @@ def main() -> int:
         )
 
         print(f"Database: {args.database}")
+
+        if args.to_date is not None:
+            print(
+                "Limite temporale: "
+                f"{args.to_date.isoformat()} "
+                "(inclusivo)"
+            )
+
         print(
             f"Ultima estrazione: {latest_draw} "
             f"del {latest_date}"

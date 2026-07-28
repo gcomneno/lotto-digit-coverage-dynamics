@@ -1,13 +1,17 @@
 from __future__ import annotations
 
+import argparse
 import unittest
+from datetime import date
 
 from analyze_coverage_anomalies import AnomalyEvent
 from analyze_current_coverage import (
     active_anomalies,
     format_digits,
     latest_target,
+    limit_draws_to_date,
     maturity_sort_key,
+    parse_iso_date,
 )
 from strategies.coverage_completion import (
     ALL_DIGITS,
@@ -285,6 +289,70 @@ class CurrentCoverageStateTests(unittest.TestCase):
                 "2026-07-25",
             ),
         )
+
+    def test_parses_strict_iso_cutoff_date(
+        self,
+    ) -> None:
+        self.assertEqual(
+            parse_iso_date("2026-06-30"),
+            date(2026, 6, 30),
+        )
+
+        with self.assertRaises(
+            argparse.ArgumentTypeError
+        ):
+            parse_iso_date("30-06-2026")
+
+    def test_cutoff_is_inclusive(
+        self,
+    ) -> None:
+        draws_by_wheel = {
+            "Bari": (
+                draw(
+                    1,
+                    (1, 23, 45, 67, 89),
+                ),
+                draw(
+                    2,
+                    (11, 22, 33, 44, 55),
+                ),
+                draw(
+                    3,
+                    (12, 34, 56, 78, 90),
+                ),
+            ),
+        }
+
+        limited = limit_draws_to_date(
+            draws_by_wheel,
+            date(2025, 1, 2),
+        )
+
+        self.assertEqual(
+            tuple(
+                item.draw_number
+                for item in limited["Bari"]
+            ),
+            (1, 2),
+        )
+
+    def test_cutoff_rejects_empty_history(
+        self,
+    ) -> None:
+        draws_by_wheel = {
+            "Bari": (
+                draw(
+                    1,
+                    (1, 23, 45, 67, 89),
+                ),
+            ),
+        }
+
+        with self.assertRaises(RuntimeError):
+            limit_draws_to_date(
+                draws_by_wheel,
+                date(2024, 12, 31),
+            )
 
     def test_active_anomalies_distinguish_stateful_a1(
         self,
