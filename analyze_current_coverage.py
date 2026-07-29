@@ -350,7 +350,6 @@ def transversal_convergence(
         10 * first_digit + second_digit
         for first_digit in convergent_digits
         for second_digit in convergent_digits
-        if first_digit != second_digit
         if 1 <= (
             10 * first_digit + second_digit
         ) <= 90
@@ -598,7 +597,7 @@ def print_markov_summary(
         "con Età > 0; Mancanti è l’unione soltanto sulle "
         "ruote attive con probabilità Entro 1 massima; "
         "C è la loro intersezione; Numeri contiene tutte "
-        "le coppie ordinate di cifre distinte valide 01–90."
+        "le coppie ordinate di cifre, con ripetizione ammessa, valide 01–90."
     )
 
 

@@ -150,7 +150,7 @@ whose current natural cycle has positive age, then reports:
 - the union of the missing-digit sets only across active wheels tied for the
   maximum one-draw completion probability;
 - their intersection `C`;
-- all valid ordered two-digit numbers formed by distinct digits in `C`.
+- all valid ordered two-digit numbers formed from digits in `C`, with repeated digits allowed.
 
 This is a deterministic transversal description and an optional virtual-play
 criterion. It does not change the probability of any individual Lotto number

@@ -157,7 +157,7 @@ il cui ciclo naturale corrente ha età positiva e mostra:
 - l’unione degli insiemi delle cifre mancanti soltanto sulle ruote attive a
   pari merito per la massima probabilità di completamento entro una estrazione;
 - la loro intersezione `C`;
-- tutti i numeri ordinati validi di due cifre formati da cifre distinte di `C`.
+- tutti i numeri ordinati validi di due cifre formati dalle cifre di `C`, ammettendo le ripetizioni.
 
 È una descrizione trasversale deterministica e, facoltativamente, un criterio di
 gioco virtuale. Non modifica la probabilità di alcun numero del Lotto e non
