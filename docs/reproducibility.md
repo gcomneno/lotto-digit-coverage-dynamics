@@ -184,10 +184,12 @@ inclusive ISO date; `--to-num` limits it by inclusive draw number. The
 equivalent spelling `--to_num` is also accepted, and the date and number
 cutoffs cannot be combined.
 
-The final `TUTTE` row is computed only from wheels with positive current-cycle
-age. It reports the two transversal unions, their intersection and the valid
-ordered two-digit encodings of distinct intersecting digits. This row is
-descriptive and does not define an altered probability model.
+The final `TUTTE` row uses wheels with positive current-cycle age. Its
+most-present set is the union across all active wheels, while its missing set
+is the union only across active wheels tied for the maximum one-draw completion
+probability. It then reports their intersection and the valid ordered
+two-digit encodings of distinct intersecting digits. This row is descriptive
+and does not define an altered probability model.
 
 Current states and active anomalies are expected to change as new draws are
 imported.

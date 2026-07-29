@@ -71,8 +71,10 @@ cycle has positive age.
 
 Let:
 
-- `P` be the union of their most-present digit sets;
-- `M` be the union of their missing-digit sets;
+- `P` be the union of the most-present digit sets across all active wheels;
+- the maximum group contains every active wheel tied for the highest
+  one-draw completion probability;
+- `M` be the union of the missing-digit sets only across that maximum group;
 - `C = P ∩ M`.
 
 The reported `Numeri` field contains every valid number `01`–`90` formed by an

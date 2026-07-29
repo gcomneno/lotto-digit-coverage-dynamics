@@ -9,6 +9,7 @@ import sys
 from collections import Counter
 from collections.abc import Mapping, Sequence
 from datetime import date
+from math import isclose
 from pathlib import Path
 
 from analyze_coverage_anomalies import (
@@ -309,10 +310,36 @@ def transversal_convergence(
             for state in active_states
         )
     )
+
+    one_step_probabilities = tuple(
+        (
+            state,
+            maturity_metrics(
+                state.missing_digits,
+                horizons=HORIZONS,
+            )["completion_within"][1],
+        )
+        for state in active_states
+    )
+    maximum_one_step_probability = max(
+        probability
+        for _, probability in one_step_probabilities
+    )
+    maximum_one_step_states = tuple(
+        state
+        for state, probability in one_step_probabilities
+        if isclose(
+            probability,
+            maximum_one_step_probability,
+            rel_tol=0.0,
+            abs_tol=1e-15,
+        )
+    )
+
     missing_digits = frozenset().union(
         *(
             state.missing_digits
-            for state in active_states
+            for state in maximum_one_step_states
         )
     )
     convergent_digits = (
@@ -335,7 +362,6 @@ def transversal_convergence(
         convergent_digits,
         candidate_numbers,
     )
-
 
 def maturity_sort_key(
     item: tuple[
@@ -568,8 +594,9 @@ def print_markov_summary(
     )
     print()
     print(
-        "* TUTTE considera soltanto le ruote con Età > 0: "
-        "le prime due colonne sono le rispettive unioni; "
+        "* TUTTE: Più presenti è l’unione sulle ruote "
+        "con Età > 0; Mancanti è l’unione soltanto sulle "
+        "ruote attive con probabilità Entro 1 massima; "
         "C è la loro intersezione; Numeri contiene tutte "
         "le coppie ordinate di cifre distinte valide 01–90."
     )

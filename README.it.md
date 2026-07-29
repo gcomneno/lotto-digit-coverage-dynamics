@@ -153,8 +153,9 @@ tool eseguito.
 Il report `current` include una riga finale `TUTTE`. Considera soltanto le ruote
 il cui ciclo naturale corrente ha età positiva e mostra:
 
-- l’unione degli insiemi delle cifre più presenti;
-- l’unione degli insiemi delle cifre mancanti;
+- l’unione degli insiemi delle cifre più presenti su tutte le ruote attive;
+- l’unione degli insiemi delle cifre mancanti soltanto sulle ruote attive a
+  pari merito per la massima probabilità di completamento entro una estrazione;
 - la loro intersezione `C`;
 - tutti i numeri ordinati validi di due cifre formati da cifre distinte di `C`.
 

@@ -183,11 +183,13 @@ l’analisi mediante una data ISO inclusiva; `--to-num` la limita mediante il
 numero inclusivo del concorso. È accettata anche la grafia equivalente
 `--to_num`; i due tipi di limite non possono essere combinati.
 
-La riga finale `TUTTE` viene calcolata soltanto sulle ruote con età positiva nel
-ciclo corrente. Mostra le due unioni trasversali, la loro intersezione e le
-codifiche valide di due cifre ordinate e distinte appartenenti
-all’intersezione. La riga è descrittiva e non definisce un modello
-probabilistico alterato.
+La riga finale `TUTTE` utilizza le ruote con età positiva nel ciclo corrente.
+L’insieme delle cifre più presenti è l’unione su tutte le ruote attive, mentre
+l’insieme delle cifre mancanti è l’unione soltanto sulle ruote attive a pari
+merito per la massima probabilità di completamento entro una estrazione.
+Mostra quindi la loro intersezione e le codifiche valide di due cifre ordinate
+e distinte appartenenti all’intersezione. La riga è descrittiva e non definisce
+un modello probabilistico alterato.
 
 Gli stati correnti e le anomalie attive cambiano con l’importazione di nuove
 estrazioni.

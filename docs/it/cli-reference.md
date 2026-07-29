@@ -71,8 +71,12 @@ ciclo naturale corrente ha età positiva.
 
 Definiamo:
 
-- `P` come unione degli insiemi delle cifre più presenti;
-- `M` come unione degli insiemi delle cifre mancanti;
+- `P` come unione degli insiemi delle cifre più presenti su tutte le ruote
+  attive;
+- il gruppo massimo come l’insieme di tutte le ruote attive a pari merito per
+  la massima probabilità di completamento entro una estrazione;
+- `M` come unione degli insiemi delle cifre mancanti soltanto nel gruppo
+  massimo;
 - `C = P ∩ M`.
 
 Il campo `Numeri` contiene ogni numero valido `01`–`90` formato da una coppia
