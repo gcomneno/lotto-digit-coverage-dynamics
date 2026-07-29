@@ -166,12 +166,12 @@ class WindowAnalysisTests(unittest.TestCase):
     "Database di integrazione non disponibile.",
 )
 class DatabaseIntegrationTests(unittest.TestCase):
-    def test_latest_draw_is_119(self) -> None:
+    def test_latest_draw_is_120(self) -> None:
         with LottoRepository(DATABASE_PATH) as repository:
             draw_number, draw_date = repository.latest_draw()
 
-        self.assertEqual(draw_number, 119)
-        self.assertEqual(draw_date, "2026-07-25")
+        self.assertEqual(draw_number, 120)
+        self.assertEqual(draw_date, "2026-07-28")
 
     def test_expected_twins_exist_in_draw_119(self) -> None:
         with LottoRepository(DATABASE_PATH) as repository:
