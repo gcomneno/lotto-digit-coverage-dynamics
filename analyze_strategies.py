@@ -6,11 +6,11 @@ import argparse
 import sys
 from pathlib import Path
 
+from strategies.lotto_repository import format_number
 from strategies.twin_digits import (
+    LottoRepository,
     TwinAnalysis,
     analyze_latest,
-    format_number,
-    LottoRepository,
     rank_digit_by_presence,
 )
 

@@ -9,7 +9,7 @@ from strategies.coverage_completion import (
     ALL_DIGITS,
     digits_in_draw,
 )
-from strategies.twin_digits import DrawSnapshot
+from strategies.lotto_repository import DrawSnapshot
 
 
 @dataclass(frozen=True)

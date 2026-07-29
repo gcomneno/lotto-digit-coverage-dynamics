@@ -15,7 +15,7 @@ from strategies.coverage_markov_validation import (
     MarkovCalibrationObservation,
     collect_calibration_observations,
 )
-from strategies.twin_digits import LottoRepository
+from strategies.lotto_repository import LottoRepository
 
 
 DEFAULT_DATABASE = Path("data/lotto-2025.sqlite3")

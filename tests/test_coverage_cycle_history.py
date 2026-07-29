@@ -7,7 +7,7 @@ from strategies.coverage_cycle_history import (
     flatten_completed_cycles,
     merge_draws_by_wheel,
 )
-from strategies.twin_digits import DrawSnapshot
+from strategies.lotto_repository import DrawSnapshot
 
 
 COMPLETE_DRAW = (1, 23, 45, 67, 89)

@@ -17,7 +17,7 @@ from strategies.digit_return_times import (
     collect_return_observations,
     theoretical_hit_probability,
 )
-from strategies.twin_digits import LottoRepository
+from strategies.lotto_repository import LottoRepository
 
 
 DEFAULT_DATABASE = Path("data/lotto-2025.sqlite3")

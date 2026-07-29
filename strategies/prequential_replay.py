@@ -14,7 +14,7 @@ from strategies.prequential_validation import (
     DEFAULT_HORIZONS,
     normalize_horizons,
 )
-from strategies.twin_digits import DrawSnapshot
+from strategies.lotto_repository import DrawSnapshot
 
 
 @dataclass(frozen=True)

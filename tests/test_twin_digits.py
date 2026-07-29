@@ -3,16 +3,18 @@ from __future__ import annotations
 import unittest
 from pathlib import Path
 
-from strategies.twin_digits import (
+from strategies.lotto_repository import (
     DrawSnapshot,
+    format_number,
+    split_digits,
+)
+from strategies.twin_digits import (
     LottoRepository,
     TwinEvent,
     analyze_event_windows,
     count_digit_in_numbers,
-    format_number,
     is_twin_number,
     rank_digit_by_presence,
-    split_digits,
 )
 
 

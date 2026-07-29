@@ -5,7 +5,7 @@ import unittest
 from strategies.prequential_replay import (
     build_prequential_replay,
 )
-from strategies.twin_digits import DrawSnapshot
+from strategies.lotto_repository import DrawSnapshot
 
 
 def draw(

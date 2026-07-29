@@ -11,7 +11,7 @@ from strategies.coverage_completion import (
 )
 from strategies.coverage_markov import expected_remaining_draws
 from strategies.digit_coverage import load_draws_by_wheel
-from strategies.twin_digits import (
+from strategies.lotto_repository import (
     DrawSnapshot,
     LottoRepository,
 )

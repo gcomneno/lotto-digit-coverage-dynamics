@@ -8,7 +8,7 @@ from strategies.digit_coverage import (
     build_coverage_windows,
     count_all_digits,
 )
-from strategies.twin_digits import (
+from strategies.lotto_repository import (
     DrawSnapshot,
     LottoRepository,
 )

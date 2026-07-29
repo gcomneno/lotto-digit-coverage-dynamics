@@ -16,7 +16,7 @@ from strategies.coverage_completion import (
     collect_completion_observations,
     exact_completion_probability,
 )
-from strategies.twin_digits import LottoRepository
+from strategies.lotto_repository import LottoRepository
 
 
 DEFAULT_DATABASE = Path("data/lotto-2025.sqlite3")

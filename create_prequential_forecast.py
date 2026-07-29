@@ -23,7 +23,7 @@ from strategies.prequential_validation import (
     utc_now_iso,
     write_forecast_document,
 )
-from strategies.twin_digits import LottoRepository
+from strategies.lotto_repository import LottoRepository
 
 
 DEFAULT_DATABASE = Path("data/lotto-2026.sqlite3")

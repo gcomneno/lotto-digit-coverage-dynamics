@@ -16,7 +16,7 @@ from strategies.coverage_completion import (
     ALL_DIGITS,
     exact_completion_probability,
 )
-from strategies.twin_digits import (
+from strategies.lotto_repository import (
     DrawSnapshot,
 )
 

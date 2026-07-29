@@ -6,7 +6,7 @@ from strategies.coverage_markov import expected_remaining_draws
 from strategies.coverage_markov_residuals import (
     build_residual_observations,
 )
-from strategies.twin_digits import DrawSnapshot
+from strategies.lotto_repository import DrawSnapshot
 
 
 def draw(

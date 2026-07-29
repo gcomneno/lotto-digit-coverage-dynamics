@@ -9,7 +9,7 @@ from strategies.coverage_markov_validation import (
     build_calibration_observations,
     normalize_horizons,
 )
-from strategies.twin_digits import DrawSnapshot
+from strategies.lotto_repository import DrawSnapshot
 
 
 def draw(
