@@ -8,8 +8,8 @@ import sys
 from pathlib import Path
 
 from strategies.twin_digits import (
-    TWIN_NUMBERS,
     LottoRepository,
+    TWIN_NUMBERS,
     TwinEvent,
     analyze_event_windows,
     rank_digit_by_presence,

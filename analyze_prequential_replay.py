@@ -23,7 +23,7 @@ from strategies.prequential_validation import (
     MODEL_ID,
     sha256_file,
 )
-from strategies.twin_digits import LottoRepository
+from strategies.lotto_repository import LottoRepository
 
 
 DEFAULT_DATABASE = Path("data/lotto-2025.sqlite3")

@@ -8,7 +8,7 @@ from strategies.digit_return_times import (
     matching_numbers,
     theoretical_hit_probability,
 )
-from strategies.twin_digits import DrawSnapshot
+from strategies.lotto_repository import DrawSnapshot
 
 
 def draw(

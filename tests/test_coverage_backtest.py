@@ -6,7 +6,7 @@ from analyze_coverage_backtest import (
     build_signals_for_wheel,
     theoretical_hit_probability,
 )
-from strategies.twin_digits import DrawSnapshot
+from strategies.lotto_repository import DrawSnapshot
 
 
 def draw(

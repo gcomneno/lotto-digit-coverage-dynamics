@@ -25,7 +25,7 @@ from strategies.coverage_markov import (
     transition_distribution,
     transition_probability,
 )
-from strategies.twin_digits import DrawSnapshot
+from strategies.lotto_repository import DrawSnapshot
 
 DEFAULT_OUTPUT_PREFIX = Path("_work/coverage-anomalies-2023-2025")
 DEFAULT_THRESHOLD = 0.01

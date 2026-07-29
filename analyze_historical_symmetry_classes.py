@@ -29,7 +29,7 @@ from strategies.coverage_structure import (
 from strategies.digit_coverage import (
     load_draws_by_wheel,
 )
-from strategies.twin_digits import (
+from strategies.lotto_repository import (
     DrawSnapshot,
     LottoRepository,
 )

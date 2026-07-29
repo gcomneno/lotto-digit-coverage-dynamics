@@ -20,7 +20,7 @@ from strategies.coverage_completion import (
     CurrentCoverageState,
     current_coverage_state,
 )
-from strategies.twin_digits import DrawSnapshot
+from strategies.lotto_repository import DrawSnapshot
 
 
 def draw(

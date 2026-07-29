@@ -21,7 +21,7 @@ from analyze_coverage_anomalies import (
 )
 from strategies.coverage_completion import ALL_DIGITS
 from strategies.coverage_markov import completion_probability_within, transition_probability
-from strategies.twin_digits import DrawSnapshot
+from strategies.lotto_repository import DrawSnapshot
 
 
 SYNCHRONIZING_DRAW = (12, 34, 56, 78, 90)

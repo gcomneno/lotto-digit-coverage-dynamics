@@ -6,7 +6,7 @@ from analyze_two_missing_backtest import (
     build_signals_for_wheel,
     theoretical_pair_probabilities,
 )
-from strategies.twin_digits import DrawSnapshot
+from strategies.lotto_repository import DrawSnapshot
 
 
 def draw(

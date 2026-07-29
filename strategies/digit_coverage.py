@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Sequence
 
-from strategies.twin_digits import (
+from strategies.lotto_repository import (
     DrawSnapshot,
     LottoRepository,
     split_digits,

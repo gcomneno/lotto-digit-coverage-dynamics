@@ -13,7 +13,7 @@ from strategies.digit_coverage import (
     DigitCoverageWindow,
     analyze_digit_coverage,
 )
-from strategies.twin_digits import LottoRepository
+from strategies.lotto_repository import LottoRepository
 
 
 DEFAULT_DATABASE = Path("data/lotto-2026.sqlite3")
