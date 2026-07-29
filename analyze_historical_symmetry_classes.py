@@ -39,6 +39,7 @@ DEFAULT_DATABASES = (
     Path("data/lotto-2023.sqlite3"),
     Path("data/lotto-2024.sqlite3"),
     Path("data/lotto-2025.sqlite3"),
+    Path("data/lotto-2026.sqlite3"),
 )
 
 DEFAULT_CSV_OUTPUT = Path(
@@ -563,7 +564,14 @@ def write_json(
             "historical-symmetry-class-"
             "one-step-comparison"
         ),
-        "segment": "2023-2025",
+        "segment": (
+            (
+                f"{min(observed_dates)[:4]}-"
+                f"{max(observed_dates)[:4]}"
+            )
+            if observed_dates
+            else None
+        ),
         "database_paths": [
             str(path)
             for path in database_paths

@@ -38,11 +38,10 @@ PRIMARY_DATABASES = (
     Path("data/lotto-2023.sqlite3"),
     Path("data/lotto-2024.sqlite3"),
     Path("data/lotto-2025.sqlite3"),
-)
-
-SECONDARY_DATABASES = (
     Path("data/lotto-2026.sqlite3"),
 )
+
+SECONDARY_DATABASES: tuple[Path, ...] = ()
 
 DEFAULT_TEXT_OUTPUT = Path(
     "_work/historical-cycle-comparison.txt"
@@ -579,7 +578,7 @@ def render_segment(
 
 def render_report(
     primary: SegmentAnalysis,
-    secondary: SegmentAnalysis,
+    secondary: SegmentAnalysis | None = None,
 ) -> str:
     lines = [
         "===== CONFRONTO STORICO DEI CICLI DI COPERTURA =====",
@@ -600,8 +599,8 @@ def render_report(
             "escluso dalle durate complete;"
         ),
         (
-            "- il segmento 2026 è separato dal 2023–2025 "
-            "perché mancano le estrazioni 1–59 del 2026;"
+            "- eventuali segmenti aggiuntivi restano separati "
+            "quando gli archivi non sono temporalmente continui;"
         ),
         (
             "- le ruote condividono il calendario delle "
@@ -616,10 +615,11 @@ def render_report(
     ]
 
     lines.extend(render_segment(primary))
-    lines.extend(render_segment(secondary))
+
+    if secondary is not None:
+        lines.extend(render_segment(secondary))
 
     return "\n".join(lines)
-
 
 def segment_to_json(
     segment: SegmentAnalysis,
@@ -673,9 +673,13 @@ def build_parser() -> argparse.ArgumentParser:
 
     parser.add_argument(
         "--secondary-databases",
-        nargs="+",
+        nargs="*",
         type=Path,
         default=list(SECONDARY_DATABASES),
+        help=(
+            "Archivi opzionali da analizzare come secondo "
+            "segmento temporalmente separato."
+        ),
     )
 
     parser.add_argument(
@@ -698,13 +702,17 @@ def main() -> int:
 
     try:
         primary = analyze_segment(
-            "Segmento continuo 2023–2025",
+            "Segmento continuo 2023–2026",
             args.primary_databases,
         )
 
-        secondary = analyze_segment(
-            "Segmento parziale 2026",
-            args.secondary_databases,
+        secondary = (
+            analyze_segment(
+                "Segmento secondario discontinuo",
+                args.secondary_databases,
+            )
+            if args.secondary_databases
+            else None
         )
 
         report = render_report(
@@ -738,8 +746,10 @@ def main() -> int:
             "primary_segment": segment_to_json(
                 primary
             ),
-            "secondary_segment": segment_to_json(
-                secondary
+            "secondary_segment": (
+                segment_to_json(secondary)
+                if secondary is not None
+                else None
             ),
         }
 

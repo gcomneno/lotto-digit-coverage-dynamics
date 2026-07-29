@@ -179,10 +179,10 @@ class HistoricalCycleDistributionTests(
         )
 
         primary = SegmentAnalysis(
-            label="Segmento continuo 2023–2025",
+            label="Segmento continuo 2023–2026",
             database_paths=("primary.sqlite3",),
             first_date="2023-01-03",
-            last_date="2025-12-30",
+            last_date="2026-07-28",
             histories=(history,),
             cycles=history.completed_cycles,
             summary=summary,
@@ -190,7 +190,7 @@ class HistoricalCycleDistributionTests(
         )
 
         secondary = SegmentAnalysis(
-            label="Segmento parziale 2026",
+            label="Segmento secondario discontinuo",
             database_paths=("secondary.sqlite3",),
             first_date="2026-04-14",
             last_date="2026-07-25",
@@ -200,23 +200,35 @@ class HistoricalCycleDistributionTests(
             duration_rows=rows,
         )
 
+        single_report = render_report(primary)
+
+        self.assertIn(
+            "SEGMENTO CONTINUO 2023–2026",
+            single_report,
+        )
+
+        self.assertNotIn(
+            "SEGMENTO SECONDARIO DISCONTINUO",
+            single_report,
+        )
+
         report = render_report(
             primary,
             secondary,
         )
 
         self.assertIn(
-            "SEGMENTO CONTINUO 2023–2025",
+            "SEGMENTO CONTINUO 2023–2026",
             report,
         )
 
         self.assertIn(
-            "SEGMENTO PARZIALE 2026",
+            "SEGMENTO SECONDARIO DISCONTINUO",
             report,
         )
 
         self.assertIn(
-            "mancano le estrazioni 1–59",
+            "eventuali segmenti aggiuntivi restano separati",
             report,
         )
 

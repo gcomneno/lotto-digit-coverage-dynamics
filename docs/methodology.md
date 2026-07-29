@@ -1,126 +1,139 @@
+# Methodology
 
-Methodology
-Unit of analysis
+## Research objective
 
-Each Lotto wheel is analyzed independently.
+The project asks whether decimal digit coverage in one Italian Lotto wheel can
+be represented exactly as a finite-state absorbing stochastic process and how
+closely its derived properties match historical observations.
 
-A draw is atomic: all five numbers from the same wheel and contest are processed
-together.
+The objective is explanation and verification, not draw selection.
 
-Digits are accumulated only within the same wheel.
+## Decimal representation
 
-Natural coverage cycles
+Every number is represented with two decimal positions:
 
-A natural cycle follows these rules:
+```text
+1  -> 01 -> {0,1}
+9  -> 09 -> {0,9}
+40 -> 40 -> {0,4}
+77 -> 77 -> {7}
+90 -> 90 -> {0,9}
+```
 
-begin with no covered digits;
-add every digit appearing in each new draw;
-close the cycle when all digits 0–9 have appeared;
-start a new cycle after that completion.
+The leading zero therefore contributes to digit coverage.
 
-The state recorded after a completion is therefore the fresh state containing
-all ten missing digits.
+## State definition
 
-Left censoring
+Let \(D=\{0,1,\ldots,9\}\). A state \(S\subseteq D\) is the set of digits still
+missing from the current cycle.
 
-An archive may begin in the middle of an already active cycle.
+There are \(2^{10}=1,024\) states. The empty set is absorbing in the mathematical
+chain. The natural historical process restarts from \(D\) after completion.
 
-The first observed partial cycle is not treated as a complete natural cycle.
-It is used only to synchronize the process once the first complete coverage is
-observed.
+## Exact transition construction
 
-Right censoring
+One wheel draw is an unordered five-element subset of `01–90`, giving
 
-At the end of an archive, the current cycle may still be open.
+\[
+\binom{90}{5}=43,949,268
+\]
 
-For probability-within-horizon validation:
+possible draws.
 
-a successful completion can be recorded as soon as it occurs;
-a failure is recorded only when the full requested horizon is available.
+Each number is mapped to a ten-bit digit mask. An integer dynamic program counts
+how many five-number subsets generate each union mask. The resulting exact mask
+distribution induces the transition kernel
 
-For residual-duration validation:
+\[
+K(S,T)=P(S\setminus G(\omega)=T).
+\]
 
-only states whose subsequent completion is observable are included;
-right-censored final states are excluded.
-Exact theoretical baseline
+A transition can only remove missing digits, so \(T\subseteq S\).
 
-No empirical frequency is used to define the Markov transition probabilities.
+## Independent verification
 
-They are calculated from the exact combinatorics of selecting five distinct
-numbers from 1 to 90.
+The reference kernel is checked against a conceptually independent
+integer-count construction over:
 
-Historical data is used only for validation.
+- all 1,024 states;
+- all reachable transition cells;
+- the complete five-number sample space.
 
-Calibration validation
+At the July 2026 checkpoint:
 
-For every observed state, the model assigns a probability of cycle completion
-within a chosen horizon.
+- 968 digit-union masks were observed;
+- 58,848 transition cells were compared;
+- the maximum absolute discrepancy was
+  `2.289401307420391 × 10⁻¹⁵`.
 
-Predictions are compared with observed binary outcomes.
+The tolerance used by the verifier is `1 × 10⁻¹²`.
 
-Reported measures include:
+## Derived quantities
 
-observed completion rate;
-mean predicted probability;
-observed-minus-predicted difference;
-Brier score;
-calibration by probability bands;
-exact-state summaries where enough observations exist.
+For every non-empty state, the implementation computes:
 
-Historical states overlap and states within the same cycle are dependent.
-Results are therefore treated as descriptive calibration, not as independent
-Bernoulli trials for naive significance testing.
+- one-step completion probability;
+- completion CDF over arbitrary horizons;
+- probability mass function;
+- expected remaining draws;
+- variance and standard deviation;
+- selected absorption-time quantiles;
+- stable state-difficulty ranking.
 
-Residual-duration validation
+Bellman recurrences exploit the fact that every proper successor contains fewer
+missing digits.
 
-For each state with a known later completion:
+## Structural analysis
 
-predicted value: exact Markov expected remaining draws;
-observed value: actual number of draws before cycle completion.
+The project verifies:
 
-Reported measures include:
+- monotonicity of the deterministic state update;
+- stochastic ordering under set inclusion;
+- exact decimal symmetries;
+- loss of information from reducing a state to its cardinality.
 
-mean observed duration;
-mean predicted duration;
-bias;
-mean absolute error;
-root mean squared error.
+The 1,023 non-empty states collapse into 27 exact structural classes:
 
-The expected value is not intended to predict the exact duration of an
-individual cycle.
+- without digit `9`, digits `0–8` are interchangeable;
+- with digit `9` missing, digit `0` becomes distinct while digits `1–8` remain
+  interchangeable.
 
-Historical walk-forward replay
+## Historical observation protocol
 
-For target contest T:
+Annual SQLite archives are merged by date for each wheel.
 
-use only contests strictly earlier than T;
-reconstruct the current state for every wheel;
-calculate and freeze the model probabilities;
-inspect contest T;
-record the completion outcome;
-advance to T + 1.
+At the current checkpoint the primary archive is continuous from 2023 through
+draw 120 of 2026.
 
-The 2025 replay covers:
+For natural cycles:
 
-100 -> 101
-101 -> 102
-...
-207 -> 208
+1. the initial left-censored cycle of each wheel is excluded;
+2. completed cycles are retained;
+3. the terminal incomplete cycle is recorded but excluded from complete-cycle
+   duration summaries;
+4. continuous year boundaries do not reset the cycle.
 
-It contains 108 × 11 = 1,188 wheel-level forecasts.
+Wheels share the draw calendar. Pooled wheel observations are therefore
+reported descriptively and are not treated as independent replicates.
 
-The replay is leakage-safe but reconstructed after the events. It is therefore
-not equivalent to a forecast publicly committed before an unknown draw.
+## Exact-state historical comparisons
 
-Live prequential validation
+Historical analyses include:
 
-The live protocol adds a time-ordering proof:
+- aggregate absorption-time distribution;
+- one-step calibration by exact structural class;
+- expected versus observed completion;
+- residual remaining duration;
+- retrospective anomaly labels A1–A4;
+- current exact-state maturity.
 
-generate an immutable forecast file;
-record source database hash and model commit;
-commit and push the forecast before the target draw;
-never modify the forecast;
-record the outcome in a separate file;
-update cumulative scoring.
+The Markov property is interpreted conditionally: once the exact missing set is
+known, cycle age and prior path do not change the theoretical transition law.
 
-The first live target is contest 120.
+## Reproducibility boundary
+
+Deterministic mathematical artifacts are tracked under `generated/`.
+Transient reports and publication checks belong under `_work/`.
+
+The 2022 archive remains unimported and uninspected. It is reserved for a future
+question that is declared before the data are examined.
