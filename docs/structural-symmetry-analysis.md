@@ -1,5 +1,8 @@
 # Structural symmetry analysis
 
+**English** | [Italiano](it/structural-symmetry-analysis.md)
+
+
 ## Purpose
 
 This document identifies the exact symmetry classes of the decimal digit-coverage process and quantifies the information lost when a state is represented only by its number of missing digits.

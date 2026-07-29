@@ -1,5 +1,8 @@
 # Finite-state model of decimal digit coverage
 
+**English** | [Italiano](it/finite-state-model.md)
+
+
 ## Purpose
 
 This document defines the exact finite-state stochastic model used to study

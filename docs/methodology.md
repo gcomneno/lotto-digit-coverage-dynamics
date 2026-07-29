@@ -1,5 +1,8 @@
 # Methodology
 
+**English** | [Italiano](it/methodology.md)
+
+
 ## Research objective
 
 The project asks whether decimal digit coverage in one Italian Lotto wheel can

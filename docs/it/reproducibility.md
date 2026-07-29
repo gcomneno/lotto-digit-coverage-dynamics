@@ -1,40 +1,39 @@
-# Reproducibility
+# Riproducibilità
 
-**English** | [Italiano](it/reproducibility.md)
+[English](../reproducibility.md) | **Italiano**
 
+Eseguire tutti i comandi dalla radice del repository.
 
-Run all commands from the repository root.
+Gli output transitori devono essere scritti sotto `_work/`. Gli artefatti
+deterministici destinati alla pubblicazione sono tracciati sotto `generated/`.
 
-Transient outputs should be written under `_work/`. Deterministic publication
-artifacts are tracked under `generated/`.
-
-## Automated suite
+## Suite automatizzata
 
 ```bash
 python3 -m unittest discover -v
 ```
 
-At the July 2026 publication checkpoint, the pruned source of truth contains 153
-passing tests.
+Al checkpoint di pubblicazione di luglio 2026, la fonte di verità potata contiene
+153 test superati.
 
-## Independent kernel verification
+## Verifica indipendente del kernel
 
 ```bash
 python3 verify_transition_kernel.py \
     --output _work/reproduction/transition-kernel.json
 ```
 
-Expected invariants include:
+Fra gli invarianti attesi:
 
 - `verified: true`;
 - `draw_combinations: 43949268`;
 - `observed_digit_mask_classes: 968`;
 - `states_verified: 1024`;
-- maximum absolute error below `1e-12`.
+- errore assoluto massimo inferiore a `1e-12`.
 
-## State atlas
+## Atlante degli stati
 
-Regenerate into a temporary directory:
+Rigenerare in una directory temporanea:
 
 ```bash
 python3 generate_state_atlas.py \
@@ -43,7 +42,7 @@ python3 generate_state_atlas.py \
     --summary-output _work/reproduction/state-atlas-summary.md
 ```
 
-Compare the machine-readable artifacts:
+Confrontare gli artefatti machine-readable:
 
 ```bash
 cmp generated/coverage-state-atlas.csv \
@@ -53,7 +52,7 @@ cmp generated/coverage-state-atlas.json \
     _work/reproduction/coverage-state-atlas.json
 ```
 
-## Structural analysis
+## Analisi strutturale
 
 ```bash
 python3 generate_structural_analysis.py \
@@ -67,7 +66,7 @@ python3 generate_structural_analysis.py \
     _work/reproduction/structural-symmetry-analysis.md
 ```
 
-Compare with the tracked outputs:
+Confrontare con gli output tracciati:
 
 ```bash
 cmp generated/coverage-symmetry-classes.csv \
@@ -80,10 +79,10 @@ cmp generated/coverage-structural-analysis.json \
     _work/reproduction/coverage-structural-analysis.json
 ```
 
-At the July 2026 checkpoint, all five regenerated theoretical artifacts matched
-their tracked versions byte for byte.
+Al checkpoint di luglio 2026, tutti e cinque gli artefatti teorici rigenerati
+coincidevano byte per byte con le versioni tracciate.
 
-## Historical cycle distribution
+## Distribuzione storica dei cicli
 
 ```bash
 python3 analyze_historical_cycle_distribution.py \
@@ -98,21 +97,21 @@ python3 analyze_historical_cycle_distribution.py \
     _work/reproduction/historical-cycle-distribution.json
 ```
 
-Expected archive interval:
+Intervallo atteso:
 
 ```text
 2023-01-03 -> 2026-07-28
 ```
 
-Expected complete-cycle count:
+Numero atteso di cicli completi:
 
 ```text
 2253
 ```
 
-The default secondary segment is empty.
+Il segmento secondario predefinito è vuoto.
 
-## Historical structural classes
+## Classi strutturali storiche
 
 ```bash
 python3 analyze_historical_symmetry_classes.py \
@@ -126,14 +125,14 @@ python3 analyze_historical_symmetry_classes.py \
     _work/reproduction/historical-symmetry-classes.json
 ```
 
-Expected summary:
+Sintesi attesa:
 
 ```text
-27 structural classes
-7869 one-step observations
+27 classi strutturali
+7869 osservazioni a un passo
 ```
 
-## Historical anomalies
+## Anomalie storiche
 
 ```bash
 python3 analyze_coverage_anomalies.py \
@@ -146,52 +145,54 @@ python3 analyze_coverage_anomalies.py \
     _work/reproduction/coverage-anomalies-2023-2026
 ```
 
-At the current checkpoint, the default `1%` threshold produces:
+Al checkpoint corrente, la soglia predefinita dell’`1%` produce:
 
 ```text
 A1=21
 A2=3
 A3=12
 A4=0
-total=36
+totale=36
 ```
 
-## Current state
+## Stato corrente
 
 ```bash
 python3 analyze_current_coverage.py \
     --database data/lotto-2026.sqlite3
 ```
 
-The output must state the exact database cutoff. Current states and active
-anomalies are expected to change as new draws are imported.
+L’output deve dichiarare la data esatta di arresto del database. Gli stati
+correnti e le anomalie attive cambiano con l’importazione di nuove estrazioni.
 
-## Database integrity and update
+## Integrità e aggiornamento del database
 
-Inspect importer and updater options:
+Esaminare le opzioni:
 
 ```bash
 python3 import_lotto.py --help
 python3 update_lotto_database.py --help
 ```
 
-Update the current annual archive:
+Aggiornare l’archivio annuale corrente:
 
 ```bash
 python3 update_lotto_database.py
 ```
 
-The updater requires a complete contiguous archive beginning at draw 1, builds a
-temporary database, validates it and replaces the destination atomically.
+L’aggiornamento richiede un archivio completo e contiguo che inizi dal concorso
+1, costruisce un database temporaneo, lo verifica e sostituisce la destinazione
+in modo atomico.
 
-## Git cleanliness
+## Pulizia Git
 
-A reproduction run directed entirely to `_work/` must not modify tracked files:
+Un’esecuzione di riproduzione diretta interamente sotto `_work/` non deve
+modificare file tracciati:
 
 ```bash
 git status --short
 ```
 
-`docs/validation-results.md` is intentionally absent. Reproduction evidence is
-generated from the live implementation rather than maintained as a manually
-synchronized validation document.
+`docs/validation-results.md` è intenzionalmente assente. Le prove di
+riproducibilità vengono generate dall’implementazione corrente anziché
+conservate in un documento manuale da mantenere sincronizzato.

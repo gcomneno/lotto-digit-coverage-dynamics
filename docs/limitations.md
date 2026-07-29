@@ -1,5 +1,8 @@
 # Limitations
 
+**English** | [Italiano](it/limitations.md)
+
+
 ## Model assumptions
 
 The exact kernel describes one wheel draw as an unordered selection of five

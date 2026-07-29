@@ -1,5 +1,8 @@
 # Historical coverage-cycle distribution
 
+**English** | [Italiano](it/historical-cycle-distribution.md)
+
+
 ## Purpose
 
 This report compares complete historical coverage-cycle durations with the

@@ -1,5 +1,8 @@
 # Coverage state atlas summary
 
+**English** | [Italiano](it/state-atlas-summary.md)
+
+
 ## Status
 
 Generated from the exact 1,024-state finite-state model.
