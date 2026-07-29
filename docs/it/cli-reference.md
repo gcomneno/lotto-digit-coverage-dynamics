@@ -80,12 +80,12 @@ Definiamo:
 - `C = P ∩ M`.
 
 Il campo `Numeri` contiene ogni numero valido `01`–`90` formato da una coppia
-ordinata di cifre distinte appartenenti a `C`.
+ordinata di cifre appartenenti a `C`, ammettendo anche cifre ripetute.
 
 Per esempio, `C={1,6,7}` produce:
 
 ```text
-{16,17,61,67,71,76}
+{11,16,17,61,66,67,71,76,77}
 ```
 
 La costruzione è deterministica e riproducibile. È una descrizione trasversale

@@ -78,12 +78,12 @@ Let:
 - `C = P ∩ M`.
 
 The reported `Numeri` field contains every valid number `01`–`90` formed by an
-ordered pair of distinct digits from `C`.
+ordered pair of digits from `C`, including pairs with repeated digits.
 
 For example, `C={1,6,7}` produces:
 
 ```text
-{16,17,61,67,71,76}
+{11,16,17,61,66,67,71,76,77}
 ```
 
 This construction is deterministic and reproducible. It is a transversal

@@ -736,8 +736,10 @@ class CurrentCoverageStateTests(unittest.TestCase):
                     6,
                 }),
                 frozenset({
+                    11,
                     16,
                     61,
+                    66,
                 }),
             ),
         )
@@ -848,7 +850,7 @@ class CurrentCoverageStateTests(unittest.TestCase):
             rendered,
         )
         self.assertIn(
-            "Numeri={16,61}",
+            "Numeri={11,16,61,66}",
             rendered,
         )
         self.assertIn(
