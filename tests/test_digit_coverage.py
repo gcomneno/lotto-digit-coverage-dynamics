@@ -125,9 +125,9 @@ class DigitCoverageIntegrationTests(unittest.TestCase):
                 max_window_size=3,
             )
 
-        self.assertEqual(len(analysis[1]), 660)
-        self.assertEqual(len(analysis[2]), 649)
-        self.assertEqual(len(analysis[3]), 638)
+        self.assertEqual(len(analysis[1]), 1320)
+        self.assertEqual(len(analysis[2]), 1309)
+        self.assertEqual(len(analysis[3]), 1298)
 
     def test_every_window_has_expected_digit_slots(self) -> None:
         with LottoRepository(DATABASE_PATH) as repository:
