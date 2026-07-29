@@ -1,85 +1,85 @@
+# Limitations
 
-Limitations
-No number prediction
+## Model assumptions
 
-The model predicts neither individual numbers nor winning combinations.
+The exact kernel describes one wheel draw as an unordered selection of five
+distinct numbers from `01–90`.
 
-It estimates the probability that a set of missing decimal digits will all
-appear within a given number of future draws.
+All theoretical probabilities are conditional on that idealized sample space.
+The project does not independently audit physical drawing equipment, operating
+procedures or institutional data-generation processes.
 
-No gambling advantage
+## Historical dependence
 
-Correct probability estimation does not create an advantage over the lottery.
+The eleven wheels share the same extraction calendar. Their observations are
+pooled for descriptive summaries, but the project does not assume that they are
+independent experimental replicates.
 
-The model describes a derived property of random draws.
+Consequently, aggregate differences from theory are not converted directly
+into classical p-values or claims of formal model acceptance.
 
-It does not change:
+## Archive scope
 
-prize probabilities;
-expected monetary return;
-independence of future number combinations;
-house advantage.
-Ideal random-draw assumption
+The current historical window runs from 3 January 2023 through 28 July 2026.
 
-The exact transition model assumes that each five-number combination from
-1–90 is sampled uniformly without replacement within a wheel draw.
+Although it contains 2,253 complete cycles, it is still a finite observation
+window. Rare states and rare transitions may have small empirical sample sizes.
 
-The historical validation checks whether real archives behave consistently with
-that model at the digit-coverage level.
+The 2022 archive is deliberately excluded and has not been inspected.
 
-Dependence between observations
+## Censoring
 
-Successive states from the same cycle overlap and are statistically dependent.
+The first observed cycle for each wheel is left-censored and excluded. The last
+open cycle is right-censored and excluded from complete-duration summaries.
 
-Wheel states from the same contest may also share external timing, although
-their draws are analyzed separately.
+These rules reduce bias but also discard some observations.
 
-Naive significance tests that assume every state is independent would
-overstate the effective sample size.
+## Anomaly labels
 
-Archive censoring
+A1–A4 events are retrospective descriptive labels.
 
-The beginning of an archive can contain a partial cycle that started before the
-available data.
+Their thresholds are not presented as a complete multiple-testing procedure,
+and A4 uses a conservative Bonferroni upper bound conditional on a preceding
+primary anomaly.
 
-The end can contain a cycle whose future completion is unknown.
+An anomaly does not imply:
 
-The implementation handles these conditions explicitly, but censoring always
-reduces available observations.
+- manipulation;
+- dependence in future draws;
+- compensating behaviour;
+- a profitable selection rule.
 
-Small exact-state samples
+## Numerical representation
 
-Some missing sets occur rarely.
+The underlying combinatorial counts are integers, but reported probabilities
+and Bellman metrics use floating-point arithmetic.
 
-Large deviations for states with ten or twenty observations are expected and
-must not be interpreted as stable anomalies.
+Independent verification currently shows a maximum absolute transition
+difference of approximately `2.29 × 10⁻¹⁵`, well below the configured
+`1 × 10⁻¹²` tolerance.
 
-Wheel-specific deviations
+## Current-state outputs
 
-Historical wheel-level replay results differ.
+Current wheel states change whenever the annual archive is updated. They are
+operational snapshots, not stable research conclusions.
 
-The current model does not apply wheel-specific corrections because:
+Documentation therefore records the archive cutoff explicitly and directs users
+to regenerate the current-state report.
 
-each wheel sample is limited;
-deviations are not yet shown to persist;
-fitting separate adjustments would risk overfitting.
-Historical replay is not live prediction
+## External data availability
 
-The walk-forward replay prevents future data from entering each forecast.
+Annual database updates depend on the structure and availability of the
+upstream archive page. The importer validates archive completeness and writes
+databases atomically, but an upstream format change can require maintenance.
 
-However, it was executed after all historical events had already occurred.
+## No predictive claim
 
-Only committed live forecasts provide external chronological evidence that the
-forecast existed before the target event.
+The project does not claim that:
 
-Model versioning
+- overdue digits become more likely;
+- cycle age modifies exact-state probabilities;
+- historical residuals create an exploitable edge;
+- rare past transitions predict future rare transitions.
 
-Future modifications must not overwrite results from
-digit-coverage-markov-v1.
-
-A changed mathematical model should receive:
-
-a new model identifier;
-separate validation results;
-separate prequential forecasts;
-explicit comparison with the frozen original.
+Earlier predictive experiments were closed after failing to produce a stable
+result beyond the exact-state model.

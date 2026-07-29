@@ -1,80 +1,194 @@
+# Reproducibility
 
-Reproducibility
-Environment
+Run all commands from the repository root.
 
-The project uses the Python standard library.
+Transient outputs should be written under `_work/`. Deterministic publication
+artifacts are tracked under `generated/`.
 
-Core components include:
+## Automated suite
 
-sqlite3;
-unittest;
-dataclasses;
-functools;
-itertools;
-math;
-json;
-hashlib.
-
-No external statistical package is required for the Markov engine.
-
-Test suite
-
-Run:
-
+```bash
 python3 -m unittest discover -v
+```
 
-At the historical replay checkpoint, the suite contains 100 tests.
+At the July 2026 publication checkpoint, the pruned source of truth contains 153
+passing tests.
 
-Datasets
+## Independent kernel verification
 
-Committed databases:
+```bash
+python3 verify_transition_kernel.py \
+    --output _work/reproduction/transition-kernel.json
+```
 
-data/lotto-2025.sqlite3
-data/lotto-2026.sqlite3
+Expected invariants include:
 
-The databases should be treated as source datasets.
+- `verified: true`;
+- `draw_combinations: 43949268`;
+- `observed_digit_mask_classes: 968`;
+- `states_verified: 1024`;
+- maximum absolute error below `1e-12`.
 
-Temporary truncated copies belong under _work/.
+## State atlas
 
-Current-state analysis
+Regenerate into a temporary directory:
+
+```bash
+python3 generate_state_atlas.py \
+    --csv-output _work/reproduction/coverage-state-atlas.csv \
+    --json-output _work/reproduction/coverage-state-atlas.json \
+    --summary-output _work/reproduction/state-atlas-summary.md
+```
+
+Compare the machine-readable artifacts:
+
+```bash
+cmp generated/coverage-state-atlas.csv \
+    _work/reproduction/coverage-state-atlas.csv
+
+cmp generated/coverage-state-atlas.json \
+    _work/reproduction/coverage-state-atlas.json
+```
+
+## Structural analysis
+
+```bash
+python3 generate_structural_analysis.py \
+    --classes-csv \
+    _work/reproduction/coverage-symmetry-classes.csv \
+    --cardinality-csv \
+    _work/reproduction/coverage-cardinality-loss.csv \
+    --json-output \
+    _work/reproduction/coverage-structural-analysis.json \
+    --summary-output \
+    _work/reproduction/structural-symmetry-analysis.md
+```
+
+Compare with the tracked outputs:
+
+```bash
+cmp generated/coverage-symmetry-classes.csv \
+    _work/reproduction/coverage-symmetry-classes.csv
+
+cmp generated/coverage-cardinality-loss.csv \
+    _work/reproduction/coverage-cardinality-loss.csv
+
+cmp generated/coverage-structural-analysis.json \
+    _work/reproduction/coverage-structural-analysis.json
+```
+
+At the July 2026 checkpoint, all five regenerated theoretical artifacts matched
+their tracked versions byte for byte.
+
+## Historical cycle distribution
+
+```bash
+python3 analyze_historical_cycle_distribution.py \
+    --primary-databases \
+    data/lotto-2023.sqlite3 \
+    data/lotto-2024.sqlite3 \
+    data/lotto-2025.sqlite3 \
+    data/lotto-2026.sqlite3 \
+    --text-output \
+    _work/reproduction/historical-cycle-distribution.txt \
+    --json-output \
+    _work/reproduction/historical-cycle-distribution.json
+```
+
+Expected archive interval:
+
+```text
+2023-01-03 -> 2026-07-28
+```
+
+Expected complete-cycle count:
+
+```text
+2253
+```
+
+The default secondary segment is empty.
+
+## Historical structural classes
+
+```bash
+python3 analyze_historical_symmetry_classes.py \
+    --database data/lotto-2023.sqlite3 \
+    --database data/lotto-2024.sqlite3 \
+    --database data/lotto-2025.sqlite3 \
+    --database data/lotto-2026.sqlite3 \
+    --csv-output \
+    _work/reproduction/historical-symmetry-classes.csv \
+    --json-output \
+    _work/reproduction/historical-symmetry-classes.json
+```
+
+Expected summary:
+
+```text
+27 structural classes
+7869 one-step observations
+```
+
+## Historical anomalies
+
+```bash
+python3 analyze_coverage_anomalies.py \
+    --database data/lotto-2023.sqlite3 \
+    --database data/lotto-2024.sqlite3 \
+    --database data/lotto-2025.sqlite3 \
+    --database data/lotto-2026.sqlite3 \
+    --label historical-2023-2026 \
+    --output-prefix \
+    _work/reproduction/coverage-anomalies-2023-2026
+```
+
+At the current checkpoint, the default `1%` threshold produces:
+
+```text
+A1=21
+A2=3
+A3=12
+A4=0
+total=36
+```
+
+## Current state
+
+```bash
 python3 analyze_current_coverage.py \
     --database data/lotto-2026.sqlite3
-Completion-state analysis
-python3 analyze_coverage_completion.py \
-    --database data/lotto-2025.sqlite3
-Markov calibration
-python3 analyze_coverage_markov_validation.py \
-    --database data/lotto-2025.sqlite3
-Residual expectation validation
-python3 analyze_coverage_markov_residuals.py \
-    --database data/lotto-2025.sqlite3
-Digit-return analysis
-python3 analyze_digit_return_times.py \
-    --database data/lotto-2025.sqlite3
-Walk-forward replay
-python3 analyze_prequential_replay.py \
-    --database data/lotto-2025.sqlite3 \
-    --start-target 101 \
-    --end-target 208 \
-    --output _work/prequential-replay-2025-from-0101.json
-Live forecast
-python3 create_prequential_forecast.py \
-    --database data/lotto-2026.sqlite3
-Integrity checks
+```
 
-Before committing research changes:
+The output must state the exact database cutoff. Current states and active
+anomalies are expected to change as new draws are imported.
 
-git diff --check
-python3 -m unittest discover -v
+## Database integrity and update
+
+Inspect importer and updater options:
+
+```bash
+python3 import_lotto.py --help
+python3 update_lotto_database.py --help
+```
+
+Update the current annual archive:
+
+```bash
+python3 update_lotto_database.py
+```
+
+The updater requires a complete contiguous archive beginning at draw 1, builds a
+temporary database, validates it and replaces the destination atomically.
+
+## Git cleanliness
+
+A reproduction run directed entirely to `_work/` must not modify tracked files:
+
+```bash
 git status --short
+```
 
-Forecast integrity can be checked with:
-
-sha256sum prequential/forecasts/draw-0120.json
-Generated reports
-
-Reports under _work/ are intentionally ignored because they can be reproduced
-from committed code and data.
-
-A committed forecast is different: it is evidence that a probability statement
-was frozen before a future draw, so it belongs under prequential/forecasts/.
+`docs/validation-results.md` is intentionally absent. Reproduction evidence is
+generated from the live implementation rather than maintained as a manually
+synchronized validation document.

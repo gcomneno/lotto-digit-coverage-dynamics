@@ -1,47 +1,48 @@
+# Documentation index
 
-Documentation
-Project overview
+## Start here
 
-Lotto Digit Coverage Dynamics studies the accumulation of decimal digits across
-successive Italian Lotto draws.
+- [Project overview](../README.md)
+- [Methodology](methodology.md)
+- [Limitations](limitations.md)
+- [Reproducibility](reproducibility.md)
+- [Glossary](glossary.md)
 
-The project separates three questions that are often confused:
+## Mathematical model
 
-Does digit coverage become nearly complete after a few draws?
-Does an individually delayed digit become more likely to appear?
-Can the current coverage state quantify how close the cycle is to
-completion?
+- [Canonical finite-state specification](finite-state-model.md)
+- [Coverage state atlas summary](state-atlas-summary.md)
+- [Structural symmetry analysis](structural-symmetry-analysis.md)
 
-The answers found so far are:
+The formal specification defines the sample space, state space, transition
+kernel, absorption metrics, natural-cycle restart semantics and verification
+boundary.
 
-yes, as a combinatorial phenomenon;
-no replicable evidence;
-yes, through an exact Markov model.
-Documents
-Foundations
-Research question
-Mathematical model
-Methodology
-Glossary
-Evidence
-Validation results
-Historical walk-forward replay
-Earlier research findings
-Operations
-Live prequential protocol
-Reproducibility
-Limitations
-Terminology
+## Historical comparison
 
-A cycle starts with no covered digits and ends when all digits from 0 to
-9 have appeared at least once on the same wheel.
+- [Historical cycle distribution](historical-cycle-distribution.md)
+- [Coverage anomalies](coverage-anomalies.md)
 
-The state of a cycle is represented by the digits still missing.
+Historical reports compare observations with the exact-state model. They are
+descriptive analyses and do not define betting rules.
 
-Examples:
+## Closed research
 
-{9}
-{3,9}
-{0,1,7,9}
+- [Predictive research closure](predictive-research-closure.md)
 
-The empty set {} is the absorbing completed state.
+The negative conclusion is retained for research accountability. Superseded
+predictive implementations and frozen forecasts are not part of the publication
+source of truth.
+
+## Generated artifacts
+
+The deterministic mathematical outputs are stored under `generated/`:
+
+- `coverage-state-atlas.csv`;
+- `coverage-state-atlas.json`;
+- `coverage-symmetry-classes.csv`;
+- `coverage-cardinality-loss.csv`;
+- `coverage-structural-analysis.json`.
+
+All five artifacts were regenerated at the July 2026 publication checkpoint
+and matched their tracked versions byte for byte.

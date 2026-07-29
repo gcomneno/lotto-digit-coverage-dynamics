@@ -691,7 +691,7 @@ tests/test_coverage_transition_enumerator.py
 Mathematical roadmap:
 
 ```text
-docs/mathematical-model-roadmap.md
+README.md and docs/index.md
 ```
 
 Predictive-research closure:

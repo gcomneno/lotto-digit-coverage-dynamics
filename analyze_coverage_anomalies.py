@@ -27,7 +27,7 @@ from strategies.coverage_markov import (
 )
 from strategies.lotto_repository import DrawSnapshot
 
-DEFAULT_OUTPUT_PREFIX = Path("_work/coverage-anomalies-2023-2025")
+DEFAULT_OUTPUT_PREFIX = Path("_work/coverage-anomalies-2023-2026")
 DEFAULT_THRESHOLD = 0.01
 DEFAULT_RECURRENCE_WINDOW = 10
 DEFAULT_RECURRENCE_THRESHOLD = 0.01
@@ -690,7 +690,7 @@ def build_parser() -> argparse.ArgumentParser:
         description="Rileva quattro categorie descrittive di anomalie della copertura."
     )
     parser.add_argument("--database", action="append", type=Path, dest="databases")
-    parser.add_argument("--label", default="historical-2023-2025")
+    parser.add_argument("--label", default="historical-2023-2026")
     parser.add_argument("--output-prefix", type=Path, default=DEFAULT_OUTPUT_PREFIX)
     parser.add_argument("--threshold", type=float, default=DEFAULT_THRESHOLD)
     parser.add_argument(

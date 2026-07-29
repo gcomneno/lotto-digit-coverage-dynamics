@@ -1,195 +1,223 @@
 # Lotto Digit Coverage Dynamics
 
-Exact combinatorial and Markov analysis of digit-coverage cycles in Italian
-Lotto draws.
+An exact finite-state model of decimal digit coverage in Italian Lotto draws.
 
-The project studies how the decimal digits `0–9` accumulate across consecutive
-draws on each Lotto wheel.
+The project models the digits still missing from a natural coverage cycle as an
+absorbing stochastic process, derives its theoretical properties and compares
+them with historical observations.
 
-Its central question is not:
+The repository is a mathematical and reproducibility project. It is not a
+betting system, a number-selection tool or evidence that past draws alter future
+draw probabilities.
 
-> Which number or digit will be drawn next?
+## Main result
 
-It is:
+For one wheel:
 
-> Given the digits still missing from the current coverage cycle, how close is
-> that cycle to completion?
+- Lotto numbers are represented as `01`–`90`;
+- the leading zero is part of the representation;
+- a state is the set of decimal digits still missing from the current cycle;
+- there are \(2^{10}=1,024\) states;
+- the empty set is absorbing in the mathematical model;
+- after completion, the natural historical process restarts from all ten
+  digits missing.
 
-The project provides:
+The exact transition kernel is computed combinatorially and independently
+verified by an integer dynamic program over all unordered five-number draws.
 
-- exact combinatorial probabilities;
-- a complete 1,024-state absorbing Markov-chain model;
-- independent verification of the transition kernel;
-- absorption-time moments, distributions and quantiles;
-- a machine-readable atlas of all 1,023 non-empty states;
-- historical calibration and cycle-duration comparisons;
-- reproducible SQLite datasets and Python analyses;
-- a documented record of rejected predictive hypotheses.
+Current verification status:
 
-## Main conclusion
+| Quantity | Result |
+|:---|---:|
+| Unordered five-number draws | 43,949,268 |
+| Observed digit-union masks | 968 |
+| States verified | 1,024 |
+| Transition cells verified | 58,848 |
+| Maximum absolute discrepancy | 2.2894 × 10⁻¹⁵ |
+| Non-empty states in the atlas | 1,023 |
+| Structural symmetry classes | 27 |
 
-The near-complete coverage of digits after a small number of draws is a real
-combinatorial phenomenon.
+The theoretical absorption time from the full ten-digit state has:
 
-No replicable evidence was found that a digit becomes more likely to appear
-merely because it has been absent for several consecutive draws.
+| Metric | Exact value |
+|:---|---:|
+| Mean | 3.506190 draws |
+| Variance | 1.924821 |
+| Standard deviation | 1.387379 |
+| Median | 3 draws |
+| 90th percentile | 5 draws |
+| 95th percentile | 6 draws |
+| 99th percentile | 8 draws |
+| Completion within 3 draws | 60.47% |
+| Completion within 5 draws | 92.28% |
 
-The useful state variable is instead the complete set of digits still missing
-from the current cycle.
+## Historical comparison
 
-> Individual digits do not accumulate probability. Coverage accumulates
-> completeness.
+The current continuous archive covers all draws from 3 January 2023 through
+28 July 2026:
 
-The Markov model measures this completeness through:
-
-- probability of completion within `1`, `2`, `3`, `5`, or `10` draws;
-- exact expected number of draws remaining;
-- variance and selected absorption-time quantiles;
-- transition probabilities between missing-digit states;
-- a deterministic mathematical difficulty ranking.
-
-It does not predict winning numbers and does not establish a gambling
-advantage.
-
-## Current status
-
-The predictive research line is closed. The maintained project direction is
-exact mathematical modelling, reproducible verification and historical
-description.
-
-| Milestone | Result |
+| Archive | Draw range |
 |:---|:---|
-| Formal specification | Complete finite-state model over all 1,024 states |
-| Independent kernel verification | 58,848 transition entries compared, zero discrepancies above tolerance |
-| Maximum kernel difference | \(2.289 \times 10^{-15}\) |
-| Absorption metrics | Mean, variance, probability mass and quantiles |
-| Complete state atlas | 1,023 non-empty states in CSV and JSON |
-| Continuous historical segment | 1,879 complete cycles from 2023–2025 |
-| Historical mean | 3.480043 observed versus 3.506190 theoretical |
-| Historical quantiles | Q50, Q90, Q95 and Q99 all match the theoretical values |
-| Maximum historical CDF difference | 1.3760 percentage points |
-| Separate partial 2026 segment | 171 complete cycles, analysed independently |
+| 2023 | 1–182 |
+| 2024 | 1–209 |
+| 2025 | 1–208 |
+| 2026 | 1–120 |
 
-The 2026 archive begins at draw 60 on 14 April 2026. It is intentionally kept
-separate from the continuous 2023–2025 segment because draws 1–59 are absent.
+After applying the documented left- and right-censoring rules, the pooled
+history contains 2,253 complete natural cycles.
 
-The complete atlas is available in:
+| Metric | Observed | Exact model |
+|:---|---:|---:|
+| Mean duration | 3.481580 | 3.506190 |
+| Variance | 1.938964 | 1.924821 |
+| Standard deviation | 1.392467 | 1.387379 |
+| Median | 3 | 3 |
+| 90th percentile | 5 | 5 |
+| 95th percentile | 6 | 6 |
+| 99th percentile | 8 | 8 |
 
-- `generated/coverage-state-atlas.csv`;
-- `generated/coverage-state-atlas.json`;
-- `docs/state-atlas-summary.md`.
+Across the duration CDF through the observed maximum of 18 draws:
 
-The detailed historical conclusion is documented in:
+- maximum absolute difference: `0.013189`;
+- mean absolute difference: `0.001867`.
 
-- `docs/historical-cycle-distribution.md`.
+These are descriptive pooled comparisons. Wheels share the extraction calendar
+and are not treated as independent replicates for inferential testing.
 
-No historical deviation has been promoted into a prediction, wheel ranking or
-wagering rule.
+## Exact-state interpretation
 
-## A simple example
+Under the ideal random-draw model, the exact missing-digit set is sufficient for
+the future transition law.
 
-Suppose a wheel has already covered all digits except 9.
+Cycle age, the order of previous digit appearances and the duration of an
+absence do not change the next-state probabilities once the current state is
+known.
 
-The state is:
+Digit identity matters:
 
-{9}
+- singleton states `{0}` through `{8}` close on the next draw with probability
+  `68.1643%`;
+- singleton state `{9}` closes on the next draw with probability `45.3005%`.
 
-Its exact model metrics are approximately:
+This difference follows from the decimal structure of `01–90`. It is not a
+delay effect or a compensating force.
 
-Metric	Value
-Completion on next draw	45.30%
-Completion within 2 draws	70.08%
-Completion within 3 draws	83.63%
-Completion within 5 draws	95.10%
-Expected remaining draws	2.207
+## Historical anomalies
 
-If the missing state is {3,9}, the next-draw completion probability falls to
-about 29.46%, while the expected remaining duration rises to about 2.484
-draws.
+The anomaly detector records four retrospective descriptive categories:
 
-The identity of the missing digits therefore matters, not only their count.
+- A1 — unusually persistent open state;
+- A2 — unusually rare immediate completion;
+- A3 — unusually rare non-terminal transition;
+- A4 — recurrence of the same primary anomaly key within a fixed window.
 
-Requirements
-Python 3.11 or newer;
-SQLite support in Python;
-no external Python dependencies for the core analyses.
+Using a primary threshold of `1%` over the continuous 2023–2026 archive:
 
-Run the complete test suite:
+| Category | Events |
+|:---|---:|
+| A1 | 21 |
+| A2 | 3 |
+| A3 | 12 |
+| A4 | 0 |
+| Total | 36 |
 
+These events are historical labels, not evidence of a forecasting advantage.
+At draw 120 of 28 July 2026, no A1–A4 anomaly was active.
+
+## Quick verification
+
+Run the complete automated suite:
+
+```bash
 python3 -m unittest discover -v
-Primary commands
+```
+
+Verify the exact transition kernel independently:
+
+```bash
+python3 verify_transition_kernel.py \
+    --output _work/transition-kernel-verification.json
+```
+
+Regenerate the complete state atlas:
+
+```bash
+python3 generate_state_atlas.py
+```
+
+Regenerate the structural analysis:
+
+```bash
+python3 generate_structural_analysis.py
+```
+
+Recalculate the continuous historical cycle comparison:
+
+```bash
+python3 analyze_historical_cycle_distribution.py
+```
+
+Recalculate historical structural classes and anomalies:
+
+```bash
+python3 analyze_historical_symmetry_classes.py
+python3 analyze_coverage_anomalies.py
+```
 
 Inspect the current coverage state:
 
+```bash
 python3 analyze_current_coverage.py \
     --database data/lotto-2026.sqlite3
+```
 
-Validate completion probabilities:
+Update the current annual database:
 
-python3 analyze_coverage_markov_validation.py \
-    --database data/lotto-2025.sqlite3
+```bash
+python3 update_lotto_database.py
+```
 
-Validate expected residual duration:
+Browse a database in the terminal:
 
-python3 analyze_coverage_markov_residuals.py \
-    --database data/lotto-2025.sqlite3
+```bash
+./view_lotto_database.sh
+./view_lotto_database.sh --digit 1,7,9
+```
 
-Run the historical walk-forward replay:
+## Repository map
 
-python3 analyze_prequential_replay.py \
-    --database data/lotto-2025.sqlite3 \
-    --start-target 101 \
-    --end-target 208 \
-    --output _work/prequential-replay-2025-from-0101.json
-
-Freeze the forecast for the next available draw:
-
-python3 create_prequential_forecast.py \
-    --database data/lotto-2026.sqlite3
-
-A forecast file is written exclusively and cannot be overwritten by the same
-command.
-
-Repository structure
+```text
 .
-├── analyze_*.py
-├── create_prequential_forecast.py
-├── data/
-│   ├── lotto-2025.sqlite3
-│   └── lotto-2026.sqlite3
-├── docs/
-├── prequential/
-│   └── forecasts/
-├── strategies/
-├── tests/
-└── _work/
+├── data/                         annual SQLite archives
+├── docs/                         model and research documentation
+├── generated/                    deterministic mathematical artifacts
+├── strategies/                   reference model implementations
+├── tests/                        automated mathematical and data tests
+├── analyze_*.py                  historical and current-state analyses
+├── generate_state_atlas.py       complete 1,023-state atlas
+├── generate_structural_analysis.py
+├── verify_transition_kernel.py   independent exhaustive verification
+├── import_lotto.py               annual archive importer
+├── update_lotto_database.py      safe complete-archive updater
+└── view_lotto_database.sh        terminal database browser
+```
 
-_work/ contains reproducible local reports and temporary databases and is not
-committed.
+## Documentation
 
-Documentation
-Documentation index
-Research question
-Mathematical model
-Methodology
-Validation results
-Historical walk-forward replay
-Live prequential protocol
-Reproducibility
-Limitations
-Glossary
-Earlier research findings
-Responsible interpretation
+Start with [`docs/index.md`](docs/index.md).
 
-This repository is a statistical and software-engineering research project.
+The canonical formal specification is
+[`docs/finite-state-model.md`](docs/finite-state-model.md).
 
-It does not:
+## Research boundary
 
-forecast specific numbers;
-demonstrate a profitable betting strategy;
-alter the probability of any Lotto combination;
-justify increasing gambling expenditure;
-claim that delayed digits are due.
+Earlier predictive experiments did not produce a stable, independently useful
+advantage after exact-state conditioning. That research line is closed and its
+superseded implementations have been removed.
 
-The model describes the natural probability of a coverage process that is
-already implied by random draws.
+The retained conclusion is documented in
+[`docs/predictive-research-closure.md`](docs/predictive-research-closure.md).
+
+The 2022 archive remains deliberately unimported and uninspected. Additional
+data should be introduced only for a concrete, predeclared mathematical or
+validation question.
