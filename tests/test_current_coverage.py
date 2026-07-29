@@ -1,19 +1,27 @@
 from __future__ import annotations
 
 import argparse
+import io
 import unittest
+from contextlib import redirect_stderr, redirect_stdout
 from datetime import date
 
 from analyze_coverage_anomalies import AnomalyEvent
 from analyze_current_coverage import (
     active_anomalies,
+    build_parser,
     format_digits,
     format_next_draw_number,
+    format_numbers,
     latest_target,
     limit_draws_to_date,
+    limit_draws_to_number,
     maturity_sort_key,
     next_draws_after_target,
+    parse_draw_number,
     parse_iso_date,
+    print_markov_summary,
+    transversal_convergence,
 )
 from strategies.coverage_completion import (
     ALL_DIGITS,
@@ -499,6 +507,292 @@ class CurrentCoverageStateTests(unittest.TestCase):
                 latest_draw=1,
                 latest_date="2025-01-01",
             )
+
+    def test_formats_candidate_numbers(self) -> None:
+        self.assertEqual(
+            format_numbers(
+                frozenset({
+                    76,
+                    16,
+                    61,
+                    17,
+                    71,
+                    67,
+                })
+            ),
+            "{16,17,61,67,71,76}",
+        )
+
+    def test_parses_positive_draw_number(self) -> None:
+        self.assertEqual(
+            parse_draw_number("119"),
+            119,
+        )
+
+        for invalid in (
+            "0",
+            "-1",
+            "abc",
+        ):
+            with self.subTest(invalid=invalid):
+                with self.assertRaises(
+                    argparse.ArgumentTypeError
+                ):
+                    parse_draw_number(invalid)
+
+    def test_draw_number_cutoff_is_inclusive(
+        self,
+    ) -> None:
+        draws_by_wheel = {
+            "Bari": (
+                draw(
+                    1,
+                    (1, 23, 45, 67, 89),
+                ),
+                draw(
+                    2,
+                    (11, 22, 33, 44, 55),
+                ),
+                draw(
+                    3,
+                    (12, 34, 56, 78, 90),
+                ),
+            ),
+        }
+
+        limited = limit_draws_to_number(
+            draws_by_wheel,
+            2,
+        )
+
+        self.assertEqual(
+            tuple(
+                item.draw_number
+                for item in limited["Bari"]
+            ),
+            (1, 2),
+        )
+
+    def test_draw_number_cutoff_rejects_empty_history(
+        self,
+    ) -> None:
+        draws_by_wheel = {
+            "Bari": (
+                draw(
+                    2,
+                    (1, 23, 45, 67, 89),
+                ),
+            ),
+        }
+
+        with self.assertRaises(RuntimeError):
+            limit_draws_to_number(
+                draws_by_wheel,
+                1,
+            )
+
+    def test_cutoff_options_are_mutually_exclusive(
+        self,
+    ) -> None:
+        parser = build_parser()
+
+        with redirect_stderr(io.StringIO()):
+            with self.assertRaises(SystemExit):
+                parser.parse_args(
+                    (
+                        "--to",
+                        "2026-07-25",
+                        "--to-num",
+                        "119",
+                    )
+                )
+
+    def test_draw_number_option_supports_both_spellings(
+        self,
+    ) -> None:
+        parser = build_parser()
+
+        underscored = parser.parse_args(
+            (
+                "--to_num",
+                "119",
+            )
+        )
+        hyphenated = parser.parse_args(
+            (
+                "--to-num",
+                "119",
+            )
+        )
+
+        self.assertEqual(
+            underscored.to_draw_number,
+            119,
+        )
+        self.assertEqual(
+            hyphenated.to_draw_number,
+            119,
+        )
+
+    def test_transversal_convergence_ignores_reset_wheels(
+        self,
+    ) -> None:
+        states = (
+            CurrentCoverageState(
+                wheel="Genova",
+                wheel_order=1,
+                latest_draw=120,
+                latest_date="2026-07-28",
+                completed_cycles=35,
+                draws_in_cycle=3,
+                covered_digits=frozenset(),
+                missing_digits=frozenset({
+                    0,
+                    6,
+                }),
+                synchronized=True,
+                most_present_digits=frozenset({
+                    1,
+                    6,
+                }),
+            ),
+            CurrentCoverageState(
+                wheel="Milano",
+                wheel_order=2,
+                latest_draw=120,
+                latest_date="2026-07-28",
+                completed_cycles=32,
+                draws_in_cycle=4,
+                covered_digits=frozenset(),
+                missing_digits=frozenset({
+                    1,
+                    7,
+                }),
+                synchronized=True,
+                most_present_digits=frozenset({
+                    7,
+                }),
+            ),
+            CurrentCoverageState(
+                wheel="Bari",
+                wheel_order=3,
+                latest_draw=120,
+                latest_date="2026-07-28",
+                completed_cycles=37,
+                draws_in_cycle=0,
+                covered_digits=frozenset(),
+                missing_digits=ALL_DIGITS,
+                synchronized=True,
+                most_present_digits=frozenset(),
+            ),
+        )
+
+        self.assertEqual(
+            transversal_convergence(states),
+            (
+                frozenset({
+                    1,
+                    6,
+                    7,
+                }),
+                frozenset({
+                    0,
+                    1,
+                    6,
+                    7,
+                }),
+                frozenset({
+                    1,
+                    6,
+                    7,
+                }),
+                frozenset({
+                    16,
+                    17,
+                    61,
+                    67,
+                    71,
+                    76,
+                }),
+            ),
+        )
+
+    def test_markov_summary_prints_transversal_row(
+        self,
+    ) -> None:
+        states = (
+            CurrentCoverageState(
+                wheel="Genova",
+                wheel_order=1,
+                latest_draw=120,
+                latest_date="2026-07-28",
+                completed_cycles=35,
+                draws_in_cycle=3,
+                covered_digits=frozenset(),
+                missing_digits=frozenset({
+                    0,
+                    6,
+                }),
+                synchronized=True,
+                most_present_digits=frozenset({
+                    1,
+                    6,
+                }),
+            ),
+            CurrentCoverageState(
+                wheel="Milano",
+                wheel_order=2,
+                latest_draw=120,
+                latest_date="2026-07-28",
+                completed_cycles=32,
+                draws_in_cycle=4,
+                covered_digits=frozenset(),
+                missing_digits=frozenset({
+                    1,
+                    7,
+                }),
+                synchronized=True,
+                most_present_digits=frozenset({
+                    7,
+                }),
+            ),
+            CurrentCoverageState(
+                wheel="Bari",
+                wheel_order=3,
+                latest_draw=120,
+                latest_date="2026-07-28",
+                completed_cycles=37,
+                draws_in_cycle=0,
+                covered_digits=frozenset(),
+                missing_digits=ALL_DIGITS,
+                synchronized=True,
+                most_present_digits=frozenset(),
+            ),
+        )
+        output = io.StringIO()
+
+        with redirect_stdout(output):
+            print_markov_summary(states)
+
+        rendered = output.getvalue()
+
+        self.assertIn(
+            "TUTTE",
+            rendered,
+        )
+        self.assertIn(
+            "C={1,6,7}",
+            rendered,
+        )
+        self.assertIn(
+            "Numeri={16,17,61,67,71,76}",
+            rendered,
+        )
+        self.assertIn(
+            "Età > 0",
+            rendered,
+        )
+
 
     def test_active_anomalies_distinguish_stateful_a1(
         self,

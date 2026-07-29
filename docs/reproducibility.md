@@ -14,8 +14,23 @@ artifacts are tracked under `generated/`.
 python3 -m unittest discover -v
 ```
 
-At the July 2026 publication checkpoint, the pruned source of truth contains 153
+At the July 2026 publication checkpoint, the pruned source of truth contains 166
 passing tests.
+
+## Unified dispatcher
+
+List the 15 executable tools and inspect any underlying help page:
+
+```bash
+./lotto.py list
+./lotto.py help current
+```
+
+The dispatcher forwards all remaining arguments unchanged and preserves the
+underlying command’s exit status. Direct invocation of every original script
+remains supported.
+
+See [Command-line reference](cli-reference.md).
 
 ## Independent kernel verification
 
@@ -159,12 +174,23 @@ total=36
 ## Current state
 
 ```bash
-python3 analyze_current_coverage.py \
-    --database data/lotto-2026.sqlite3
+./lotto.py current
+./lotto.py current --to 2026-07-25
+./lotto.py current --to-num 119
 ```
 
-The output must state the exact database cutoff. Current states and active
-anomalies are expected to change as new draws are imported.
+The output must state the exact database cutoff. `--to` limits the analysis by
+inclusive ISO date; `--to-num` limits it by inclusive draw number. The
+equivalent spelling `--to_num` is also accepted, and the date and number
+cutoffs cannot be combined.
+
+The final `TUTTE` row is computed only from wheels with positive current-cycle
+age. It reports the two transversal unions, their intersection and the valid
+ordered two-digit encodings of distinct intersecting digits. This row is
+descriptive and does not define an altered probability model.
+
+Current states and active anomalies are expected to change as new draws are
+imported.
 
 ## Database integrity and update
 

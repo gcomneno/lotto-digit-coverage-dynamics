@@ -9,6 +9,7 @@
 - [Methodology](methodology.md)
 - [Limitations](limitations.md)
 - [Reproducibility](reproducibility.md)
+- [Command-line reference](cli-reference.md)
 - [Glossary](glossary.md)
 
 ## Mathematical model
