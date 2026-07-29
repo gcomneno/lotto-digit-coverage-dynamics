@@ -1,5 +1,8 @@
 # Glossary
 
+**English** | [Italiano](it/glossary.md)
+
+
 Glossary
 Absorbing state
 

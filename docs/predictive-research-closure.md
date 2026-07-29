@@ -1,5 +1,8 @@
 # Predictive research closure
 
+**English** | [Italiano](it/predictive-research-closure.md)
+
+
 ## Status
 
 Predictive research is closed.

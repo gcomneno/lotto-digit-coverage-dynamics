@@ -1,5 +1,8 @@
 # Coverage anomalies
 
+**English** | [Italiano](it/coverage-anomalies.md)
+
+
 ## Purpose
 
 `analyze_coverage_anomalies.py` identifies rare events in the natural

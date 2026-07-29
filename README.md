@@ -1,5 +1,8 @@
 # Lotto Digit Coverage Dynamics
 
+**English** | [Italiano](README.it.md)
+
+
 An exact finite-state model of decimal digit coverage in Italian Lotto draws.
 
 The project models the digits still missing from a natural coverage cycle as an
