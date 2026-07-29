@@ -133,6 +133,38 @@ Con una soglia primaria dell’`1%` sull’archivio continuo 2023–2026:
 Gli eventi sono etichette storiche, non prove di un vantaggio previsionale.
 Al concorso 120 del 28 luglio 2026 non era attiva alcuna anomalia A1–A4.
 
+## Interfaccia unificata da riga di comando
+
+I 15 strumenti eseguibili restano utilizzabili autonomamente, mentre `lotto.py`
+li espone attraverso un unico dispatcher facilmente esplorabile:
+
+```bash
+./lotto.py list
+./lotto.py help current
+./lotto.py current
+./lotto.py current --to 2026-07-25
+./lotto.py current --to-num 119
+```
+
+Gli argomenti successivi al sottocomando vengono inoltrati senza modifiche allo
+strumento sottostante. Il wrapper restituisce lo stesso codice di uscita del
+tool eseguito.
+
+Il report `current` include una riga finale `TUTTE`. Considera soltanto le ruote
+il cui ciclo naturale corrente ha età positiva e mostra:
+
+- l’unione degli insiemi delle cifre più presenti;
+- l’unione degli insiemi delle cifre mancanti;
+- la loro intersezione `C`;
+- tutti i numeri ordinati validi di due cifre formati da cifre distinte di `C`.
+
+È una descrizione trasversale deterministica e, facoltativamente, un criterio di
+gioco virtuale. Non modifica la probabilità di alcun numero del Lotto e non
+costituisce prova di un vantaggio previsionale.
+
+La lista completa è nella
+[guida ai comandi](docs/it/cli-reference.md).
+
 ## Verifica rapida
 
 Eseguire l’intera suite automatizzata:
@@ -141,56 +173,48 @@ Eseguire l’intera suite automatizzata:
 python3 -m unittest discover -v
 ```
 
+La suite corrente contiene 166 test.
+
 Verificare indipendentemente il kernel esatto:
 
 ```bash
-python3 verify_transition_kernel.py \
+./lotto.py kernel \
     --output _work/transition-kernel-verification.json
 ```
 
-Rigenerare l’atlante completo degli stati:
+Rigenerare l’atlante completo e l’analisi strutturale:
 
 ```bash
-python3 generate_state_atlas.py
+./lotto.py atlas
+./lotto.py structure
 ```
 
-Rigenerare l’analisi strutturale:
+Ricalcolare i confronti storici continui:
 
 ```bash
-python3 generate_structural_analysis.py
-```
-
-Ricalcolare il confronto continuo dei cicli storici:
-
-```bash
-python3 analyze_historical_cycle_distribution.py
-```
-
-Ricalcolare le classi strutturali e le anomalie storiche:
-
-```bash
-python3 analyze_historical_symmetry_classes.py
-python3 analyze_coverage_anomalies.py
+./lotto.py cycles
+./lotto.py symmetry-history
+./lotto.py anomalies
 ```
 
 Esaminare lo stato corrente della copertura:
 
 ```bash
-python3 analyze_current_coverage.py \
-    --database data/lotto-2026.sqlite3
+./lotto.py current
+./lotto.py current --to 2026-07-25
+./lotto.py current --to-num 119
 ```
 
-Aggiornare il database annuale corrente:
+`--to` applica un limite inclusivo basato sulla data ISO. `--to-num` applica un
+limite inclusivo basato sul numero del concorso; `--to_num` resta disponibile
+come grafia equivalente. Le due opzioni sono mutuamente esclusive.
+
+Aggiornare ed esplorare il database annuale corrente:
 
 ```bash
-python3 update_lotto_database.py
-```
-
-Esplorare un database dal terminale:
-
-```bash
-./view_lotto_database.sh
-./view_lotto_database.sh --digit 1,7,9
+./lotto.py update
+./lotto.py db
+./lotto.py db --digit 1,7,9
 ```
 
 ## Struttura del repository
@@ -203,6 +227,7 @@ Esplorare un database dal terminale:
 ├── generated/                    artefatti matematici deterministici
 ├── strategies/                   implementazioni di riferimento
 ├── tests/                        test matematici e dei dati
+├── lotto.py                      dispatcher unico per tutti i 15 CLI
 ├── analyze_*.py                  analisi storiche e dello stato corrente
 ├── generate_state_atlas.py       atlante completo dei 1.023 stati
 ├── generate_structural_analysis.py
@@ -215,6 +240,9 @@ Esplorare un database dal terminale:
 ## Documentazione
 
 Iniziare dall’[indice italiano](docs/it/index.md).
+
+L’interfaccia unificata è descritta nella
+[guida italiana ai comandi](docs/it/cli-reference.md).
 
 La specifica formale italiana è
 [`docs/it/finite-state-model.md`](docs/it/finite-state-model.md).

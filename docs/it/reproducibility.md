@@ -14,7 +14,22 @@ python3 -m unittest discover -v
 ```
 
 Al checkpoint di pubblicazione di luglio 2026, la fonte di verità potata contiene
-153 test superati.
+166 test superati.
+
+## Dispatcher unificato
+
+Elencare i 15 strumenti eseguibili e consultare l’help di qualunque tool:
+
+```bash
+./lotto.py list
+./lotto.py help current
+```
+
+Il dispatcher inoltra senza modifiche tutti gli argomenti rimanenti e conserva
+il codice di uscita del comando sottostante. L’invocazione diretta di ogni
+script originale resta supportata.
+
+Vedere la [guida ai comandi](cli-reference.md).
 
 ## Verifica indipendente del kernel
 
@@ -158,12 +173,24 @@ totale=36
 ## Stato corrente
 
 ```bash
-python3 analyze_current_coverage.py \
-    --database data/lotto-2026.sqlite3
+./lotto.py current
+./lotto.py current --to 2026-07-25
+./lotto.py current --to-num 119
 ```
 
-L’output deve dichiarare la data esatta di arresto del database. Gli stati
-correnti e le anomalie attive cambiano con l’importazione di nuove estrazioni.
+L’output deve dichiarare il limite esatto applicato al database. `--to` limita
+l’analisi mediante una data ISO inclusiva; `--to-num` la limita mediante il
+numero inclusivo del concorso. È accettata anche la grafia equivalente
+`--to_num`; i due tipi di limite non possono essere combinati.
+
+La riga finale `TUTTE` viene calcolata soltanto sulle ruote con età positiva nel
+ciclo corrente. Mostra le due unioni trasversali, la loro intersezione e le
+codifiche valide di due cifre ordinate e distinte appartenenti
+all’intersezione. La riga è descrittiva e non definisce un modello
+probabilistico alterato.
+
+Gli stati correnti e le anomalie attive cambiano con l’importazione di nuove
+estrazioni.
 
 ## Integrità e aggiornamento del database
 

@@ -52,6 +52,24 @@ def parse_iso_date(value: str) -> date:
     return parsed
 
 
+def parse_draw_number(value: str) -> int:
+    try:
+        parsed = int(value)
+    except ValueError as error:
+        raise argparse.ArgumentTypeError(
+            "--to_num richiede un numero di estrazione "
+            "intero positivo."
+        ) from error
+
+    if parsed <= 0:
+        raise argparse.ArgumentTypeError(
+            "--to_num richiede un numero di estrazione "
+            "intero positivo."
+        )
+
+    return parsed
+
+
 def limit_draws_to_date(
     draws_by_wheel: Mapping[
         str,
@@ -88,6 +106,40 @@ def limit_draws_to_date(
         raise RuntimeError(
             "Nessuna estrazione disponibile entro "
             f"il {cutoff.isoformat()} per: "
+            + ", ".join(empty_wheels)
+            + "."
+        )
+
+    return limited
+
+
+def limit_draws_to_number(
+    draws_by_wheel: Mapping[
+        str,
+        Sequence[DrawSnapshot],
+    ],
+    cutoff: int,
+) -> dict[str, tuple[DrawSnapshot, ...]]:
+    limited = {
+        wheel: tuple(
+            draw
+            for draw in draws
+            if draw.draw_number <= cutoff
+        )
+        for wheel, draws
+        in draws_by_wheel.items()
+    }
+
+    empty_wheels = tuple(
+        wheel
+        for wheel, draws in limited.items()
+        if not draws
+    )
+
+    if empty_wheels:
+        raise RuntimeError(
+            "Nessuna estrazione disponibile entro "
+            f"il numero {cutoff} per: "
             + ", ".join(empty_wheels)
             + "."
         )
@@ -225,6 +277,66 @@ def format_digits(digits: frozenset[int]) -> str:
     ) + "}"
 
 
+def format_numbers(numbers: frozenset[int]) -> str:
+    return "{" + ",".join(
+        f"{number:02d}"
+        for number in sorted(numbers)
+    ) + "}"
+
+
+def transversal_convergence(
+    states: Sequence[CurrentCoverageState],
+) -> tuple[
+    frozenset[int],
+    frozenset[int],
+    frozenset[int],
+    frozenset[int],
+]:
+    active_states = tuple(
+        state
+        for state in states
+        if state.draws_in_cycle > 0
+    )
+
+    if not active_states:
+        empty: frozenset[int] = frozenset()
+
+        return empty, empty, empty, empty
+
+    most_present_digits = frozenset().union(
+        *(
+            state.most_present_digits
+            for state in active_states
+        )
+    )
+    missing_digits = frozenset().union(
+        *(
+            state.missing_digits
+            for state in active_states
+        )
+    )
+    convergent_digits = (
+        most_present_digits
+        & missing_digits
+    )
+    candidate_numbers = frozenset(
+        10 * first_digit + second_digit
+        for first_digit in convergent_digits
+        for second_digit in convergent_digits
+        if first_digit != second_digit
+        if 1 <= (
+            10 * first_digit + second_digit
+        ) <= 90
+    )
+
+    return (
+        most_present_digits,
+        missing_digits,
+        convergent_digits,
+        candidate_numbers,
+    )
+
+
 def maturity_sort_key(
     item: tuple[
         CurrentCoverageState,
@@ -330,7 +442,10 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         default=DEFAULT_DATABASE,
     )
-    parser.add_argument(
+    cutoff_group = (
+        parser.add_mutually_exclusive_group()
+    )
+    cutoff_group.add_argument(
         "--to",
         dest="to_date",
         type=parse_iso_date,
@@ -338,6 +453,17 @@ def build_parser() -> argparse.ArgumentParser:
         help=(
             "Ferma l'analisi all'ultima estrazione "
             "non successiva alla data indicata."
+        ),
+    )
+    cutoff_group.add_argument(
+        "--to_num",
+        "--to-num",
+        dest="to_draw_number",
+        type=parse_draw_number,
+        metavar="N",
+        help=(
+            "Ferma l'analisi all'ultima estrazione "
+            "con numero non superiore a N."
         ),
     )
 
@@ -421,6 +547,32 @@ def print_markov_summary(
             f"{metrics['expected_remaining_draws']:>6.3f}"
         )
 
+    (
+        most_present_digits,
+        missing_digits,
+        convergent_digits,
+        candidate_numbers,
+    ) = transversal_convergence(states)
+    latest_draw, _ = latest_target(states)
+
+    print(
+        f"{'*':<5}"
+        f"{'TUTTE':<12}"
+        f"{latest_draw:<8}"
+        f"{'-':<7}"
+        f"{'>0':<5}"
+        f"{format_digits(most_present_digits):<23}"
+        f"{format_digits(missing_digits):<23}"
+        f"C={format_digits(convergent_digits)} "
+        f"Numeri={format_numbers(candidate_numbers)}"
+    )
+    print()
+    print(
+        "* TUTTE considera soltanto le ruote con Età > 0: "
+        "le prime due colonne sono le rispettive unioni; "
+        "C è la loro intersezione; Numeri contiene tutte "
+        "le coppie ordinate di cifre distinte valide 01–90."
+    )
 
 
 def print_next_draw(
@@ -611,10 +763,16 @@ def main() -> int:
                 repository
             )
 
-        draws_by_wheel = limit_draws_to_date(
-            all_draws_by_wheel,
-            args.to_date,
-        )
+        if args.to_draw_number is not None:
+            draws_by_wheel = limit_draws_to_number(
+                all_draws_by_wheel,
+                args.to_draw_number,
+            )
+        else:
+            draws_by_wheel = limit_draws_to_date(
+                all_draws_by_wheel,
+                args.to_date,
+            )
 
         states = tuple(
             current_coverage_state(draws)
@@ -661,6 +819,13 @@ def main() -> int:
             print(
                 "Limite temporale: "
                 f"{args.to_date.isoformat()} "
+                "(inclusivo)"
+            )
+
+        if args.to_draw_number is not None:
+            print(
+                "Limite estrazione: "
+                f"{args.to_draw_number} "
                 "(inclusivo)"
             )
 

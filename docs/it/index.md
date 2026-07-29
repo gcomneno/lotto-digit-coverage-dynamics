@@ -8,6 +8,7 @@
 - [Metodologia](methodology.md)
 - [Limitazioni](limitations.md)
 - [Riproducibilità](reproducibility.md)
+- [Guida ai comandi](cli-reference.md)
 
 ## Modello matematico
 

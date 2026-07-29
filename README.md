@@ -127,6 +127,36 @@ Using a primary threshold of `1%` over the continuous 2023–2026 archive:
 These events are historical labels, not evidence of a forecasting advantage.
 At draw 120 of 28 July 2026, no A1–A4 anomaly was active.
 
+## Unified command-line interface
+
+The 15 executable tools remain independently usable, while `lotto.py` exposes
+them through one discoverable dispatcher:
+
+```bash
+./lotto.py list
+./lotto.py help current
+./lotto.py current
+./lotto.py current --to 2026-07-25
+./lotto.py current --to-num 119
+```
+
+Arguments following the subcommand are forwarded unchanged to the underlying
+tool. The wrapper returns the same exit status as that tool.
+
+The `current` report includes a final `TUTTE` row. It considers only wheels
+whose current natural cycle has positive age, then reports:
+
+- the union of their most-present digit sets;
+- the union of their missing-digit sets;
+- their intersection `C`;
+- all valid ordered two-digit numbers formed by distinct digits in `C`.
+
+This is a deterministic transversal description and an optional virtual-play
+criterion. It does not change the probability of any individual Lotto number
+and is not evidence of predictive advantage.
+
+See the complete [CLI reference](docs/cli-reference.md).
+
 ## Quick verification
 
 Run the complete automated suite:
@@ -135,56 +165,48 @@ Run the complete automated suite:
 python3 -m unittest discover -v
 ```
 
+The current suite contains 166 tests.
+
 Verify the exact transition kernel independently:
 
 ```bash
-python3 verify_transition_kernel.py \
+./lotto.py kernel \
     --output _work/transition-kernel-verification.json
 ```
 
-Regenerate the complete state atlas:
+Regenerate the complete state atlas and structural analysis:
 
 ```bash
-python3 generate_state_atlas.py
+./lotto.py atlas
+./lotto.py structure
 ```
 
-Regenerate the structural analysis:
+Recalculate the continuous historical comparisons:
 
 ```bash
-python3 generate_structural_analysis.py
-```
-
-Recalculate the continuous historical cycle comparison:
-
-```bash
-python3 analyze_historical_cycle_distribution.py
-```
-
-Recalculate historical structural classes and anomalies:
-
-```bash
-python3 analyze_historical_symmetry_classes.py
-python3 analyze_coverage_anomalies.py
+./lotto.py cycles
+./lotto.py symmetry-history
+./lotto.py anomalies
 ```
 
 Inspect the current coverage state:
 
 ```bash
-python3 analyze_current_coverage.py \
-    --database data/lotto-2026.sqlite3
+./lotto.py current
+./lotto.py current --to 2026-07-25
+./lotto.py current --to-num 119
 ```
 
-Update the current annual database:
+`--to` applies an inclusive ISO-date cutoff. `--to-num` applies an inclusive
+draw-number cutoff; `--to_num` is retained as an equivalent spelling. The two
+cutoff options are mutually exclusive.
+
+Update and inspect the current annual database:
 
 ```bash
-python3 update_lotto_database.py
-```
-
-Browse a database in the terminal:
-
-```bash
-./view_lotto_database.sh
-./view_lotto_database.sh --digit 1,7,9
+./lotto.py update
+./lotto.py db
+./lotto.py db --digit 1,7,9
 ```
 
 ## Repository map
@@ -196,6 +218,7 @@ Browse a database in the terminal:
 ├── generated/                    deterministic mathematical artifacts
 ├── strategies/                   reference model implementations
 ├── tests/                        automated mathematical and data tests
+├── lotto.py                      unified dispatcher for all 15 CLI tools
 ├── analyze_*.py                  historical and current-state analyses
 ├── generate_state_atlas.py       complete 1,023-state atlas
 ├── generate_structural_analysis.py
@@ -208,6 +231,9 @@ Browse a database in the terminal:
 ## Documentation
 
 Start with [`docs/index.md`](docs/index.md).
+
+The unified command interface is documented in
+[`docs/cli-reference.md`](docs/cli-reference.md).
 
 The canonical formal specification is
 [`docs/finite-state-model.md`](docs/finite-state-model.md).
