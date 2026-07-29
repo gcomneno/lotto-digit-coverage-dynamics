@@ -146,8 +146,9 @@ tool. The wrapper returns the same exit status as that tool.
 The `current` report includes a final `TUTTE` row. It considers only wheels
 whose current natural cycle has positive age, then reports:
 
-- the union of their most-present digit sets;
-- the union of their missing-digit sets;
+- the union of the most-present digit sets across all active wheels;
+- the union of the missing-digit sets only across active wheels tied for the
+  maximum one-draw completion probability;
 - their intersection `C`;
 - all valid ordered two-digit numbers formed by distinct digits in `C`.
 

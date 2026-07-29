@@ -634,7 +634,7 @@ class CurrentCoverageStateTests(unittest.TestCase):
             119,
         )
 
-    def test_transversal_convergence_ignores_reset_wheels(
+    def test_transversal_convergence_uses_maximum_one_step_group(
         self,
     ) -> None:
         states = (
@@ -648,11 +648,9 @@ class CurrentCoverageStateTests(unittest.TestCase):
                 covered_digits=frozenset(),
                 missing_digits=frozenset({
                     0,
-                    6,
                 }),
                 synchronized=True,
                 most_present_digits=frozenset({
-                    1,
                     6,
                 }),
             ),
@@ -665,8 +663,7 @@ class CurrentCoverageStateTests(unittest.TestCase):
                 draws_in_cycle=4,
                 covered_digits=frozenset(),
                 missing_digits=frozenset({
-                    1,
-                    7,
+                    6,
                 }),
                 synchronized=True,
                 most_present_digits=frozenset({
@@ -674,8 +671,41 @@ class CurrentCoverageStateTests(unittest.TestCase):
                 }),
             ),
             CurrentCoverageState(
-                wheel="Bari",
+                wheel="Nazionale",
                 wheel_order=3,
+                latest_draw=120,
+                latest_date="2026-07-28",
+                completed_cycles=34,
+                draws_in_cycle=3,
+                covered_digits=frozenset(),
+                missing_digits=frozenset({
+                    1,
+                }),
+                synchronized=True,
+                most_present_digits=frozenset({
+                    7,
+                }),
+            ),
+            CurrentCoverageState(
+                wheel="Torino",
+                wheel_order=4,
+                latest_draw=120,
+                latest_date="2026-07-28",
+                completed_cycles=33,
+                draws_in_cycle=6,
+                covered_digits=frozenset(),
+                missing_digits=frozenset({
+                    9,
+                }),
+                synchronized=True,
+                most_present_digits=frozenset({
+                    1,
+                    8,
+                }),
+            ),
+            CurrentCoverageState(
+                wheel="Bari",
+                wheel_order=5,
                 latest_draw=120,
                 latest_date="2026-07-28",
                 completed_cycles=37,
@@ -694,25 +724,20 @@ class CurrentCoverageStateTests(unittest.TestCase):
                     1,
                     6,
                     7,
+                    8,
                 }),
                 frozenset({
                     0,
                     1,
                     6,
-                    7,
                 }),
                 frozenset({
                     1,
                     6,
-                    7,
                 }),
                 frozenset({
                     16,
-                    17,
                     61,
-                    67,
-                    71,
-                    76,
                 }),
             ),
         )
@@ -731,11 +756,9 @@ class CurrentCoverageStateTests(unittest.TestCase):
                 covered_digits=frozenset(),
                 missing_digits=frozenset({
                     0,
-                    6,
                 }),
                 synchronized=True,
                 most_present_digits=frozenset({
-                    1,
                     6,
                 }),
             ),
@@ -748,8 +771,7 @@ class CurrentCoverageStateTests(unittest.TestCase):
                 draws_in_cycle=4,
                 covered_digits=frozenset(),
                 missing_digits=frozenset({
-                    1,
-                    7,
+                    6,
                 }),
                 synchronized=True,
                 most_present_digits=frozenset({
@@ -757,8 +779,41 @@ class CurrentCoverageStateTests(unittest.TestCase):
                 }),
             ),
             CurrentCoverageState(
-                wheel="Bari",
+                wheel="Nazionale",
                 wheel_order=3,
+                latest_draw=120,
+                latest_date="2026-07-28",
+                completed_cycles=34,
+                draws_in_cycle=3,
+                covered_digits=frozenset(),
+                missing_digits=frozenset({
+                    1,
+                }),
+                synchronized=True,
+                most_present_digits=frozenset({
+                    7,
+                }),
+            ),
+            CurrentCoverageState(
+                wheel="Torino",
+                wheel_order=4,
+                latest_draw=120,
+                latest_date="2026-07-28",
+                completed_cycles=33,
+                draws_in_cycle=6,
+                covered_digits=frozenset(),
+                missing_digits=frozenset({
+                    9,
+                }),
+                synchronized=True,
+                most_present_digits=frozenset({
+                    1,
+                    8,
+                }),
+            ),
+            CurrentCoverageState(
+                wheel="Bari",
+                wheel_order=5,
                 latest_draw=120,
                 latest_date="2026-07-28",
                 completed_cycles=37,
@@ -781,18 +836,25 @@ class CurrentCoverageStateTests(unittest.TestCase):
             rendered,
         )
         self.assertIn(
-            "C={1,6,7}",
+            "{1,6,7,8}",
             rendered,
         )
         self.assertIn(
-            "Numeri={16,17,61,67,71,76}",
+            "{0,1,6}",
             rendered,
         )
         self.assertIn(
-            "Età > 0",
+            "C={1,6}",
             rendered,
         )
-
+        self.assertIn(
+            "Numeri={16,61}",
+            rendered,
+        )
+        self.assertIn(
+            "probabilità Entro 1 massima",
+            rendered,
+        )
 
     def test_active_anomalies_distinguish_stateful_a1(
         self,
