@@ -26,6 +26,7 @@ boundary.
 
 - [Historical cycle distribution](historical-cycle-distribution.md)
 - [Coverage anomalies](coverage-anomalies.md)
+- [Rolling-frequency walk-forward backtest](rolling-frequency-backtest.md)
 
 Historical reports compare observations with the exact-state model. They are
 descriptive analyses and do not define betting rules.

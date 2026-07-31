@@ -76,6 +76,16 @@ TOOLS = (
         ("digits",),
     ),
     Tool(
+        "rolling-frequency",
+        "analyze_rolling_frequency.py",
+        "Analisi storiche",
+        (
+            "Backtesta le frequenze rolling "
+            "contro rose casuali equivalenti."
+        ),
+        ("rolling",),
+    ),
+    Tool(
         "return-times",
         "analyze_digit_return_times.py",
         "Analisi storiche",

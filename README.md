@@ -127,9 +127,27 @@ Using a primary threshold of `1%` over the continuous 2023–2026 archive:
 These events are historical labels, not evidence of a forecasting advantage.
 At draw 120 of 28 July 2026, no A1–A4 anomaly was active.
 
+## Rolling-frequency backtest
+
+A predefined walk-forward experiment tested rolling most-frequent digit
+windows `3`, `6`, `8` and `12`. The primary `N = 6` hypothesis was fixed before
+evaluation.
+
+Each candidate set was compared with uniformly random sets of equal size. The
+strongest development-period result, `N = 8` for ambi, did not replicate in the
+held-out 2026 period. The primary `N = 6` result was also below the held-out
+random ambo mean.
+
+No tested window demonstrated a stable predictive advantage. Virtual stake,
+payout and financial-return accounting were deliberately excluded from the
+implemented scope.
+
+See the complete
+[rolling-frequency backtest report](docs/rolling-frequency-backtest.md).
+
 ## Unified command-line interface
 
-The 15 executable tools remain independently usable, while `lotto.py` exposes
+The 16 executable tools remain independently usable, while `lotto.py` exposes
 them through one discoverable dispatcher:
 
 ```bash
@@ -166,7 +184,7 @@ Run the complete automated suite:
 python3 -m unittest discover -v
 ```
 
-The current suite contains 191 tests.
+The current suite contains 242 tests.
 
 Verify the exact transition kernel independently:
 
@@ -188,6 +206,7 @@ Recalculate the continuous historical comparisons:
 ./lotto.py cycles
 ./lotto.py symmetry-history
 ./lotto.py anomalies
+./lotto.py rolling-frequency
 ```
 
 Inspect the current coverage state:
@@ -238,7 +257,7 @@ recommendation.
 ├── generated/                    deterministic mathematical artifacts
 ├── strategies/                   reference model implementations
 ├── tests/                        automated mathematical and data tests
-├── lotto.py                      unified dispatcher for all 15 CLI tools
+├── lotto.py                      unified dispatcher for all 16 CLI tools
 ├── analyze_*.py                  historical and current-state analyses
 ├── generate_state_atlas.py       complete 1,023-state atlas
 ├── generate_structural_analysis.py
@@ -254,6 +273,9 @@ Start with [`docs/index.md`](docs/index.md).
 
 The unified command interface is documented in
 [`docs/cli-reference.md`](docs/cli-reference.md).
+
+The rolling-frequency experiment is documented in
+[`docs/rolling-frequency-backtest.md`](docs/rolling-frequency-backtest.md).
 
 The canonical formal specification is
 [`docs/finite-state-model.md`](docs/finite-state-model.md).

@@ -21,7 +21,7 @@ class LottoCliTests(unittest.TestCase):
 
         self.assertEqual(result, 0)
         self.assertIn(
-            "CLI disponibili: 15",
+            "CLI disponibili: 16",
             rendered,
         )
 
@@ -120,6 +120,37 @@ class LottoCliTests(unittest.TestCase):
                 "cwd": lotto.ROOT,
                 "check": False,
             },
+        )
+
+    def test_forwards_rolling_frequency_tool(
+        self,
+    ) -> None:
+        completed = SimpleNamespace(returncode=0)
+
+        with patch(
+            "lotto.subprocess.run",
+            return_value=completed,
+        ) as run:
+            result = lotto.main(
+                (
+                    "rolling-frequency",
+                    "--repetitions",
+                    "25",
+                )
+            )
+
+        self.assertEqual(result, 0)
+        self.assertEqual(
+            run.call_args.args[0],
+            [
+                sys.executable,
+                str(
+                    lotto.ROOT
+                    / "analyze_rolling_frequency.py"
+                ),
+                "--repetitions",
+                "25",
+            ],
         )
 
     def test_alias_selects_expected_tool(self) -> None:

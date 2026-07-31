@@ -30,6 +30,7 @@ Tutti gli script originali restano direttamente eseguibili.
 | `residuals` | `analyze_coverage_markov_residuals.py` | Confronto dei tempi residui teorici e osservati |
 | `validation` | `analyze_coverage_markov_validation.py` | Calibrazione empirica delle probabilità Markov |
 | `digit-coverage` | `analyze_digit_coverage.py` | Copertura delle cifre su finestre mobili |
+| `rolling-frequency` | `analyze_rolling_frequency.py` | Backtest walk-forward delle frequenze rolling contro rose casuali equivalenti |
 | `return-times` | `analyze_digit_return_times.py` | Analisi dei tempi di ritorno delle cifre |
 | `cycles` | `analyze_historical_cycle_distribution.py` | Confronto storico delle durate dei cicli |
 | `symmetry-history` | `analyze_historical_symmetry_classes.py` | Analisi storica delle classi strutturali |
@@ -43,9 +44,37 @@ Alias:
 - `now` → `current`;
 - `view` → `db`;
 - `digits` → `digit-coverage`;
+- `rolling` → `rolling-frequency`;
 - `returns` → `return-times`;
 - `cycle-distribution` → `cycles`;
 - `symmetry` → `symmetry-history`.
+
+## Backtest delle frequenze rolling
+
+```bash
+./lotto.py rolling-frequency
+./lotto.py rolling-frequency --window-size 6
+./lotto.py rolling-frequency --repetitions 1000 --seed 20260731
+```
+
+L’esecuzione predefinita:
+
+- legge in sola lettura gli archivi annuali 2023–2026;
+- valuta le finestre `3`, `6`, `8` e `12`;
+- usa il 2023–2025 come periodo di sviluppo;
+- usa il 2026 come periodo held-out;
+- esegue `1.000` repliche casuali a parità di dimensione per confronto;
+- scrive artefatti CSV e JSON deterministici sotto `_work/`.
+
+Le opzioni `--database` e `--window-size` possono essere ripetute. I percorsi
+degli output possono essere modificati con `--csv-output` e `--json-output`.
+
+Il comando riporta esposizione dei candidati, numeri centrati, ambi centrati,
+medie casuali, rapporti osservato/casuale e p-value empirici unilaterali. Non
+riporta posta virtuale, vincite o ritorno finanziario.
+
+Vedere il
+[report completo sulle frequenze rolling](rolling-frequency-backtest.md).
 
 ## Limiti dello stato corrente
 
@@ -143,6 +172,7 @@ delle probabilità o una raccomandazione di gioco.
 ./lotto.py current --to-num 119
 ./lotto.py update --year 2026
 ./lotto.py anomalies --help
+./lotto.py rolling-frequency
 ./lotto.py kernel \
     --output _work/transition-kernel-verification.json
 ./lotto.py db --digit 1,6,7

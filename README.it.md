@@ -133,9 +133,27 @@ Con una soglia primaria dell’`1%` sull’archivio continuo 2023–2026:
 Gli eventi sono etichette storiche, non prove di un vantaggio previsionale.
 Al concorso 120 del 28 luglio 2026 non era attiva alcuna anomalia A1–A4.
 
+## Backtest delle frequenze rolling
+
+Un esperimento walk-forward predefinito ha verificato le finestre rolling delle
+cifre più frequenti `3`, `6`, `8` e `12`. L’ipotesi primaria `N = 6` è stata
+fissata prima della valutazione.
+
+Ogni rosa è stata confrontata con rose uniformi casuali della stessa
+dimensione. Il risultato più forte nel periodo di sviluppo, `N = 8` sugli ambi,
+non si è replicato nel periodo held-out 2026. Anche `N = 6` è rimasta sotto la
+media casuale held-out degli ambi.
+
+Nessuna finestra mostra un vantaggio previsionale stabile. La contabilità di
+posta virtuale, vincite e ritorno finanziario è stata deliberatamente esclusa
+dallo scope implementato.
+
+Vedere il
+[report completo sulle frequenze rolling](docs/it/rolling-frequency-backtest.md).
+
 ## Interfaccia unificata da riga di comando
 
-I 15 strumenti eseguibili restano utilizzabili autonomamente, mentre `lotto.py`
+I 16 strumenti eseguibili restano utilizzabili autonomamente, mentre `lotto.py`
 li espone attraverso un unico dispatcher facilmente esplorabile:
 
 ```bash
@@ -174,7 +192,7 @@ Eseguire l’intera suite automatizzata:
 python3 -m unittest discover -v
 ```
 
-La suite corrente contiene 191 test.
+La suite corrente contiene 242 test.
 
 Verificare indipendentemente il kernel esatto:
 
@@ -196,6 +214,7 @@ Ricalcolare i confronti storici continui:
 ./lotto.py cycles
 ./lotto.py symmetry-history
 ./lotto.py anomalies
+./lotto.py rolling-frequency
 ```
 
 Esaminare lo stato corrente della copertura:
@@ -248,7 +267,7 @@ una raccomandazione di gioco.
 ├── generated/                    artefatti matematici deterministici
 ├── strategies/                   implementazioni di riferimento
 ├── tests/                        test matematici e dei dati
-├── lotto.py                      dispatcher unico per tutti i 15 CLI
+├── lotto.py                      dispatcher unico per tutti i 16 CLI
 ├── analyze_*.py                  analisi storiche e dello stato corrente
 ├── generate_state_atlas.py       atlante completo dei 1.023 stati
 ├── generate_structural_analysis.py
@@ -264,6 +283,9 @@ Iniziare dall’[indice italiano](docs/it/index.md).
 
 L’interfaccia unificata è descritta nella
 [guida italiana ai comandi](docs/it/cli-reference.md).
+
+L’esperimento sulle frequenze rolling è documentato in
+[`docs/it/rolling-frequency-backtest.md`](docs/it/rolling-frequency-backtest.md).
 
 La specifica formale italiana è
 [`docs/it/finite-state-model.md`](docs/it/finite-state-model.md).
