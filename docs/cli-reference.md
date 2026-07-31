@@ -30,6 +30,7 @@ All original scripts remain directly executable.
 | `residuals` | `analyze_coverage_markov_residuals.py` | Theoretical and observed residual-time comparison |
 | `validation` | `analyze_coverage_markov_validation.py` | Empirical calibration of Markov probabilities |
 | `digit-coverage` | `analyze_digit_coverage.py` | Digit coverage over moving windows |
+| `rolling-frequency` | `analyze_rolling_frequency.py` | Walk-forward rolling-frequency backtest against equal-size random sets |
 | `return-times` | `analyze_digit_return_times.py` | Digit return-time analysis |
 | `cycles` | `analyze_historical_cycle_distribution.py` | Historical cycle-duration comparison |
 | `symmetry-history` | `analyze_historical_symmetry_classes.py` | Historical structural-class analysis |
@@ -43,9 +44,37 @@ Aliases:
 - `now` → `current`;
 - `view` → `db`;
 - `digits` → `digit-coverage`;
+- `rolling` → `rolling-frequency`;
 - `returns` → `return-times`;
 - `cycle-distribution` → `cycles`;
 - `symmetry` → `symmetry-history`.
+
+## Rolling-frequency backtest
+
+```bash
+./lotto.py rolling-frequency
+./lotto.py rolling-frequency --window-size 6
+./lotto.py rolling-frequency --repetitions 1000 --seed 20260731
+```
+
+The default run:
+
+- reads the 2023–2026 annual archives in read-only mode;
+- evaluates windows `3`, `6`, `8` and `12`;
+- uses 2023–2025 as the development period;
+- uses 2026 as the held-out period;
+- performs `1,000` equal-size random replications per comparison;
+- writes deterministic CSV and JSON artifacts under `_work/`.
+
+`--database` and `--window-size` may be repeated. Output paths can be changed
+with `--csv-output` and `--json-output`.
+
+The command reports candidate exposure, number hits, ambo hits, random means,
+observed-to-random ratios and empirical one-sided p-values. It does not report
+virtual stake, payout or financial return.
+
+See the complete
+[rolling-frequency research report](rolling-frequency-backtest.md).
 
 ## Current-state cutoffs
 
@@ -141,6 +170,7 @@ recommendation.
 ./lotto.py current --to-num 119
 ./lotto.py update --year 2026
 ./lotto.py anomalies --help
+./lotto.py rolling-frequency
 ./lotto.py kernel \
     --output _work/transition-kernel-verification.json
 ./lotto.py db --digit 1,6,7
