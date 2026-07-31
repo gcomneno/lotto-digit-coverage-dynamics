@@ -3,12 +3,13 @@
 DATABASE="data/lotto-2026.sqlite3"
 DATABASE_SET=0
 DIGITS=()
+NUMBERS=()
 
 usage() {
     cat <<'HELP'
 Uso:
   ./view_lotto_database.sh [DATABASE]
-  ./view_lotto_database.sh [--database PATH] [--digit CIFRE]...
+  ./view_lotto_database.sh [--database PATH] [--digit CIFRE]... [--number NUMERI]...
 
 Visualizza tutte le estrazioni del database in una tabella larga.
 
@@ -17,14 +18,20 @@ Opzioni:
   --digit CIFRE         Evidenzia una o più cifre da 0 a 9.
                         L'opzione può essere ripetuta.
                         Sono accettate anche cifre separate da virgola.
+  --number NUMERI       Evidenzia uno o più numeri da 1 a 90.
+                        L'opzione può essere ripetuta.
+                        Sono accettati anche numeri separati da virgola.
   -h, --help            Mostra questo messaggio.
 
 Esempi:
   ./view_lotto_database.sh
   ./view_lotto_database.sh --digit 7
-  ./view_lotto_database.sh --digit 1 --digit 7
   ./view_lotto_database.sh --digit 1,7,9
-  ./view_lotto_database.sh data/lotto-2025.sqlite3 --digit 0,9
+  ./view_lotto_database.sh --number 17
+  ./view_lotto_database.sh --number 17 --number 90
+  ./view_lotto_database.sh --number 1,17,90
+  ./view_lotto_database.sh --digit 7 --number 17,90
+  ./view_lotto_database.sh data/lotto-2025.sqlite3 --number 1,90
 HELP
 }
 
@@ -49,6 +56,16 @@ while test "$#" -gt 0; do
             fi
 
             DIGITS+=("$2")
+            shift 2
+            ;;
+
+        --number)
+            if test "$#" -lt 2; then
+                echo "ERRORE: --number richiede almeno un numero." >&2
+                exit 2
+            fi
+
+            NUMBERS+=("$2")
             shift 2
             ;;
 
@@ -106,9 +123,10 @@ cleanup() {
 trap cleanup EXIT HUP INT TERM
 
 
-python3 - "$DATABASE" "${DIGITS[@]}" > "$OUTPUT" <<'PYTHON'
+python3 - "$DATABASE" --digits "${DIGITS[@]}" --numbers "${NUMBERS[@]}" > "$OUTPUT" <<'PYTHON'
 from __future__ import annotations
 
+import re
 import sqlite3
 import sys
 from pathlib import Path
@@ -161,6 +179,39 @@ def parse_digits(values: list[str]) -> tuple[str, ...]:
     )
 
 
+def parse_numbers(values: list[str]) -> tuple[int, ...]:
+    numbers: set[int] = set()
+
+    for value in values:
+        parts = value.split(",")
+
+        for part in parts:
+            normalized = part.strip()
+
+            if (
+                not normalized.isascii()
+                or not normalized.isdigit()
+            ):
+                raise ValueError(
+                    "--number accetta soltanto numeri "
+                    "interi compresi tra 1 e 90; "
+                    f"ricevuto {part!r}."
+                )
+
+            number = int(normalized)
+
+            if not 1 <= number <= 90:
+                raise ValueError(
+                    "--number accetta soltanto numeri "
+                    "interi compresi tra 1 e 90; "
+                    f"ricevuto {part!r}."
+                )
+
+            numbers.add(number)
+
+    return tuple(sorted(numbers))
+
+
 def highlight_digits(
     text: str,
     digits: set[str],
@@ -178,11 +229,58 @@ def highlight_digits(
     )
 
 
+NUMBER_PATTERN = re.compile(r"(?<!\d)\d{2}(?!\d)")
+
+
+def highlight_cell(
+    text: str,
+    digits: set[str],
+    numbers: set[int],
+) -> str:
+    if not digits and not numbers:
+        return text
+
+    rendered: list[str] = []
+    cursor = 0
+
+    for match in NUMBER_PATTERN.finditer(text):
+        rendered.append(
+            text[cursor:match.start()]
+        )
+
+        token = match.group()
+
+        if int(token) in numbers:
+            rendered.append(
+                f"{HIGHLIGHT}{token}{RESET}"
+            )
+        else:
+            rendered.append(
+                highlight_digits(
+                    token,
+                    digits,
+                )
+            )
+
+        cursor = match.end()
+
+    rendered.append(text[cursor:])
+
+    return "".join(rendered)
+
+
 database = Path(sys.argv[1])
+numbers_marker = sys.argv.index(
+    "--numbers",
+    3,
+)
 
 try:
     selected_digits = parse_digits(
-        sys.argv[2:]
+        sys.argv[3:numbers_marker]
+    )
+    selected_numbers = parse_numbers(
+        sys.argv[numbers_marker + 1:]
     )
 except ValueError as error:
     print(
@@ -300,6 +398,15 @@ if selected_digits:
         + ", ".join(selected_digits)
     )
 
+if selected_numbers:
+    print(
+        "Numeri evidenziati: "
+        + ", ".join(
+            str(number)
+            for number in selected_numbers
+        )
+    )
+
 print()
 
 header = (
@@ -324,6 +431,7 @@ print(header)
 print(separator)
 
 digit_set = set(selected_digits)
+number_set = set(selected_numbers)
 
 for (
     draw_number,
@@ -343,9 +451,10 @@ for (
         ).ljust(wheel_width)
 
         formatted_wheels.append(
-            highlight_digits(
+            highlight_cell(
                 plain_cell,
                 digit_set,
+                number_set,
             )
         )
 

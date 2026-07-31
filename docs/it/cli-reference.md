@@ -93,6 +93,15 @@ e, facoltativamente, una convenzione per il gioco virtuale, non un risultato
 previsionale. Nel modello ideale ogni singolo numero del Lotto conserva la
 medesima probabilità di inclusione in una estrazione.
 
+## Evidenziazione del database
+
+Il comando `db` supporta due selettori indipendenti e componibili:
+
+- `--digit CIFRE` evidenzia singole cifre da `0` a `9`;
+- `--number NUMERI` evidenzia numeri del Lotto completi da `1` a `90`.
+
+Entrambe le opzioni possono essere ripetute e ogni valore può contenere una lista separata da virgole. Le selezioni ripetute vengono deduplicate. Un numero selezionato viene rappresentato nella forma a due cifre usata dal database: quindi `--number 1` evidenzia `01`. Quando sono selezionati sia un numero completo sia una sua cifra, prevale l'evidenziazione del numero completo.
+
 ## Esempi
 
 ```bash
@@ -103,4 +112,6 @@ medesima probabilità di inclusione in una estrazione.
 ./lotto.py kernel \
     --output _work/transition-kernel-verification.json
 ./lotto.py db --digit 1,6,7
+./lotto.py db --number 1,17,90
+./lotto.py db --digit 7 --number 17,90
 ```

@@ -216,7 +216,11 @@ Aggiornare ed esplorare il database annuale corrente:
 ./lotto.py update
 ./lotto.py db
 ./lotto.py db --digit 1,7,9
+./lotto.py db --number 1,17,90
+./lotto.py db --digit 7 --number 17,90
 ```
+
+`--digit` evidenzia ogni cifra selezionata ovunque compaia. `--number` evidenzia numeri del Lotto completi da `1` a `90`; l'opzione è ripetibile e accetta anche valori separati da virgola. Quando entrambi i selettori corrispondono, l'evidenziazione del numero completo prevale su quella delle singole cifre.
 
 ## Struttura del repository
 

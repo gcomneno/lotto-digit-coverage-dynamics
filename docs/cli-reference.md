@@ -91,6 +91,15 @@ description and an optional virtual-play convention, not a forecasting result.
 Every fixed Lotto number still has the same one-draw inclusion probability
 under the ideal model.
 
+## Database highlighting
+
+The `db` command supports two independent, composable selectors:
+
+- `--digit DIGITS` highlights individual digits from `0` to `9`;
+- `--number NUMBERS` highlights complete Lotto numbers from `1` to `90`.
+
+Both options may be repeated and each value may contain a comma-separated list. Repeated selections are deduplicated. A selected number is rendered using its two-digit database form, so `--number 1` highlights `01`. When a complete number and one of its digits are both selected, complete-number highlighting takes precedence.
+
 ## Examples
 
 ```bash
@@ -101,4 +110,6 @@ under the ideal model.
 ./lotto.py kernel \
     --output _work/transition-kernel-verification.json
 ./lotto.py db --digit 1,6,7
+./lotto.py db --number 1,17,90
+./lotto.py db --digit 7 --number 17,90
 ```

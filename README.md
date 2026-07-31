@@ -208,7 +208,11 @@ Update and inspect the current annual database:
 ./lotto.py update
 ./lotto.py db
 ./lotto.py db --digit 1,7,9
+./lotto.py db --number 1,17,90
+./lotto.py db --digit 7 --number 17,90
 ```
+
+`--digit` highlights each selected digit wherever it appears. `--number` highlights complete Lotto numbers from `1` to `90`; the option is repeatable and also accepts comma-separated values. When both selectors match, highlighting the complete number takes precedence over highlighting its individual digits.
 
 ## Repository map
 
