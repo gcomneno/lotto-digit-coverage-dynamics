@@ -174,7 +174,7 @@ Eseguire l’intera suite automatizzata:
 python3 -m unittest discover -v
 ```
 
-La suite corrente contiene 170 test.
+La suite corrente contiene 191 test.
 
 Verificare indipendentemente il kernel esatto:
 
@@ -218,9 +218,25 @@ Aggiornare ed esplorare il database annuale corrente:
 ./lotto.py db --digit 1,7,9
 ./lotto.py db --number 1,17,90
 ./lotto.py db --digit 7 --number 17,90
+./lotto.py db --latest-occurrences
+./lotto.py db --database data/lotto-2025.sqlite3 --latest-occurrences 100
 ```
 
 `--digit` evidenzia ogni cifra selezionata ovunque compaia. `--number` evidenzia numeri del Lotto completi da `1` a `90`; l'opzione è ripetibile e accetta anche valori separati da virgola. Quando entrambi i selettori corrispondono, l'evidenziazione del numero completo prevale su quella delle singole cifre.
+
+`--latest-occurrences [NUM_ESTRAZIONE]` attiva il tracciamento
+retrospettivo sulla stessa ruota. Senza valore seleziona l'ultima estrazione
+completa. Con un numero positivo usa quella estrazione come cutoff storico
+inclusivo, esclude le estrazioni successive e mostra per prima la riga di
+riferimento in ordine cronologico discendente. I cinque numeri di riferimento
+usano colori posizionali distinti e le loro occorrenze precedenti vengono
+evidenziate soltanto sulla stessa ruota.
+
+La modalità è mutuamente esclusiva con `--digit` e `--number`. Per scegliere un
+altro archivio usare la forma non ambigua
+`--database PATH --latest-occurrences [NUM_ESTRAZIONE]`. La ripetizione storica
+viene mostrata in modo descrittivo e non costituisce un segnale previsionale o
+una raccomandazione di gioco.
 
 ## Struttura del repository
 
