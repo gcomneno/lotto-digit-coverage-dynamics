@@ -14,7 +14,7 @@ python3 -m unittest discover -v
 ```
 
 Al checkpoint di pubblicazione di luglio 2026, la fonte di verità potata contiene
-166 test superati.
+170 test superati.
 
 ## Dispatcher unificato
 

@@ -174,7 +174,7 @@ Eseguire l’intera suite automatizzata:
 python3 -m unittest discover -v
 ```
 
-La suite corrente contiene 166 test.
+La suite corrente contiene 170 test.
 
 Verificare indipendentemente il kernel esatto:
 
