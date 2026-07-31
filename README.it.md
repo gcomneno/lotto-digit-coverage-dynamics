@@ -266,3 +266,9 @@ La conclusione negativa è conservata in
 L’archivio 2022 resta deliberatamente non importato e non ispezionato.
 Ulteriori dati devono essere introdotti solo per una domanda matematica o di
 validazione concreta e dichiarata in anticipo.
+
+## Licenza
+
+Distribuito secondo i termini della [licenza MIT](LICENSE).
+
+Copyright © 2026 Giancarlo Cicellyn Comneno.
