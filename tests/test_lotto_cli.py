@@ -81,6 +81,47 @@ class LottoCliTests(unittest.TestCase):
             },
         )
 
+    def test_forwards_latest_occurrences_to_db_tool(
+        self,
+    ) -> None:
+        completed = SimpleNamespace(returncode=0)
+
+        with patch(
+            "lotto.subprocess.run",
+            return_value=completed,
+        ) as run:
+            result = lotto.main(
+                (
+                    "db",
+                    "--database",
+                    "data/lotto-2025.sqlite3",
+                    "--latest-occurrences",
+                    "100",
+                )
+            )
+
+        self.assertEqual(result, 0)
+        self.assertEqual(
+            run.call_args.args[0],
+            [
+                str(
+                    lotto.ROOT
+                    / "view_lotto_database.sh"
+                ),
+                "--database",
+                "data/lotto-2025.sqlite3",
+                "--latest-occurrences",
+                "100",
+            ],
+        )
+        self.assertEqual(
+            run.call_args.kwargs,
+            {
+                "cwd": lotto.ROOT,
+                "check": False,
+            },
+        )
+
     def test_alias_selects_expected_tool(self) -> None:
         completed = SimpleNamespace(returncode=0)
 

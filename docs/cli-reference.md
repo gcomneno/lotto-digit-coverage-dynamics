@@ -91,7 +91,9 @@ description and an optional virtual-play convention, not a forecasting result.
 Every fixed Lotto number still has the same one-draw inclusion probability
 under the ideal model.
 
-## Database highlighting
+## Database highlighting and historical tracing
+
+### Manual highlighting
 
 The `db` command supports two independent, composable selectors:
 
@@ -99,6 +101,38 @@ The `db` command supports two independent, composable selectors:
 - `--number NUMBERS` highlights complete Lotto numbers from `1` to `90`.
 
 Both options may be repeated and each value may contain a comma-separated list. Repeated selections are deduplicated. A selected number is rendered using its two-digit database form, so `--number 1` highlights `01`. When a complete number and one of its digits are both selected, complete-number highlighting takes precedence.
+
+### Reference-draw historical occurrences
+
+`--latest-occurrences [DRAW_NUMBER]` traces the five reference numbers
+independently on every wheel.
+
+Without `DRAW_NUMBER`, the command deterministically selects the latest complete
+draw by its `(draw_date, draw_number)` tuple. With a positive integer, it
+resolves exactly one reference draw with that number and treats its tuple as the
+inclusive historical cutoff.
+
+In this mode:
+
+- the reference draw is rendered immediately below the header;
+- the reference and all earlier draws are shown in descending chronological order;
+- draws later than an explicit reference are excluded;
+- the five numbers on each wheel receive five distinct positional colors;
+- every earlier occurrence keeps the corresponding color only on that same wheel;
+- identical values on other wheels are not matches;
+- the palette is reused independently for every wheel.
+
+The mode is mutually exclusive with `--digit` and `--number`. When
+another database is selected, use one of these unambiguous forms:
+
+```bash
+./lotto.py db --database data/lotto-2025.sqlite3 --latest-occurrences
+./lotto.py db --database data/lotto-2025.sqlite3 --latest-occurrences 100
+```
+
+The database is never reordered or mutated. This is retrospective
+visualization, not a predictive signal, probability adjustment or betting
+recommendation.
 
 ## Examples
 
@@ -112,4 +146,6 @@ Both options may be repeated and each value may contain a comma-separated list. 
 ./lotto.py db --digit 1,6,7
 ./lotto.py db --number 1,17,90
 ./lotto.py db --digit 7 --number 17,90
+./lotto.py db --latest-occurrences
+./lotto.py db --database data/lotto-2025.sqlite3 --latest-occurrences 100
 ```
