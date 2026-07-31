@@ -24,6 +24,7 @@ dalla lingua.
 
 - [Distribuzione storica dei cicli](historical-cycle-distribution.md)
 - [Anomalie della copertura](coverage-anomalies.md)
+- [Backtest walk-forward delle frequenze rolling](rolling-frequency-backtest.md)
 
 Le analisi storiche confrontano le osservazioni con il modello dello stato
 esatto. Sono descrittive e non definiscono regole di gioco.
