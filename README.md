@@ -255,3 +255,9 @@ The retained conclusion is documented in
 The 2022 archive remains deliberately unimported and uninspected. Additional
 data should be introduced only for a concrete, predeclared mathematical or
 validation question.
+
+## License
+
+Released under the [MIT License](LICENSE).
+
+Copyright © 2026 Giancarlo Cicellyn Comneno.
