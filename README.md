@@ -166,7 +166,7 @@ Run the complete automated suite:
 python3 -m unittest discover -v
 ```
 
-The current suite contains 166 tests.
+The current suite contains 170 tests.
 
 Verify the exact transition kernel independently:
 

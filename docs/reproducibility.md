@@ -14,7 +14,7 @@ artifacts are tracked under `generated/`.
 python3 -m unittest discover -v
 ```
 
-At the July 2026 publication checkpoint, the pruned source of truth contains 166
+At the July 2026 publication checkpoint, the pruned source of truth contains 170
 passing tests.
 
 ## Unified dispatcher
