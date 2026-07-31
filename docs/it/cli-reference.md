@@ -93,7 +93,9 @@ e, facoltativamente, una convenzione per il gioco virtuale, non un risultato
 previsionale. Nel modello ideale ogni singolo numero del Lotto conserva la
 medesima probabilità di inclusione in una estrazione.
 
-## Evidenziazione del database
+## Evidenziazione e tracciamento storico del database
+
+### Evidenziazione manuale
 
 Il comando `db` supporta due selettori indipendenti e componibili:
 
@@ -101,6 +103,38 @@ Il comando `db` supporta due selettori indipendenti e componibili:
 - `--number NUMERI` evidenzia numeri del Lotto completi da `1` a `90`.
 
 Entrambe le opzioni possono essere ripetute e ogni valore può contenere una lista separata da virgole. Le selezioni ripetute vengono deduplicate. Un numero selezionato viene rappresentato nella forma a due cifre usata dal database: quindi `--number 1` evidenzia `01`. Quando sono selezionati sia un numero completo sia una sua cifra, prevale l'evidenziazione del numero completo.
+
+### Occorrenze storiche dall'estrazione di riferimento
+
+`--latest-occurrences [NUM_ESTRAZIONE]` traccia indipendentemente su ogni
+ruota i cinque numeri dell'estrazione di riferimento.
+
+Senza `NUM_ESTRAZIONE`, il comando seleziona deterministicamente l'ultima
+estrazione completa tramite la tupla `(draw_date, draw_number)`. Con un intero
+positivo risolve esattamente una estrazione con quel numero e usa la relativa
+tupla come cutoff storico inclusivo.
+
+In questa modalità:
+
+- l'estrazione di riferimento appare subito sotto l'intestazione;
+- il riferimento e tutte le estrazioni precedenti sono mostrati in ordine cronologico discendente;
+- le estrazioni successive a un riferimento esplicito vengono escluse;
+- i cinque numeri di ogni ruota ricevono cinque colori posizionali distinti;
+- ogni occorrenza precedente mantiene il colore corrispondente soltanto sulla stessa ruota;
+- gli stessi valori presenti su altre ruote non costituiscono corrispondenze;
+- la palette viene riutilizzata indipendentemente per ogni ruota.
+
+La modalità è mutuamente esclusiva con `--digit` e `--number`. Per
+scegliere un altro database usare una delle forme non ambigue seguenti:
+
+```bash
+./lotto.py db --database data/lotto-2025.sqlite3 --latest-occurrences
+./lotto.py db --database data/lotto-2025.sqlite3 --latest-occurrences 100
+```
+
+Il database non viene mai riordinato o modificato. Si tratta di una
+visualizzazione retrospettiva, non di un segnale previsionale, una modifica
+delle probabilità o una raccomandazione di gioco.
 
 ## Esempi
 
@@ -114,4 +148,6 @@ Entrambe le opzioni possono essere ripetute e ogni valore può contenere una lis
 ./lotto.py db --digit 1,6,7
 ./lotto.py db --number 1,17,90
 ./lotto.py db --digit 7 --number 17,90
+./lotto.py db --latest-occurrences
+./lotto.py db --database data/lotto-2025.sqlite3 --latest-occurrences 100
 ```

@@ -166,7 +166,7 @@ Run the complete automated suite:
 python3 -m unittest discover -v
 ```
 
-The current suite contains 170 tests.
+The current suite contains 191 tests.
 
 Verify the exact transition kernel independently:
 
@@ -210,9 +210,24 @@ Update and inspect the current annual database:
 ./lotto.py db --digit 1,7,9
 ./lotto.py db --number 1,17,90
 ./lotto.py db --digit 7 --number 17,90
+./lotto.py db --latest-occurrences
+./lotto.py db --database data/lotto-2025.sqlite3 --latest-occurrences 100
 ```
 
 `--digit` highlights each selected digit wherever it appears. `--number` highlights complete Lotto numbers from `1` to `90`; the option is repeatable and also accepts comma-separated values. When both selectors match, highlighting the complete number takes precedence over highlighting its individual digits.
+
+`--latest-occurrences [DRAW_NUMBER]` activates retrospective same-wheel
+tracing. Without a value it selects the latest complete draw. With a positive
+draw number it uses that draw as the inclusive historical cutoff, excludes
+later draws and renders the reference row first in descending chronological
+order. The five reference numbers use distinct positional colors whose earlier
+occurrences are highlighted only on the same wheel.
+
+This mode is mutually exclusive with `--digit` and `--number`. When selecting
+another archive, use the unambiguous form
+`--database PATH --latest-occurrences [DRAW_NUMBER]`. Historical repetition is
+displayed descriptively and is not a predictive signal or a betting
+recommendation.
 
 ## Repository map
 
