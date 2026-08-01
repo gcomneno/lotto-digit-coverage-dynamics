@@ -58,8 +58,8 @@ mancanti ha:
 
 ## Confronto storico
 
-L’archivio continuo attuale comprende tutte le estrazioni dal 3 gennaio 2023
-al 28 luglio 2026:
+Il checkpoint storico pubblicato comprende tutte le estrazioni dal
+3 gennaio 2023 al 28 luglio 2026:
 
 | Archivio | Intervallo dei concorsi |
 |:---|:---|
@@ -131,7 +131,8 @@ Con una soglia primaria dell’`1%` sull’archivio continuo 2023–2026:
 | Totale | 36 |
 
 Gli eventi sono etichette storiche, non prove di un vantaggio previsionale.
-Al concorso 120 del 28 luglio 2026 non era attiva alcuna anomalia A1–A4.
+Al checkpoint pubblicato, concorso 120 del 28 luglio 2026, non era attiva
+alcuna anomalia A1–A4.
 
 ## Backtest delle frequenze rolling
 
@@ -301,9 +302,10 @@ linea di ricerca è chiusa e le implementazioni superate sono state eliminate.
 La conclusione negativa è conservata in
 [`docs/it/predictive-research-closure.md`](docs/it/predictive-research-closure.md).
 
-L’archivio 2022 resta deliberatamente non importato e non ispezionato.
-Ulteriori dati devono essere introdotti solo per una domanda matematica o di
-validazione concreta e dichiarata in anticipo.
+Gli archivi esterni all’ambito pubblicato 2023–2026 sono esclusi dai
+risultati di ricerca tracciati. Ulteriori dati devono entrare in un’analisi
+pubblicata solo per una domanda matematica o di validazione concreta e
+dichiarata in anticipo.
 
 ## Licenza
 

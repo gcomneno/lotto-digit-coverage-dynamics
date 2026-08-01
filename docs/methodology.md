@@ -105,8 +105,8 @@ The 1,023 non-empty states collapse into 27 exact structural classes:
 
 Annual SQLite archives are merged by date for each wheel.
 
-At the current checkpoint the primary archive is continuous from 2023 through
-draw 120 of 2026.
+At the published checkpoint the primary archive is continuous from 2023
+through draw 120 of 2026.
 
 For natural cycles:
 
@@ -138,5 +138,6 @@ known, cycle age and prior path do not change the theoretical transition law.
 Deterministic mathematical artifacts are tracked under `generated/`.
 Transient reports and publication checks belong under `_work/`.
 
-The 2022 archive remains unimported and uninspected. It is reserved for a future
-question that is declared before the data are examined.
+Archives outside the published 2023–2026 scope are excluded from tracked
+analyses. They should enter a published analysis only for a question declared
+before the relevant data are evaluated.

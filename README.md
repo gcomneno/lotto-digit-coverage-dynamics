@@ -56,8 +56,8 @@ The theoretical absorption time from the full ten-digit state has:
 
 ## Historical comparison
 
-The current continuous archive covers all draws from 3 January 2023 through
-28 July 2026:
+The published historical checkpoint covers all draws from 3 January 2023
+through 28 July 2026:
 
 | Archive | Draw range |
 |:---|:---|
@@ -125,7 +125,8 @@ Using a primary threshold of `1%` over the continuous 2023–2026 archive:
 | Total | 36 |
 
 These events are historical labels, not evidence of a forecasting advantage.
-At draw 120 of 28 July 2026, no A1–A4 anomaly was active.
+At the published checkpoint, draw 120 of 28 July 2026, no A1–A4
+anomaly was active.
 
 ## Rolling-frequency backtest
 
@@ -289,9 +290,9 @@ superseded implementations have been removed.
 The retained conclusion is documented in
 [`docs/predictive-research-closure.md`](docs/predictive-research-closure.md).
 
-The 2022 archive remains deliberately unimported and uninspected. Additional
-data should be introduced only for a concrete, predeclared mathematical or
-validation question.
+Archives outside the published 2023–2026 scope are excluded from the tracked
+research results. Additional data should enter a published analysis only for a
+concrete, predeclared mathematical or validation question.
 
 ## License
 

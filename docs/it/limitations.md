@@ -23,12 +23,14 @@ modello.
 
 ## Ampiezza dell’archivio
 
-La finestra storica corrente va dal 3 gennaio 2023 al 28 luglio 2026.
+Il checkpoint storico pubblicato va dal 3 gennaio 2023 al
+28 luglio 2026.
 
 Pur contenendo 2.253 cicli completi, resta una finestra finita. Gli stati e le
 transizioni rare possono avere campioni empirici piccoli.
 
-L’archivio 2022 è deliberatamente escluso e non è stato ispezionato.
+Gli archivi esterni all’ambito pubblicato 2023–2026 sono deliberatamente
+esclusi dalle analisi tracciate.
 
 ## Censura
 

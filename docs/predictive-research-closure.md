@@ -14,7 +14,8 @@ The active project scope is limited to:
 - descriptive comparison with historical observations;
 - reproducible data maintenance and inspection.
 
-The project does not maintain a betting or number-selection subsystem.
+The project does not maintain or endorse a predictive betting or
+number-selection subsystem.
 
 ## What was investigated
 
@@ -89,6 +90,6 @@ before inspecting new outcomes:
 5. explicit rules for multiplicity and subgroup selection;
 6. a result with practical as well as numerical significance.
 
-The uninspected 2022 archive must not be opened merely to continue searching
-after a negative result. It should be used only for a concrete question declared
-in advance.
+Archives outside the published 2023–2026 scope must not be added to the
+tracked analysis merely to continue searching after a negative result. They
+should be used only for a concrete question declared in advance.
