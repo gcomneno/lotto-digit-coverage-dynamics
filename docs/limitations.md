@@ -23,12 +23,14 @@ into classical p-values or claims of formal model acceptance.
 
 ## Archive scope
 
-The current historical window runs from 3 January 2023 through 28 July 2026.
+The published historical checkpoint runs from 3 January 2023 through
+28 July 2026.
 
 Although it contains 2,253 complete cycles, it is still a finite observation
 window. Rare states and rare transitions may have small empirical sample sizes.
 
-The 2022 archive is deliberately excluded and has not been inspected.
+Archives outside the published 2023–2026 scope are deliberately excluded
+from the tracked analyses.
 
 ## Censoring
 
