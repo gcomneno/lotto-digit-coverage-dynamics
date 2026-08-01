@@ -57,7 +57,8 @@ La suddivisione è stata fissata prima della valutazione:
 | Sviluppo | dal 2023-01-01 al 2025-12-31 | Confronto e diagnosi |
 | Held-out | dal 2026-01-01 al 2026-12-31 | Valutazione fuori campione |
 
-L’archivio 2026 corrente termina al concorso 120 del 28 luglio 2026.
+L’esecuzione di riferimento pubblicata usa l’archivio 2026 fino al
+concorso 120 del 28 luglio 2026.
 
 L’ipotesi primaria `N = 6` resta primaria indipendentemente dai risultati
 comparativi delle altre finestre.

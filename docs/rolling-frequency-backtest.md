@@ -56,7 +56,8 @@ The split was fixed before evaluation:
 | Development | 2023-01-01 through 2025-12-31 | Comparison and diagnosis |
 | Held-out | 2026-01-01 through 2026-12-31 | Out-of-sample evaluation |
 
-The current 2026 archive ends at draw 120 of 28 July 2026.
+The published reference run uses the 2026 archive through draw 120 of
+28 July 2026.
 
 The primary `N = 6` hypothesis remains primary regardless of the comparative
 results of the other windows.

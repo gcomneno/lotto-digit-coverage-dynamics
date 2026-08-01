@@ -7,6 +7,7 @@ from strategies.digit_coverage import (
     analyze_digit_coverage,
     build_coverage_windows,
     count_all_digits,
+    load_draws_by_wheel,
 )
 from strategies.lotto_repository import (
     DrawSnapshot,
@@ -120,14 +121,27 @@ class DigitCoverageUnitTests(unittest.TestCase):
 class DigitCoverageIntegrationTests(unittest.TestCase):
     def test_expected_window_totals(self) -> None:
         with LottoRepository(DATABASE_PATH) as repository:
+            draws_by_wheel = load_draws_by_wheel(
+                repository
+            )
             analysis = analyze_digit_coverage(
                 repository,
                 max_window_size=3,
             )
 
-        self.assertEqual(len(analysis[1]), 1320)
-        self.assertEqual(len(analysis[2]), 1309)
-        self.assertEqual(len(analysis[3]), 1298)
+        for window_size, windows in analysis.items():
+            expected_count = sum(
+                max(
+                    0,
+                    len(draws) - window_size + 1,
+                )
+                for draws in draws_by_wheel.values()
+            )
+
+            self.assertEqual(
+                len(windows),
+                expected_count,
+            )
 
     def test_every_window_has_expected_digit_slots(self) -> None:
         with LottoRepository(DATABASE_PATH) as repository:

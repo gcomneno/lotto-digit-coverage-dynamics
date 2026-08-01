@@ -13,7 +13,8 @@ L’ambito attivo del progetto è limitato a:
 - confronto descrittivo con le osservazioni storiche;
 - manutenzione e ispezione riproducibili dei dati.
 
-Il progetto non mantiene un sottosistema di gioco o di selezione dei numeri.
+Il progetto non mantiene né promuove un sottosistema previsionale di gioco
+o di selezione dei numeri.
 
 ## Cosa è stato studiato
 
@@ -89,6 +90,7 @@ osservare nuovi esiti:
 5. regole esplicite per molteplicità e selezione dei sottogruppi;
 6. un risultato significativo sul piano pratico oltre che numerico.
 
-L’archivio 2022 non deve essere aperto soltanto per continuare la ricerca dopo
-un risultato negativo. Va utilizzato esclusivamente per una domanda concreta
+Gli archivi esterni all’ambito pubblicato 2023–2026 non devono essere
+aggiunti all’analisi tracciata soltanto per continuare la ricerca dopo un
+risultato negativo. Devono essere usati esclusivamente per una domanda concreta
 dichiarata in anticipo.
