@@ -67,9 +67,9 @@ def parse_year(value: str) -> int:
     year = int(normalized)
     current_year = current_system_year()
 
-    if year < 1900:
+    if year < 1871:
         raise argparse.ArgumentTypeError(
-            "--year deve essere maggiore o uguale a 1900."
+            "--year deve essere maggiore o uguale a 1871."
         )
 
     if year > current_year:
@@ -345,14 +345,80 @@ class LottoArchiveParser(HTMLParser):
                 self.current_draw = None
 
 
-def validate_draw(draw: Draw) -> None:
-    wheel_names = tuple(result.wheel for result in draw.wheels)
+def missing_draw_numbers(
+    draws: list[Draw] | tuple[Draw, ...],
+) -> tuple[int, ...]:
+    if not draws:
+        return ()
 
-    if wheel_names != EXPECTED_WHEELS:
+    observed = {
+        draw.number
+        for draw in draws
+    }
+
+    latest = max(observed)
+
+    return tuple(
+        number
+        for number in range(1, latest + 1)
+        if number not in observed
+    )
+
+
+def archive_completeness(
+    draws: list[Draw] | tuple[Draw, ...],
+) -> str:
+    return (
+        "complete"
+        if draws and not missing_draw_numbers(draws)
+        else "partial"
+    )
+
+
+def validate_draw(draw: Draw) -> None:
+    wheel_names = tuple(
+        result.wheel
+        for result in draw.wheels
+    )
+
+    if not wheel_names:
         raise ValueError(
-            f"Estrazione {draw.number}: ruote inattese.\n"
-            f"Attese:    {EXPECTED_WHEELS}\n"
-            f"Rilevate:  {wheel_names}"
+            f"Estrazione {draw.number}: nessuna ruota rilevata."
+        )
+
+    empty_names = tuple(
+        name
+        for name in wheel_names
+        if not name.strip()
+    )
+
+    if empty_names:
+        raise ValueError(
+            f"Estrazione {draw.number}: nome di ruota vuoto."
+        )
+
+    duplicate_names = tuple(
+        name
+        for name in dict.fromkeys(wheel_names)
+        if wheel_names.count(name) > 1
+    )
+
+    if duplicate_names:
+        raise ValueError(
+            f"Estrazione {draw.number}: ruote duplicate: "
+            + ", ".join(duplicate_names)
+        )
+
+    unknown_names = tuple(
+        name
+        for name in wheel_names
+        if name not in EXPECTED_WHEELS
+    )
+
+    if unknown_names:
+        raise ValueError(
+            f"Estrazione {draw.number}: ruote sconosciute: "
+            + ", ".join(unknown_names)
         )
 
     for result in draw.wheels:
@@ -524,10 +590,22 @@ def import_draws(
     source_path: Path,
     import_limit: int,
     archive_year: int,
+    archive_draws: list[Draw] | tuple[Draw, ...] | None = None,
 ) -> None:
     imported_at = datetime.now(timezone.utc).isoformat(
         timespec="seconds"
     )
+
+    source_draws = (
+        tuple(draws)
+        if archive_draws is None
+        else tuple(archive_draws)
+    )
+
+    if not source_draws:
+        raise ValueError(
+            "Impossibile descrivere un archivio sorgente vuoto."
+        )
 
     with connection:
         for sort_order, wheel_name in enumerate(
@@ -626,6 +704,28 @@ def import_draws(
                     ],
                 )
 
+        observed_wheels = tuple(
+            wheel_name
+            for wheel_name in EXPECTED_WHEELS
+            if any(
+                result.wheel == wheel_name
+                for draw in source_draws
+                for result in draw.wheels
+            )
+        )
+
+        wheel_configurations = {
+            tuple(
+                result.wheel
+                for result in draw.wheels
+            )
+            for draw in source_draws
+        }
+
+        missing_numbers = missing_draw_numbers(
+            source_draws
+        )
+
         metadata = {
             "archive_year": str(archive_year),
             "source_url": source_url,
@@ -633,8 +733,22 @@ def import_draws(
             "source_sha256": source_hash,
             "imported_at_utc": imported_at,
             "import_limit": str(import_limit),
-            "first_draw_number": str(draws[-1].number),
-            "last_draw_number": str(draws[0].number),
+            "first_draw_number": str(min(draw.number for draw in draws)),
+            "last_draw_number": str(max(draw.number for draw in draws)),
+            "archive_completeness": archive_completeness(
+                source_draws
+            ),
+            "archive_draw_count": str(len(source_draws)),
+            "stored_draw_count": str(len(draws)),
+            "missing_draw_count": str(len(missing_numbers)),
+            "missing_draw_numbers": ",".join(
+                str(number)
+                for number in missing_numbers
+            ),
+            "observed_wheels": ",".join(observed_wheels),
+            "wheel_configuration_count": str(
+                len(wheel_configurations)
+            ),
         }
 
         connection.executemany(
@@ -650,15 +764,58 @@ def import_draws(
 
 def verify_database(
     connection: sqlite3.Connection,
-    expected_draw_count: int,
+    expected_draws: list[Draw],
+    archive_draws: list[Draw] | tuple[Draw, ...] | None = None,
 ) -> None:
+    expected_draw_count = len(expected_draws)
+
+    source_draws = (
+        tuple(expected_draws)
+        if archive_draws is None
+        else tuple(archive_draws)
+    )
+
+    if not source_draws:
+        raise ValueError(
+            "Impossibile verificare un archivio sorgente vuoto."
+        )
+
+    expected_wheel_results = sum(
+        len(draw.wheels)
+        for draw in expected_draws
+    )
+
+    expected_numbers = sum(
+        len(result.numbers)
+        for draw in expected_draws
+        for result in draw.wheels
+    )
+
+    expected_active_wheels = {
+        result.wheel
+        for draw in expected_draws
+        for result in draw.wheels
+    }
+
     draw_count = connection.execute(
         "SELECT COUNT(*) FROM draws"
     ).fetchone()[0]
 
-    wheel_count = connection.execute(
+    catalog_wheel_count = connection.execute(
         "SELECT COUNT(*) FROM wheels"
     ).fetchone()[0]
+
+    active_wheels = {
+        row[0]
+        for row in connection.execute(
+            """
+            SELECT DISTINCT w.name
+            FROM draw_numbers AS n
+            JOIN wheels AS w
+                ON w.id = n.wheel_id
+            """
+        )
+    }
 
     number_count = connection.execute(
         "SELECT COUNT(*) FROM draw_numbers"
@@ -675,18 +832,16 @@ def verify_database(
         """
     ).fetchone()[0]
 
-    expected_numbers = expected_draw_count * 11 * 5
-    expected_wheel_results = expected_draw_count * 11
-
     if draw_count != expected_draw_count:
         raise ValueError(
             f"Database: attese {expected_draw_count} estrazioni, "
             f"trovate {draw_count}."
         )
 
-    if wheel_count != 11:
+    if active_wheels != expected_active_wheels:
         raise ValueError(
-            f"Database: attese 11 ruote, trovate {wheel_count}."
+            "Database: le ruote osservate non corrispondono "
+            "all'archivio importato."
         )
 
     if wheel_result_count != expected_wheel_results:
@@ -703,9 +858,18 @@ def verify_database(
 
     print("===== VERIFICA DATABASE =====")
     print(f"Estrazioni:          {draw_count}")
-    print(f"Ruote:               {wheel_count}")
+    print(f"Ruote catalogate:    {catalog_wheel_count}")
+    print(f"Ruote osservate:     {len(active_wheels)}")
     print(f"Risultati di ruota:  {wheel_result_count}")
     print(f"Numeri registrati:   {number_count}")
+    print(
+        "Estr. sorgente:      "
+        f"{len(source_draws)}"
+    )
+    print(
+        "Completezza sorgente:"
+        f" {archive_completeness(source_draws)}"
+    )
     print("Integrità SQLite:    ", end="")
 
     integrity = connection.execute(
@@ -713,6 +877,11 @@ def verify_database(
     ).fetchone()[0]
 
     print(integrity)
+
+    if integrity != "ok":
+        raise ValueError(
+            f"Integrità SQLite non valida: {integrity}."
+        )
 
     print("\n===== ESTRAZIONE PIÙ RECENTE =====")
 
@@ -926,24 +1095,26 @@ def main() -> int:
 
         effective_limit = len(selected_draws)
 
-        selected_numbers = [
-            draw.number
-            for draw in selected_draws
-        ]
-
-        expected_sequence = list(
-            range(
-                max(selected_numbers),
-                min(selected_numbers) - 1,
-                -1,
-            )
+        missing_numbers = missing_draw_numbers(
+            all_draws
         )
 
-        if selected_numbers != expected_sequence:
-            raise ValueError(
-                f"Le {effective_limit} estrazioni selezionate "
-                "non formano una sequenza numerica continua."
+        if missing_numbers:
+            print()
+            print("===== AVVISO ARCHIVIO PARZIALE =====")
+            print(
+                "Concorsi mancanti:   "
+                + ", ".join(
+                    str(number)
+                    for number in missing_numbers[:20]
+                )
             )
+
+            if len(missing_numbers) > 20:
+                print(
+                    "Totale mancanti:    "
+                    f"{len(missing_numbers)}"
+                )
 
         database_path.parent.mkdir(
             parents=True,
@@ -965,11 +1136,13 @@ def main() -> int:
                 source_path=source_path,
                 import_limit=effective_limit,
                 archive_year=year,
+                archive_draws=all_draws,
             )
 
             verify_database(
                 connection,
-                expected_draw_count=effective_limit,
+                expected_draws=selected_draws,
+                archive_draws=all_draws,
             )
         finally:
             connection.close()
