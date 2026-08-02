@@ -45,6 +45,12 @@ TOOLS = (
         ("view",),
     ),
     Tool(
+        "db-update",
+        "update_lotto_databases.py",
+        "Gestione dati",
+        "Aggiorna uno o più database annuali.",
+    ),
+    Tool(
         "anomalies",
         "analyze_coverage_anomalies.py",
         "Analisi storiche",
@@ -160,6 +166,10 @@ def print_usage() -> None:
     print("  ./lotto.py current")
     print("  ./lotto.py current --to-num 119")
     print("  ./lotto.py update")
+    print(
+        "  ./lotto.py db update "
+        "--from-year 2021 --to-year 2026"
+    )
     print("  ./lotto.py anomalies --help")
     print()
     print("Usa './lotto.py list' per vedere tutti i comandi.")
@@ -189,8 +199,14 @@ def print_tools() -> None:
                 else ""
             )
 
+            display_command = (
+                "db update"
+                if tool.command == "db-update"
+                else tool.command
+            )
+
             print(
-                f"{tool.command:<18} "
+                f"{display_command:<18} "
                 f"{tool.description}"
             )
             print(
@@ -244,8 +260,24 @@ def main(argv: Sequence[str] | None = None) -> int:
             print_usage()
             return 0
 
-        first = arguments.pop(0)
+        if (
+            len(arguments) >= 2
+            and arguments[0] == "db"
+            and arguments[1] == "update"
+        ):
+            del arguments[:2]
+            first = "db-update"
+        else:
+            first = arguments.pop(0)
+
         arguments.insert(0, "--help")
+    elif (
+        first == "db"
+        and arguments
+        and arguments[0] == "update"
+    ):
+        arguments.pop(0)
+        first = "db-update"
 
     tool = BY_COMMAND.get(first)
 

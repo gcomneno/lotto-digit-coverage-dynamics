@@ -23,7 +23,8 @@ All original scripts remain directly executable.
 | Command | Underlying executable | Purpose |
 |:---|:---|:---|
 | `current` | `analyze_current_coverage.py` | Current Markov ranking, transversal row and active anomalies |
-| `update` | `update_lotto_database.py` | Safe complete-archive update |
+| `update` | `update_lotto_database.py` | Conservative current-database update |
+| `db update` | `update_lotto_databases.py` | Safe single-year, range and rollover orchestration |
 | `db` | `view_lotto_database.sh` | Terminal database browser |
 | `anomalies` | `analyze_coverage_anomalies.py` | Historical A1–A4 anomaly analysis |
 | `completion` | `analyze_coverage_completion.py` | Natural-cycle completion analysis |
@@ -128,6 +129,45 @@ description and an optional virtual-play convention, not a forecasting result.
 Every fixed Lotto number still has the same one-draw inclusion probability
 under the ideal model.
 
+## Annual database orchestration
+
+The multi-year database command is:
+
+```bash
+./lotto.py db update
+./lotto.py db update --year 2025
+./lotto.py db update --from-year 2021 --to-year 2026
+./lotto.py db update --from-year 2021 --to-year 2026 --dry-run
+./lotto.py db update --from-year 2021 --to-year 2026 --keep-going
+```
+
+With no year option, the current system year is selected. `--year` is mutually
+exclusive with the inclusive `--from-year` / `--to-year` pair. Future years and
+years before 1871 are rejected.
+
+Completed years use `data/lotto-YYYY.sqlite3`; the current year uses
+`data/lotto-current.sqlite3`. Historical archives may contain fewer wheels or
+missing draw numbers and are classified as `complete` or `partial` rather than
+being rejected solely for those historical differences.
+
+Each changed database is built in a temporary SQLite file and verified before
+atomic replacement. Existing destinations receive timestamped backups.
+The orchestrator protects stored data when the remote source loses draws or
+wheel results, or changes an already stored date or number.
+
+When the current database still contains the previous year, the orchestrator
+first retrieves and verifies the final archive for that year, then rebuilds
+`data/lotto-YYYY.sqlite3`. Only after that dependency completes without errors
+or warnings may `data/lotto-current.sqlite3` be rebuilt for the new year.
+
+`--dry-run` performs source retrieval, parsing and comparison without writing
+databases. `--keep-going` continues after failures that are independent of
+rollover; a failed or protected rollover dependency always stops the current
+year from being replaced.
+
+The legacy `./lotto.py update` command remains available for conservative
+single-database current-year updates.
+
 ## Database highlighting and historical tracing
 
 ### Manual highlighting
@@ -177,6 +217,8 @@ recommendation.
 ./lotto.py current
 ./lotto.py current --to-num 119
 ./lotto.py update --year 2026
+./lotto.py db update --year 2025
+./lotto.py db update --from-year 2021 --to-year 2026 --dry-run
 ./lotto.py anomalies --help
 ./lotto.py rolling-frequency
 ./lotto.py kernel \

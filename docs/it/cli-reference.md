@@ -23,7 +23,8 @@ Tutti gli script originali restano direttamente eseguibili.
 | Comando | Eseguibile sottostante | Scopo |
 |:---|:---|:---|
 | `current` | `analyze_current_coverage.py` | Classifica Markov corrente, riga trasversale e anomalie attive |
-| `update` | `update_lotto_database.py` | Aggiornamento sicuro dell’archivio completo |
+| `update` | `update_lotto_database.py` | Aggiornamento prudente del database corrente |
+| `db update` | `update_lotto_databases.py` | Orchestrazione sicura per anno, intervallo e rollover |
 | `db` | `view_lotto_database.sh` | Esplorazione del database da terminale |
 | `anomalies` | `analyze_coverage_anomalies.py` | Analisi storica delle anomalie A1–A4 |
 | `completion` | `analyze_coverage_completion.py` | Analisi del completamento dei cicli naturali |
@@ -183,6 +184,46 @@ e, facoltativamente, una convenzione per il gioco virtuale, non un risultato
 previsionale. Nel modello ideale ogni singolo numero del Lotto conserva la
 medesima probabilità di inclusione in una estrazione.
 
+## Orchestrazione dei database annuali
+
+Il comando per gestire uno o più anni è:
+
+```bash
+./lotto.py db update
+./lotto.py db update --year 2025
+./lotto.py db update --from-year 2021 --to-year 2026
+./lotto.py db update --from-year 2021 --to-year 2026 --dry-run
+./lotto.py db update --from-year 2021 --to-year 2026 --keep-going
+```
+
+Senza opzioni viene selezionato l'anno di sistema corrente. `--year` è
+mutuamente esclusivo con la coppia inclusiva `--from-year` / `--to-year`.
+Gli anni futuri e quelli precedenti al 1871 vengono rifiutati.
+
+Gli anni conclusi usano `data/lotto-YYYY.sqlite3`; l'anno corrente usa
+`data/lotto-current.sqlite3`. Gli archivi storici possono contenere meno ruote
+o concorsi mancanti e vengono classificati come `complete` o `partial`, senza
+essere rifiutati soltanto per queste differenze storiche.
+
+Ogni database modificato viene costruito e verificato in un file SQLite
+temporaneo prima della sostituzione atomica. Per una destinazione già esistente
+viene creato un backup con timestamp. L'orchestratore protegge i dati locali
+quando la sorgente remota perde concorsi o risultati di ruota, oppure modifica
+date o numeri già registrati.
+
+Quando il database corrente contiene ancora l'anno precedente, l'orchestratore
+recupera e verifica prima l'archivio definitivo di quell'anno, quindi ricostruisce
+`data/lotto-YYYY.sqlite3`. Soltanto dopo il completamento senza errori o avvisi
+può ricostruire `data/lotto-current.sqlite3` per il nuovo anno.
+
+`--dry-run` esegue recupero, parsing e confronto senza scrivere database.
+`--keep-going` continua dopo errori indipendenti dal rollover; un errore o una
+protezione sull'anno da archiviare blocca sempre la sostituzione del database
+corrente.
+
+Il comando precedente `./lotto.py update` resta disponibile per
+l'aggiornamento prudente del solo database corrente.
+
 ## Evidenziazione e tracciamento storico del database
 
 ### Evidenziazione manuale
@@ -232,6 +273,8 @@ delle probabilità o una raccomandazione di gioco.
 ./lotto.py current
 ./lotto.py current --to-num 119
 ./lotto.py update --year 2026
+./lotto.py db update --year 2025
+./lotto.py db update --from-year 2021 --to-year 2026 --dry-run
 ./lotto.py anomalies --help
 ./lotto.py rolling-frequency
 ./lotto.py kernel \
