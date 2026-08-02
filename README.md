@@ -148,7 +148,7 @@ See the complete
 
 ## Unified command-line interface
 
-The 16 executable tools remain independently usable, while `lotto.py` exposes
+The 17 executable tools remain independently usable, while `lotto.py` exposes
 them through one discoverable dispatcher:
 
 ```bash
@@ -258,7 +258,7 @@ recommendation.
 ├── generated/                    deterministic mathematical artifacts
 ├── strategies/                   reference model implementations
 ├── tests/                        automated mathematical and data tests
-├── lotto.py                      unified dispatcher for all 16 CLI tools
+├── lotto.py                      unified dispatcher for all 17 CLI tools
 ├── analyze_*.py                  historical and current-state analyses
 ├── generate_state_atlas.py       complete 1,023-state atlas
 ├── generate_structural_analysis.py

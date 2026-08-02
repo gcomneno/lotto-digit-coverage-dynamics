@@ -31,6 +31,7 @@ Tutti gli script originali restano direttamente eseguibili.
 | `validation` | `analyze_coverage_markov_validation.py` | Calibrazione empirica delle probabilità Markov |
 | `digit-coverage` | `analyze_digit_coverage.py` | Copertura delle cifre su finestre mobili |
 | `rolling-frequency` | `analyze_rolling_frequency.py` | Backtest walk-forward delle frequenze rolling contro rose casuali equivalenti |
+| `coverage-hits` | `analyze_coverage_hit_statistics.py` | Statistiche recenti delle quasi-chiusure per quantità TOP e Mancanti |
 | `return-times` | `analyze_digit_return_times.py` | Analisi dei tempi di ritorno delle cifre |
 | `cycles` | `analyze_historical_cycle_distribution.py` | Confronto storico delle durate dei cicli |
 | `symmetry-history` | `analyze_historical_symmetry_classes.py` | Analisi storica delle classi strutturali |
@@ -45,6 +46,7 @@ Alias:
 - `view` → `db`;
 - `digits` → `digit-coverage`;
 - `rolling` → `rolling-frequency`;
+- `hits` → `coverage-hits`;
 - `returns` → `return-times`;
 - `cycle-distribution` → `cycles`;
 - `symmetry` → `symmetry-history`.
@@ -53,6 +55,8 @@ Alias:
 
 ```bash
 ./lotto.py rolling-frequency
+./lotto.py coverage-hits --last 10
+./lotto.py coverage-hits --last 10 --details
 ./lotto.py rolling-frequency --window-size 6
 ./lotto.py rolling-frequency --repetitions 1000 --seed 20260731
 ```

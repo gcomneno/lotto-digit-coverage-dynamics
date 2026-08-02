@@ -86,6 +86,16 @@ TOOLS = (
         ("rolling",),
     ),
     Tool(
+        "coverage-hits",
+        "analyze_coverage_hit_statistics.py",
+        "Analisi storiche",
+        (
+            "Misura le quasi-chiusure recenti "
+            "per quantità di cifre TOP e Mancanti."
+        ),
+        ("hits",),
+    ),
+    Tool(
         "return-times",
         "analyze_digit_return_times.py",
         "Analisi storiche",
