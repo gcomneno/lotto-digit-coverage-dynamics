@@ -1,0 +1,43 @@
+Database: data/lotto-1901-1950.sqlite3
+Estrazioni target analizzate: 2606
+Intervallo: 4 del 1901-01-26 → 2609 del 1950-12-30
+Definizione ottenuta: vengono intercettate almeno N-1 cifre Mancanti; con N=1 è richiesta l'unica cifra mancante.
+Nota: Markov rappresenta la probabilità media di copertura completa; Atteso rappresenta invece la probabilità teorica esatta della soglia qui contata.
+
+Ordinamento: Manc. ↑, TOP ↑
+
+===== STATISTICA PER FASCIA =====
+TOP  Manc.  Soglia    Markov    Atteso   Casi  Ottenute  Mancate  Successo    Scarto  Cifre/caso     Evidenza
+---  -----  ------   -------   -------  -----  --------  -------  --------  --------  ----------  -----------
+  1      1       1   58.83%   58.83%   4865      2882     1983   59.24%   +0.41%       0.592       strong
+  2      1       1   57.94%   57.94%   1369       787      582   57.49%   -0.46%       0.575       strong
+  3      1       1   59.45%   59.45%    375       216      159   57.60%   -1.85%       0.576     moderate
+  4      1       1   61.32%   61.32%    234       134      100   57.26%   -4.06%       0.573     moderate
+  5      1       1   60.02%   60.02%     73        34       39   46.58%  -13.45%       0.466  preliminary
+  6      1       1   49.87%   49.87%      5         2        3   40.00%   -9.87%       0.400    anecdotal
+  1      2       1   37.40%   87.61%   1612      1420      192   88.09%   +0.48%       1.258       strong
+  2      2       1   39.04%   88.41%   1255      1120      135   89.24%   +0.83%       1.316       strong
+  3      2       1   36.89%   87.39%    112       102       10   91.07%   +3.68%       1.232     moderate
+  4      2       1   37.24%   87.66%     34        30        4   88.24%   +0.58%       1.118  preliminary
+  5      2       1   36.86%   87.28%     30        22        8   73.33%  -13.95%       1.100  preliminary
+  6      2       1   35.29%   86.75%      8         7        1   87.50%   +0.75%       1.500    anecdotal
+  7      2       1   45.02%   91.31%      1         1        0  100.00%   +8.69%       1.000    anecdotal
+  1      3       2   23.56%   72.31%   1349       985      364   73.02%   +0.70%       1.960       strong
+  2      3       2   21.72%   70.34%     97        71       26   73.20%   +2.86%       1.876  preliminary
+  3      3       2   23.61%   72.38%   1301       941      360   72.33%   -0.05%       1.917       strong
+  4      3       2   21.42%   69.55%      4         3        1   75.00%   +5.45%       2.250    anecdotal
+  6      3       2   18.41%   67.11%      1         1        0  100.00%  +32.89%       2.000    anecdotal
+  1      4       3   13.45%   55.15%   1517       840      677   55.37%   +0.22%       2.610       strong
+  2      4       3   13.29%   54.86%    168        94       74   55.95%   +1.10%       2.607     moderate
+  3      4       3   14.17%   56.67%      2         1        1   50.00%   -6.67%       2.000    anecdotal
+  4      4       3   13.42%   55.12%    455       248      207   54.51%   -0.61%       2.576     moderate
+  1      5       4    7.22%   39.37%    423       184      239   43.50%   +4.13%       3.364     moderate
+  2      5       4    7.19%   39.29%    237        89      148   37.55%   -1.74%       3.241     moderate
+  5      5       4    7.34%   39.73%     14         4       10   28.57%  -11.16%       3.214  exploratory
+  1      6       5    3.65%   26.42%     48        10       38   20.83%   -5.58%       3.833  preliminary
+  2      6       5    3.59%   26.24%     13         2       11   15.38%  -10.86%       3.615  exploratory
+  3      6       5    3.68%   26.55%     11         4        7   36.36%   +9.82%       4.091  exploratory
+
+Totale osservazioni ruota-target: 15613
+Totale ottenute: 10234/15613 (65.55%)
+CSV esportato: _work/reports/consolidated-coverage/coverage-hits-1901-1950.csv

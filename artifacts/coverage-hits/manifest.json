@@ -1,0 +1,146 @@
+{
+  "schema_version": 1,
+  "artifact_family": "coverage-hit-statistics",
+  "generated_at": "2026-08-02T15:14:25.960673+00:00",
+  "code_commit": "5e9361bd24789363aace3204c668f155265b9195",
+  "command_template": "./lotto.py coverage-hits --database data/lotto-INTERVAL.sqlite3 --last DRAW_COUNT --sort=missing,top --csv coverage-hits-INTERVAL.csv",
+  "canonical_interval": "1871-2025",
+  "notes": [
+    "The five partition reports restart coverage state at each interval boundary.",
+    "The 1871-2025 report preserves continuous coverage state across the full archive."
+  ],
+  "entries": [
+    {
+      "interval": "1871-1900",
+      "draw_count": 1565,
+      "database": {
+        "path": "data/lotto-1871-1900.sqlite3",
+        "bytes": 3923968,
+        "sha256": "5448bb3ad93821b7f6359c4d4f5a94176bd5c53be0f60a3cf7a4d274da88620e"
+      },
+      "reports": {
+        "text": {
+          "path": "artifacts/coverage-hits/coverage-hits-1871-1900.txt",
+          "bytes": 3811,
+          "sha256": "c1e5571610b954bfc67d49fef5dccd99677701fe25e945c2323798dd5c3a5be5"
+        },
+        "csv": {
+          "path": "artifacts/coverage-hits/coverage-hits-1871-1900.csv",
+          "bytes": 3281,
+          "rows": 28,
+          "sha256": "c93809f2c6b292a4c5284f62be1e04c204a7f6d4c6ecea31df08667ffcd45d93"
+        }
+      }
+    },
+    {
+      "interval": "1901-1950",
+      "draw_count": 2609,
+      "database": {
+        "path": "data/lotto-1901-1950.sqlite3",
+        "bytes": 7000064,
+        "sha256": "0b1971751e46ade8d92c17e8f51817b9c8de7b5121da8ea444ff5e471b83b0b8"
+      },
+      "reports": {
+        "text": {
+          "path": "artifacts/coverage-hits/coverage-hits-1901-1950.txt",
+          "bytes": 3809,
+          "sha256": "4a40cac255edf32d7d525cfe5d27b3efb026d057fdf5fb20734c4982fc685c1d"
+        },
+        "csv": {
+          "path": "artifacts/coverage-hits/coverage-hits-1901-1950.csv",
+          "bytes": 3358,
+          "rows": 28,
+          "sha256": "569ed5706d16afdb4b9a3f47260f90bd1880e4eab55b6387f6466967a12a8b96"
+        }
+      }
+    },
+    {
+      "interval": "1951-2000",
+      "draw_count": 2807,
+      "database": {
+        "path": "data/lotto-1951-2000.sqlite3",
+        "bytes": 8945664,
+        "sha256": "be2264efcfa93831321b183b19ceb434eeb680e424782385344099a29ae392e2"
+      },
+      "reports": {
+        "text": {
+          "path": "artifacts/coverage-hits/coverage-hits-1951-2000.txt",
+          "bytes": 3809,
+          "sha256": "28b37314a58de6fde91a6a8076adacd75ea40b73593fe16dee34725c3de817d7"
+        },
+        "csv": {
+          "path": "artifacts/coverage-hits/coverage-hits-1951-2000.csv",
+          "bytes": 3373,
+          "rows": 28,
+          "sha256": "760a1a785324e486a07455ca66e3949ae8c7de031e71c03af97944f2f0884821"
+        }
+      }
+    },
+    {
+      "interval": "2001-2020",
+      "draw_count": 2886,
+      "database": {
+        "path": "data/lotto-2001-2020.sqlite3",
+        "bytes": 10010624,
+        "sha256": "8f08241a27b7a39229761313d501e5a37441f61a8cab2845806f0dd02ef1aa6a"
+      },
+      "reports": {
+        "text": {
+          "path": "artifacts/coverage-hits/coverage-hits-2001-2020.txt",
+          "bytes": 3597,
+          "sha256": "9ab05a190cf87784aec3794c11dc0a6ff72c6ba4bcf5cf8486538e5c0e18e74f"
+        },
+        "csv": {
+          "path": "artifacts/coverage-hits/coverage-hits-2001-2020.csv",
+          "bytes": 3166,
+          "rows": 26,
+          "sha256": "5161839ca7a6fc9efaa51ac7e28a92f1a5a25381481641a959aa7b3836c22b6e"
+        }
+      }
+    },
+    {
+      "interval": "2021-2025",
+      "draw_count": 912,
+      "database": {
+        "path": "data/lotto-2021-2025.sqlite3",
+        "bytes": 3084288,
+        "sha256": "49d76ff2d052332ff4ff69e86ab917b7b2a7242e564d408ad06f1ffe3342cd6e"
+      },
+      "reports": {
+        "text": {
+          "path": "artifacts/coverage-hits/coverage-hits-2021-2025.txt",
+          "bytes": 3698,
+          "sha256": "5a0fa2d9c40ba29bbe3058002f4e5fe4fc4dca4c92c56dba4bae607f6c8674ec"
+        },
+        "csv": {
+          "path": "artifacts/coverage-hits/coverage-hits-2021-2025.csv",
+          "bytes": 3184,
+          "rows": 27,
+          "sha256": "bc69eb1e4b6ae18258a394c6c094603462ff8f7e8c47f572f95ad3cddf443814"
+        }
+      }
+    },
+    {
+      "interval": "1871-2025",
+      "draw_count": 10779,
+      "database": {
+        "path": "data/lotto-1871-2025.sqlite3",
+        "bytes": 33456128,
+        "sha256": "f6fcbbf0194ba57e80715fe4f92223fc6c4c319c76f18e69591e4047c93209b8"
+      },
+      "reports": {
+        "text": {
+          "path": "artifacts/coverage-hits/coverage-hits-1871-2025.txt",
+          "bytes": 4023,
+          "sha256": "f5af1a7d88bdb6b3eeb72991a80f2d27e520a74cb327297d0945153f6121855e"
+        },
+        "csv": {
+          "path": "artifacts/coverage-hits/coverage-hits-1871-2025.csv",
+          "bytes": 3638,
+          "rows": 30,
+          "sha256": "919078d579fe951155b5b170f75dd1ebb9a43c2e895d47f6862406c380c0d266"
+        }
+      }
+    }
+  ]
+}
