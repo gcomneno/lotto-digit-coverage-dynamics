@@ -229,9 +229,9 @@ l'aggiornamento prudente del solo database corrente.
 Il comando di manutenzione a livello di repository è:
 
 ```bash
-./generate_historical_databases.py
-./generate_historical_databases.py --from-year 1871 --to-year 2020
-./generate_historical_databases.py --from-year 1938 --to-year 1939 --dry-run
+./generate_historical_archive.py
+./generate_historical_archive.py --from-year 1871 --to-year 2020
+./generate_historical_archive.py --from-year 1938 --to-year 1939 --dry-run
 ```
 
 Per impostazione predefinita elabora dal 1871 all'anno di sistema precedente.

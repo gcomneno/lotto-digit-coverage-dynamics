@@ -260,9 +260,9 @@ For complete historical reconstruction and verification, use the repository
 maintenance tool:
 
 ```bash
-./generate_historical_databases.py
-./generate_historical_databases.py --from-year 1871 --to-year 2020
-./generate_historical_databases.py --from-year 1938 --to-year 1939 --dry-run
+./generate_historical_archive.py
+./generate_historical_archive.py --from-year 1871 --to-year 2020
+./generate_historical_archive.py --from-year 1938 --to-year 1939 --dry-run
 ```
 
 Its default interval is 1871 through the previous system year. It delegates
@@ -303,7 +303,7 @@ recommendation.
 ├── update_lotto_database.py      conservative current-database updater
 ├── update_lotto_databases.py     safe multi-year database orchestrator
 ├── view_lotto_database.sh        terminal database browser
-├── generate_historical_databases.py
+├── generate_historical_archive.py
                                   historical archive generation and verification
 ```
 
