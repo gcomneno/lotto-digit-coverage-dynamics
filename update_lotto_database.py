@@ -16,8 +16,8 @@ from typing import Sequence
 
 from import_lotto import (
     Draw,
-    archive_database_path,
     archive_source_path,
+    destination_database_path,
     archive_url,
     current_system_year,
     download_archive,
@@ -176,7 +176,9 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         help=(
             "Database destinazione. "
-            "Se omesso usa data/lotto-YYYY.sqlite3."
+            "Se omesso usa data/lotto-current.sqlite3 "
+            "per l'anno corrente e data/lotto-YYYY.sqlite3 "
+            "per gli anni conclusi."
         ),
     )
 
@@ -196,7 +198,7 @@ def main() -> int:
     database_path = (
         args.database
         if args.database is not None
-        else archive_database_path(year)
+        else destination_database_path(year)
     )
 
     source_path = archive_source_path(year)
