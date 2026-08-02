@@ -299,13 +299,17 @@ I precedenti esperimenti previsionali non hanno prodotto un vantaggio stabile
 e indipendentemente utile dopo il condizionamento sullo stato esatto. Quella
 linea di ricerca è chiusa e le implementazioni superate sono state eliminate.
 
+Il dataset storico annuale e consolidato completo è documentato in
+[`docs/it/historical-lotto-archive.md`](docs/it/historical-lotto-archive.md).
+
 La conclusione negativa è conservata in
 [`docs/it/predictive-research-closure.md`](docs/it/predictive-research-closure.md).
 
-Gli archivi esterni all’ambito pubblicato 2023–2026 sono esclusi dai
-risultati di ricerca tracciati. Ulteriori dati devono entrare in un’analisi
-pubblicata solo per una domanda matematica o di validazione concreta e
-dichiarata in anticipo.
+Il repository traccia ora l’intero archivio annuale dal 1871 al 2025 e
+sei database SQLite consolidati. I rapporti precedenti conservano i campioni
+originariamente dichiarati; le nuove analisi devono specificare database,
+cutoff e trattamento dei cambiamenti di regime storico prima di valutare i
+risultati.
 
 ## Licenza
 
