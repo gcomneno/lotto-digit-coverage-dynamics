@@ -224,6 +224,21 @@ corrente.
 Il comando precedente `./lotto.py update` resta disponibile per
 l'aggiornamento prudente del solo database corrente.
 
+### Tool di manutenzione dell'archivio storico
+
+Il comando di manutenzione a livello di repository è:
+
+```bash
+./tools/generate_historical_databases.py
+./tools/generate_historical_databases.py --from-year 1871 --to-year 2020
+./tools/generate_historical_databases.py --from-year 1938 --to-year 1939 --dry-run
+```
+
+Per impostazione predefinita elabora dal 1871 all'anno di sistema precedente.
+Delega la creazione annuale a `db update`, continua dopo gli errori indipendenti
+salvo l'opzione `--fail-fast`, quindi verifica che ogni database SQLite
+richiesto esista e superi `PRAGMA integrity_check`.
+
 ## Evidenziazione e tracciamento storico del database
 
 ### Evidenziazione manuale
