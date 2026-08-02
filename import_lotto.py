@@ -44,6 +44,18 @@ def archive_database_path(year: int) -> Path:
     return Path(f"data/lotto-{year}.sqlite3")
 
 
+CURRENT_DATABASE_PATH = Path(
+    "data/lotto-current.sqlite3"
+)
+
+
+def destination_database_path(year: int) -> Path:
+    if year == current_system_year():
+        return CURRENT_DATABASE_PATH
+
+    return archive_database_path(year)
+
+
 def parse_year(value: str) -> int:
     normalized = value.strip()
 
@@ -129,7 +141,9 @@ def download_archive(
 DEFAULT_YEAR = current_system_year()
 SOURCE_URL = archive_url(DEFAULT_YEAR)
 SOURCE_PATH = archive_source_path(DEFAULT_YEAR)
-DATABASE_PATH = archive_database_path(DEFAULT_YEAR)
+DATABASE_PATH = destination_database_path(
+    DEFAULT_YEAR
+)
 IMPORT_LIMIT: int | None = None
 
 
@@ -795,7 +809,9 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         help=(
             "Database SQLite destinazione. "
-            "Se omesso, usa data/lotto-YYYY.sqlite3."
+            "Se omesso, usa data/lotto-current.sqlite3 "
+            "per l'anno corrente e data/lotto-YYYY.sqlite3 "
+            "per gli anni conclusi."
         ),
     )
 
@@ -835,7 +851,7 @@ def main() -> int:
     database_path = (
         args.database
         if args.database is not None
-        else archive_database_path(year)
+        else destination_database_path(year)
     )
 
     source_url = (

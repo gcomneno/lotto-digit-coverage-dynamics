@@ -13,6 +13,7 @@ from import_lotto import (
     archive_url,
     build_parser,
     current_system_year,
+    destination_database_path,
     download_archive,
     parse_import_limit,
     parse_year,
@@ -73,6 +74,23 @@ class ImportLottoYearTests(unittest.TestCase):
         self.assertEqual(
             archive_database_path(2024),
             Path("data/lotto-2024.sqlite3"),
+        )
+
+    @patch(
+        "import_lotto.current_system_year",
+        return_value=2026,
+    )
+    def test_destination_database_path_distinguishes_current_year(
+        self,
+        _current_year: object,
+    ) -> None:
+        self.assertEqual(
+            destination_database_path(2026),
+            Path("data/lotto-current.sqlite3"),
+        )
+        self.assertEqual(
+            destination_database_path(2025),
+            Path("data/lotto-2025.sqlite3"),
         )
 
     def test_parse_year_requires_four_digits(
