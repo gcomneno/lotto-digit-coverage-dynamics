@@ -21,7 +21,7 @@ class LottoCliTests(unittest.TestCase):
 
         self.assertEqual(result, 0)
         self.assertIn(
-            "CLI disponibili: 16",
+            "CLI disponibili: 17",
             rendered,
         )
 
@@ -151,6 +151,64 @@ class LottoCliTests(unittest.TestCase):
                 "--repetitions",
                 "25",
             ],
+        )
+
+    def test_forwards_coverage_hits_tool(
+        self,
+    ) -> None:
+        completed = SimpleNamespace(returncode=0)
+
+        with patch(
+            "lotto.subprocess.run",
+            return_value=completed,
+        ) as run:
+            result = lotto.main(
+                (
+                    "coverage-hits",
+                    "--last",
+                    "10",
+                    "--details",
+                )
+            )
+
+        self.assertEqual(result, 0)
+        self.assertEqual(
+            run.call_args.args[0],
+            [
+                sys.executable,
+                str(
+                    lotto.ROOT
+                    / "analyze_coverage_hit_statistics.py"
+                ),
+                "--last",
+                "10",
+                "--details",
+            ],
+        )
+
+    def test_coverage_hits_alias_selects_tool(
+        self,
+    ) -> None:
+        completed = SimpleNamespace(returncode=0)
+
+        with patch(
+            "lotto.subprocess.run",
+            return_value=completed,
+        ) as run:
+            result = lotto.main(
+                (
+                    "hits",
+                    "--help",
+                )
+            )
+
+        self.assertEqual(result, 0)
+        self.assertEqual(
+            run.call_args.args[0][1],
+            str(
+                lotto.ROOT
+                / "analyze_coverage_hit_statistics.py"
+            ),
         )
 
     def test_alias_selects_expected_tool(self) -> None:

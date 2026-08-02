@@ -1,0 +1,246 @@
+#!/usr/bin/env python3
+
+"""Statistiche recenti sulle cifre mancanti intercettate."""
+
+from __future__ import annotations
+
+import argparse
+from pathlib import Path
+from typing import Sequence
+
+from strategies.coverage_hit_statistics import (
+    CoverageHitObservation,
+    build_coverage_hit_experiment,
+    select_latest_targets,
+    summarize_coverage_hits,
+)
+from strategies.digit_coverage import load_draws_by_wheel
+from strategies.lotto_repository import LottoRepository
+
+
+DEFAULT_DATABASE = Path("data/lotto-2026.sqlite3")
+DEFAULT_TARGET_COUNT = 10
+
+
+def format_digits(digits: frozenset[int]) -> str:
+    return "{" + ",".join(
+        str(digit)
+        for digit in sorted(digits)
+    ) + "}"
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description=(
+            "Verifica sulle ultime estrazioni se compare "
+            "il numero minimo richiesto di cifre Mancanti: "
+            "N-1 quando N > 1, altrimenti 1."
+        )
+    )
+    parser.add_argument(
+        "--database",
+        type=Path,
+        default=DEFAULT_DATABASE,
+    )
+    parser.add_argument(
+        "--last",
+        type=int,
+        default=DEFAULT_TARGET_COUNT,
+        metavar="N",
+        help=(
+            "Numero di estrazioni target recenti "
+            "da includere (default: 10)."
+        ),
+    )
+    parser.add_argument(
+        "--details",
+        action="store_true",
+        help="Mostra anche ogni osservazione per ruota.",
+    )
+
+    return parser
+
+
+def print_details(
+    observations: Sequence[CoverageHitObservation],
+) -> None:
+    print("===== DETTAGLIO WALK-FORWARD =====")
+    print(
+        f"{'Target':<8}"
+        f"{'Data':<12}"
+        f"{'Ruota':<12}"
+        f"{'TOP':<6}"
+        f"{'Manc.':<7}"
+        f"{'Soglia':<8}"
+        f"{'Entro 1':<10}"
+        f"{'Atteso':<10}"
+        f"{'Mancanti':<18}"
+        f"{'Colpite':<18}"
+        "Esito"
+    )
+    print(
+        f"{'------':<8}"
+        f"{'----------':<12}"
+        f"{'----------':<12}"
+        f"{'---':<6}"
+        f"{'-----':<7}"
+        f"{'------':<8}"
+        f"{'-------':<10}"
+        f"{'-------':<10}"
+        f"{'-------------':<18}"
+        f"{'-------------':<18}"
+        "-------"
+    )
+
+    for observation in observations:
+        print(
+            f"{observation.target_draw:<8}"
+            f"{observation.target_date:<12}"
+            f"{observation.wheel:<12}"
+            f"{observation.most_present_count:<6}"
+            f"{observation.missing_count:<7}"
+            f"{observation.required_hit_count:<8}"
+            f"{observation.completion_within_one:<9.2%} "
+            f"{observation.threshold_probability:<9.2%} "
+            f"{format_digits(observation.missing_digits):<18}"
+            f"{format_digits(observation.hit_digits):<18}"
+            f"{'OTTENUTA' if observation.obtained else 'MANCATA'}"
+        )
+
+    print()
+
+
+def main() -> int:
+    parser = build_parser()
+    arguments = parser.parse_args()
+
+    if arguments.last <= 0:
+        parser.error("--last deve essere un intero positivo.")
+
+    with LottoRepository(
+        arguments.database
+    ) as repository:
+        draws_by_wheel = load_draws_by_wheel(
+            repository
+        )
+
+    all_observations = build_coverage_hit_experiment(
+        draws_by_wheel
+    )
+    observations = select_latest_targets(
+        all_observations,
+        target_count=arguments.last,
+    )
+
+    if not observations:
+        raise RuntimeError(
+            "Nessuna osservazione walk-forward disponibile."
+        )
+
+    target_keys = sorted(
+        {
+            (
+                observation.target_date,
+                observation.target_draw,
+            )
+            for observation in observations
+        }
+    )
+
+    print(
+        f"Database: {arguments.database}"
+    )
+    print(
+        "Estrazioni target analizzate: "
+        f"{len(target_keys)}"
+    )
+    print(
+        "Intervallo: "
+        f"{target_keys[0][1]} del {target_keys[0][0]} "
+        "→ "
+        f"{target_keys[-1][1]} del {target_keys[-1][0]}"
+    )
+    print(
+        "Definizione ottenuta: vengono intercettate "
+        "almeno N-1 cifre Mancanti; con N=1 "
+        "è richiesta l'unica cifra mancante."
+    )
+    print(
+        "Nota: Markov μ rappresenta la probabilità media "
+        "di copertura completa; Atteso rappresenta invece "
+        "la probabilità teorica esatta della soglia qui contata."
+    )
+    print()
+
+    if arguments.details:
+        print_details(observations)
+
+    summaries = summarize_coverage_hits(
+        observations
+    )
+
+    print("===== STATISTICA PER FASCIA =====")
+    print(
+        f"{'TOP':>3}  "
+        f"{'Manc.':>5}  "
+        f"{'Soglia':>6}  "
+        f"{'Markov μ':>8}  "
+        f"{'Atteso':>8}  "
+        f"{'Casi':>5}  "
+        f"{'Ottenute':>8}  "
+        f"{'Mancate':>7}  "
+        f"{'Successo':>8}  "
+        f"{'Scarto':>8}  "
+        f"{'Cifre/caso':>10}"
+    )
+    print(
+        f"{'---':>3}  "
+        f"{'-----':>5}  "
+        f"{'------':>6}  "
+        f"{'-------':>8}  "
+        f"{'-------':>8}  "
+        f"{'-----':>5}  "
+        f"{'--------':>8}  "
+        f"{'-------':>7}  "
+        f"{'--------':>8}  "
+        f"{'--------':>8}  "
+        f"{'----------':>10}"
+    )
+
+    for summary in summaries:
+        print(
+            f"{summary.most_present_count:>3}  "
+            f"{summary.missing_count:>5}  "
+            f"{max(1, summary.missing_count - 1):>6}  "
+            f"{summary.mean_completion_within_one:>7.2%}  "
+            f"{summary.mean_threshold_probability:>7.2%}  "
+            f"{summary.attempts:>5}  "
+            f"{summary.obtained:>8}  "
+            f"{summary.missed:>7}  "
+            f"{summary.success_rate:>7.2%}  "
+            f"{summary.success_excess:>+7.2%}  "
+            f"{summary.mean_hit_digits:>10.3f}"
+        )
+
+    total_attempts = len(observations)
+    total_obtained = sum(
+        observation.obtained
+        for observation in observations
+    )
+
+    print()
+    print(
+        "Totale osservazioni ruota-target: "
+        f"{total_attempts}"
+    )
+    print(
+        "Totale ottenute: "
+        f"{total_obtained}/{total_attempts} "
+        f"({total_obtained / total_attempts:.2%})"
+    )
+
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
