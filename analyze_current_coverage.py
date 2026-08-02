@@ -35,6 +35,11 @@ from strategies.lotto_repository import (
     LottoRepository,
 )
 
+from strategies.current_coverage_signal import (
+    DEFAULT_HISTORICAL_SUMMARY,
+    print_coverage_hit_signal,
+)
+
 
 DEFAULT_DATABASE = Path("data/lotto-current.sqlite3")
 DEFAULT_CHECKPOINT_DIRECTORY = Path(
@@ -1137,6 +1142,10 @@ def main() -> int:
         print()
 
         print_markov_summary(states)
+        print_coverage_hit_signal(
+            states,
+            summary_path=DEFAULT_HISTORICAL_SUMMARY,
+        )
         print_next_draw(
             next_draws,
             states=states,
