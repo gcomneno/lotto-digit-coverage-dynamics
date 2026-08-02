@@ -96,13 +96,14 @@ class ImportLottoYearTests(unittest.TestCase):
     def test_parse_year_requires_four_digits(
         self,
     ) -> None:
+        self.assertEqual(parse_year("1871"), 1871)
         self.assertEqual(parse_year("2024"), 2024)
 
         for invalid in (
             "24",
             "20245",
             "abcd",
-            "1899",
+            "1870",
             str(current_system_year() + 1),
         ):
             with self.subTest(invalid=invalid):
