@@ -173,9 +173,9 @@ single-database current-year updates.
 The repository-level maintenance command is:
 
 ```bash
-./tools/generate_historical_databases.py
-./tools/generate_historical_databases.py --from-year 1871 --to-year 2020
-./tools/generate_historical_databases.py --from-year 1938 --to-year 1939 --dry-run
+./generate_historical_databases.py
+./generate_historical_databases.py --from-year 1871 --to-year 2020
+./generate_historical_databases.py --from-year 1938 --to-year 1939 --dry-run
 ```
 
 By default it processes 1871 through the previous system year. It delegates

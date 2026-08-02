@@ -260,9 +260,9 @@ For complete historical reconstruction and verification, use the repository
 maintenance tool:
 
 ```bash
-./tools/generate_historical_databases.py
-./tools/generate_historical_databases.py --from-year 1871 --to-year 2020
-./tools/generate_historical_databases.py --from-year 1938 --to-year 1939 --dry-run
+./generate_historical_databases.py
+./generate_historical_databases.py --from-year 1871 --to-year 2020
+./generate_historical_databases.py --from-year 1938 --to-year 1939 --dry-run
 ```
 
 Its default interval is 1871 through the previous system year. It delegates
@@ -294,7 +294,6 @@ recommendation.
 ├── generated/                    deterministic mathematical artifacts
 ├── strategies/                   reference model implementations
 ├── tests/                        automated mathematical and data tests
-├── tools/                        repository maintenance tools
 ├── lotto.py                      unified dispatcher for all 18 CLI tools
 ├── analyze_*.py                  historical and current-state analyses
 ├── generate_state_atlas.py       complete 1,023-state atlas
@@ -304,7 +303,7 @@ recommendation.
 ├── update_lotto_database.py      conservative current-database updater
 ├── update_lotto_databases.py     safe multi-year database orchestrator
 ├── view_lotto_database.sh        terminal database browser
-└── tools/generate_historical_databases.py
+├── generate_historical_databases.py
                                   historical archive generation and verification
 ```
 
