@@ -138,6 +138,24 @@ class CoverageHitSummary:
         return self.hit_digit_count / self.attempts
 
     @property
+    def evidence_level(self) -> str:
+        """Classifica descrittiva della numerosità del campione."""
+
+        if self.attempts < 10:
+            return "anecdotal"
+
+        if self.attempts < 30:
+            return "exploratory"
+
+        if self.attempts < 100:
+            return "preliminary"
+
+        if self.attempts < 500:
+            return "moderate"
+
+        return "strong"
+
+    @property
     def success_excess(self) -> float:
         """Scarto fra successo osservato e probabilità attesa."""
 
@@ -145,6 +163,12 @@ class CoverageHitSummary:
             self.success_rate
             - self.mean_threshold_probability
         )
+
+    @property
+    def threshold(self) -> int:
+        """Soglia N-1 corrispondente al gruppo."""
+
+        return max(1, self.missing_count - 1)
 
 
 def _ordered_single_wheel(

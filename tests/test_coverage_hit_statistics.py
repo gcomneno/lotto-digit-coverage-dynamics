@@ -4,6 +4,7 @@ import unittest
 
 from strategies.coverage_hit_statistics import (
     CoverageHitObservation,
+    CoverageHitSummary,
     required_hit_count,
     select_latest_targets,
     summarize_coverage_hits,
@@ -204,6 +205,48 @@ class LatestTargetSelectionTests(unittest.TestCase):
                 (),
                 target_count=0,
             )
+
+
+class EvidenceLevelTests(unittest.TestCase):
+    def summary_with_attempts(
+        self,
+        attempts: int,
+    ) -> CoverageHitSummary:
+        return CoverageHitSummary(
+            most_present_count=1,
+            missing_count=1,
+            mean_completion_within_one=0.5,
+            mean_threshold_probability=0.5,
+            attempts=attempts,
+            obtained=0,
+            missed=attempts,
+            hit_digit_count=0,
+        )
+
+    def test_evidence_level_boundaries(
+        self,
+    ) -> None:
+        cases = (
+            (1, "anecdotal"),
+            (9, "anecdotal"),
+            (10, "exploratory"),
+            (29, "exploratory"),
+            (30, "preliminary"),
+            (99, "preliminary"),
+            (100, "moderate"),
+            (499, "moderate"),
+            (500, "strong"),
+        )
+
+        for attempts, expected in cases:
+            with self.subTest(attempts=attempts):
+                self.assertEqual(
+                    self.summary_with_attempts(
+                        attempts
+                    ).evidence_level,
+                    expected,
+                )
+
 
 
 class CoverageHitSummaryTests(unittest.TestCase):
