@@ -105,8 +105,17 @@ The 1,023 non-empty states collapse into 27 exact structural classes:
 
 Annual SQLite archives are merged by date for each wheel.
 
-At the published checkpoint the primary archive is continuous from 2023
-through draw 120 of 2026.
+The repository now publishes a complete historical archive from
+1871-01-07 through 2025-12-30, containing 10,779 chronologically consolidated
+draws.
+
+Individual research reports may deliberately use narrower periods, including
+the continuous 2023–2026 checkpoint used by the original exact-state
+validation. Every report must state its own archive cutoff explicitly.
+
+The complete dataset and its historically changing wheel configurations are
+documented in the
+[historical Lotto archive report](historical-lotto-archive.md).
 
 For natural cycles:
 
@@ -138,6 +147,10 @@ known, cycle age and prior path do not change the theoretical transition law.
 Deterministic mathematical artifacts are tracked under `generated/`.
 Transient reports and publication checks belong under `_work/`.
 
-Archives outside the published 2023–2026 scope are excluded from tracked
-analyses. They should enter a published analysis only for a question declared
-before the relevant data are evaluated.
+The annual databases from 1871 through 2025, the five historical blocks
+and the overall historical database are tracked as durable data resources.
+
+Publishing the wider archive does not retroactively enlarge the samples used
+by earlier research reports. A new analysis must declare its databases,
+cutoffs and historical-regime treatment before evaluating the relevant
+results.

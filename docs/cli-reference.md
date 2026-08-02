@@ -183,6 +183,29 @@ annual creation to `db update`, uses keep-going behavior unless `--fail-fast`
 is supplied, and verifies that every requested SQLite database exists and
 passes `PRAGMA integrity_check`.
 
+### Consolidated historical databases
+
+The repository tracks these read-only research archives:
+
+```text
+data/lotto-1871-1900.sqlite3
+data/lotto-1901-1950.sqlite3
+data/lotto-1951-2000.sqlite3
+data/lotto-2001-2020.sqlite3
+data/lotto-2021-2025.sqlite3
+data/lotto-1871-2025.sqlite3
+```
+
+The overall database contains 10,779 draws from 1871-01-07 through
+2025-12-30. Its `draw_number` is a new chronological sequence rather than the
+original annual contest number.
+
+Historical draws contain five values for every wheel actually present.
+Depending on the period, a draw may contain from 6 to 11 wheels.
+
+See the
+[historical Lotto archive report](historical-lotto-archive.md).
+
 ## Database highlighting and historical tracing
 
 ### Manual highlighting

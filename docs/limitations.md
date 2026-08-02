@@ -23,14 +23,28 @@ into classical p-values or claims of formal model acceptance.
 
 ## Archive scope
 
-The published historical checkpoint runs from 3 January 2023 through
-28 July 2026.
+The repository publishes annual databases from 1871 through 2025 and an
+overall historical consolidation containing 10,779 draws from 1871-01-07
+through 2025-12-30.
 
-Although it contains 2,253 complete cycles, it is still a finite observation
-window. Rare states and rare transitions may have small empirical sample sizes.
+That wider dataset does not make every existing report a 155-year analysis.
+The original exact-state checkpoint from 3 January 2023 through 28 July 2026,
+for example, still contains 2,253 complete cycles and remains the declared
+sample for the results that cite it.
 
-Archives outside the published 2023–2026 scope are deliberately excluded
-from the tracked analyses.
+Long historical coverage introduces additional limitations:
+
+- wheel availability changes over time;
+- extraction frequency changes substantially;
+- sample sizes differ by wheel;
+- some 1943–1946 draws contain only a subset of the regular wheels;
+- operational procedures cannot be assumed invariant across the entire period.
+
+Rare states and transitions may still have small samples within a particular
+wheel, regime or predeclared comparison.
+
+See the
+[historical Lotto archive report](historical-lotto-archive.md).
 
 ## Censoring
 

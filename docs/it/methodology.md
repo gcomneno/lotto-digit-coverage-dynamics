@@ -106,8 +106,17 @@ I 1.023 stati non vuoti collassano in 27 classi strutturali esatte:
 
 Gli archivi SQLite annuali vengono uniti per data separatamente per ogni ruota.
 
-Al checkpoint pubblicato, l’archivio primario è continuo dal 2023 al
-concorso 120 del 2026.
+Il repository pubblica ora un archivio storico completo dal 1871-01-07
+al 2025-12-30, contenente 10.779 estrazioni consolidate cronologicamente.
+
+I singoli rapporti di ricerca possono usare deliberatamente periodi più
+ristretti, compreso il checkpoint continuo 2023–2026 impiegato nella
+validazione originaria dello stato esatto. Ogni rapporto deve dichiarare
+esplicitamente il proprio cutoff.
+
+Il dataset completo e le configurazioni storicamente variabili delle ruote
+sono descritti nel
+[rapporto sull’archivio storico del Lotto](historical-lotto-archive.md).
 
 Per i cicli naturali:
 
@@ -140,6 +149,10 @@ modificano la legge teorica delle transizioni.
 Gli artefatti matematici deterministici sono tracciati sotto `generated/`.
 I rapporti transitori e i controlli di pubblicazione appartengono a `_work/`.
 
-Gli archivi esterni all’ambito pubblicato 2023–2026 sono esclusi dalle
-analisi tracciate. Devono entrare in un’analisi pubblicata soltanto per una
-domanda dichiarata prima di valutare i dati pertinenti.
+I database annuali dal 1871 al 2025, i cinque blocchi storici e il
+database storico complessivo sono tracciati come risorse durevoli.
+
+La pubblicazione dell’archivio più ampio non estende retroattivamente i
+campioni usati dai rapporti precedenti. Una nuova analisi deve dichiarare
+database, cutoff e trattamento dei diversi regimi storici prima di valutare i
+risultati pertinenti.

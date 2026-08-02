@@ -327,12 +327,16 @@ Earlier predictive experiments did not produce a stable, independently useful
 advantage after exact-state conditioning. That research line is closed and its
 superseded implementations have been removed.
 
+The complete annual and consolidated historical dataset is documented in
+[`docs/historical-lotto-archive.md`](docs/historical-lotto-archive.md).
+
 The retained conclusion is documented in
 [`docs/predictive-research-closure.md`](docs/predictive-research-closure.md).
 
-Archives outside the published 2023–2026 scope are excluded from the tracked
-research results. Additional data should enter a published analysis only for a
-concrete, predeclared mathematical or validation question.
+The repository now tracks the complete annual archive from 1871 through
+2025 and six consolidated SQLite databases. Earlier reports retain their
+original declared samples; new analyses must state their databases, cutoffs
+and treatment of historical regime changes before results are evaluated.
 
 ## License
 

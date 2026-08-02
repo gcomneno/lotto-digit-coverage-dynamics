@@ -239,6 +239,29 @@ Delega la creazione annuale a `db update`, continua dopo gli errori indipendenti
 salvo l'opzione `--fail-fast`, quindi verifica che ogni database SQLite
 richiesto esista e superi `PRAGMA integrity_check`.
 
+### Database storici consolidati
+
+Il repository traccia questi archivi di ricerca in sola lettura:
+
+```text
+data/lotto-1871-1900.sqlite3
+data/lotto-1901-1950.sqlite3
+data/lotto-1951-2000.sqlite3
+data/lotto-2001-2020.sqlite3
+data/lotto-2021-2025.sqlite3
+data/lotto-1871-2025.sqlite3
+```
+
+Il database complessivo contiene 10.779 estrazioni dal 1871-01-07 al
+2025-12-30. Il suo `draw_number` è una nuova sequenza cronologica e non il
+numero annuale originale del concorso.
+
+Le estrazioni storiche contengono cinque valori per ogni ruota effettivamente
+presente. A seconda del periodo, una estrazione può contenere da 6 a 11 ruote.
+
+Vedere il
+[rapporto sull’archivio storico del Lotto](historical-lotto-archive.md).
+
 ## Evidenziazione e tracciamento storico del database
 
 ### Evidenziazione manuale

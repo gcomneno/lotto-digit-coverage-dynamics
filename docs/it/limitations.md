@@ -23,14 +23,29 @@ modello.
 
 ## Ampiezza dell’archivio
 
-Il checkpoint storico pubblicato va dal 3 gennaio 2023 al
-28 luglio 2026.
+Il repository pubblica database annuali dal 1871 al 2025 e un consolidato
+storico complessivo contenente 10.779 estrazioni dal 1871-01-07 al 2025-12-30.
 
-Pur contenendo 2.253 cicli completi, resta una finestra finita. Gli stati e le
-transizioni rare possono avere campioni empirici piccoli.
+La disponibilità del dataset più ampio non trasforma ogni rapporto esistente in
+un’analisi di 155 anni. Il checkpoint originario dello stato esatto dal
+3 gennaio 2023 al 28 luglio 2026, per esempio, contiene ancora 2.253 cicli
+completi e resta il campione dichiarato per i risultati che lo citano.
 
-Gli archivi esterni all’ambito pubblicato 2023–2026 sono deliberatamente
-esclusi dalle analisi tracciate.
+La copertura storica estesa introduce ulteriori limitazioni:
+
+- la disponibilità delle ruote cambia nel tempo;
+- la frequenza delle estrazioni varia sensibilmente;
+- le numerosità differiscono fra le ruote;
+- alcune estrazioni del 1943–1946 contengono soltanto una parte delle ruote
+  regolari;
+- non si può assumere l’invarianza delle procedure operative lungo l’intero
+  periodo.
+
+Stati e transizioni rare possono comunque avere campioni piccoli all’interno
+di una specifica ruota, regime o confronto dichiarato in anticipo.
+
+Vedere il
+[rapporto sull’archivio storico del Lotto](historical-lotto-archive.md).
 
 ## Censura
 
