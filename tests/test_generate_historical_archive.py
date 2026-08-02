@@ -6,7 +6,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-import generate_historical_databases as historical
+import generate_historical_archive as historical
 
 
 class GenerateHistoricalDatabasesTests(unittest.TestCase):
