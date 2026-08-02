@@ -168,6 +168,21 @@ year from being replaced.
 The legacy `./lotto.py update` command remains available for conservative
 single-database current-year updates.
 
+### Historical archive maintenance tool
+
+The repository-level maintenance command is:
+
+```bash
+./tools/generate_historical_databases.py
+./tools/generate_historical_databases.py --from-year 1871 --to-year 2020
+./tools/generate_historical_databases.py --from-year 1938 --to-year 1939 --dry-run
+```
+
+By default it processes 1871 through the previous system year. It delegates
+annual creation to `db update`, uses keep-going behavior unless `--fail-fast`
+is supplied, and verifies that every requested SQLite database exists and
+passes `PRAGMA integrity_check`.
+
 ## Database highlighting and historical tracing
 
 ### Manual highlighting
