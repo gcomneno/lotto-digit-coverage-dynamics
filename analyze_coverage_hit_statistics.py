@@ -5,11 +5,13 @@
 from __future__ import annotations
 
 import argparse
+import csv
 from pathlib import Path
 from typing import Sequence
 
 from strategies.coverage_hit_statistics import (
     CoverageHitObservation,
+    CoverageHitSummary,
     build_coverage_hit_experiment,
     select_latest_targets,
     summarize_coverage_hits,
@@ -27,6 +29,69 @@ def format_digits(digits: frozenset[int]) -> str:
         str(digit)
         for digit in sorted(digits)
     ) + "}"
+
+
+def write_summary_csv(
+    destination: Path,
+    summaries: Sequence[CoverageHitSummary],
+) -> None:
+    """Esporta il riepilogo in CSV con valori numerici grezzi."""
+
+    destination.parent.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    fieldnames = (
+        "top",
+        "missing",
+        "threshold",
+        "markov_probability",
+        "expected_probability",
+        "cases",
+        "obtained",
+        "missed",
+        "success_rate",
+        "excess",
+        "mean_hit_digits",
+    )
+
+    with destination.open(
+        "w",
+        encoding="utf-8",
+        newline="",
+    ) as stream:
+        writer = csv.DictWriter(
+            stream,
+            fieldnames=fieldnames,
+        )
+        writer.writeheader()
+
+        for summary in summaries:
+            writer.writerow(
+                {
+                    "top": summary.most_present_count,
+                    "missing": summary.missing_count,
+                    "threshold": max(
+                        1,
+                        summary.missing_count - 1,
+                    ),
+                    "markov_probability": (
+                        summary.mean_completion_within_one
+                    ),
+                    "expected_probability": (
+                        summary.mean_threshold_probability
+                    ),
+                    "cases": summary.attempts,
+                    "obtained": summary.obtained,
+                    "missed": summary.missed,
+                    "success_rate": summary.success_rate,
+                    "excess": summary.success_excess,
+                    "mean_hit_digits": (
+                        summary.mean_hit_digits
+                    ),
+                }
+            )
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -56,6 +121,15 @@ def build_parser() -> argparse.ArgumentParser:
         "--details",
         action="store_true",
         help="Mostra anche ogni osservazione per ruota.",
+    )
+    parser.add_argument(
+        "--csv",
+        type=Path,
+        metavar="FILE",
+        help=(
+            "Esporta la statistica riepilogativa in CSV "
+            "con valori numerici ordinabili."
+        ),
     )
 
     return parser
@@ -238,6 +312,15 @@ def main() -> int:
         f"{total_obtained}/{total_attempts} "
         f"({total_obtained / total_attempts:.2%})"
     )
+
+    if arguments.csv is not None:
+        write_summary_csv(
+            arguments.csv,
+            summaries,
+        )
+        print(
+            f"CSV esportato: {arguments.csv}"
+        )
 
     return 0
 

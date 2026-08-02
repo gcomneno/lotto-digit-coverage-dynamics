@@ -14,3 +14,6 @@ Local Python environments
 
 .venv/
 venv/
+
+# Generated tabular reports
+reports/*.csv

@@ -57,6 +57,10 @@ Aliases:
 ./lotto.py rolling-frequency
 ./lotto.py coverage-hits --last 10
 ./lotto.py coverage-hits --last 10 --details
+./lotto.py coverage-hits \
+  --database data/lotto-2021-2025.sqlite3 \
+  --last 912 \
+  --csv reports/coverage-hits-2021-2025.csv
 ./lotto.py rolling-frequency --window-size 6
 ./lotto.py rolling-frequency --repetitions 1000 --seed 20260731
 ```
