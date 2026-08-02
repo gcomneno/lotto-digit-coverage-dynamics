@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-DATABASE="data/lotto-2026.sqlite3"
+DATABASE="data/lotto-current.sqlite3"
 DATABASE_SET=0
 DIGITS=()
 NUMBERS=()

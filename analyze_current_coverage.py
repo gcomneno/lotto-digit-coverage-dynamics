@@ -30,7 +30,7 @@ from strategies.lotto_repository import (
 )
 
 
-DEFAULT_DATABASE = Path("data/lotto-2026.sqlite3")
+DEFAULT_DATABASE = Path("data/lotto-current.sqlite3")
 HORIZONS = (1, 2, 3, 5)
 
 ANSI_RESET = "\033[0m"
