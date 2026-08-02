@@ -60,9 +60,62 @@ Alias:
 ./lotto.py coverage-hits \
   --database data/lotto-2021-2025.sqlite3 \
   --last 912 \
-  --csv reports/coverage-hits-2021-2025.csv
+  --csv _work/reports/coverage-hits-2021-2025.csv
 ./lotto.py rolling-frequency --window-size 6
 ./lotto.py rolling-frequency --repetitions 1000 --seed 20260731
+```
+
+L’esportazione CSV contiene valori numerici grezzi, così colonne come
+`success_rate`, `excess` e `cases` possono essere ordinate correttamente
+nei visualizzatori tabellari.
+
+La colonna `evidence_level` classifica le righe in base alla numerosità
+del campione:
+
+- `anecdotal`: da 1 a 9 casi;
+- `exploratory`: da 10 a 29 casi;
+- `preliminary`: da 30 a 99 casi;
+- `moderate`: da 100 a 499 casi;
+- `strong`: almeno 500 casi.
+
+L’etichetta descrive soltanto la solidità numerica del campione:
+non dimostra un vantaggio predittivo.
+
+
+### Ordinamento di `coverage-hits`
+
+Il riepilogo usa per impostazione predefinita:
+
+```text
+missing,top
+```
+
+Le colonne sono separate da virgole e vengono applicate da sinistra
+a destra. Il prefisso `-` richiede l’ordine decrescente.
+
+Esempi:
+
+```bash
+./lotto.py coverage-hits --sort=-cases
+
+./lotto.py coverage-hits \
+  --sort=missing,-success_rate
+
+./lotto.py coverage-hits \
+  --sort=evidence,-excess
+```
+
+Quando il primo nome di colonna è preceduto da `-`, si usa la forma
+`--sort=-cases`, con il segno `=`, affinché il valore non venga
+interpretato come una nuova opzione della CLI.
+
+L’ordinamento scelto viene mostrato prima della tabella ed è applicato
+nello stesso modo anche alle righe esportate tramite `--csv`.
+
+Per visualizzare tutte le colonne disponibili:
+
+```bash
+./lotto.py coverage-hits --list-sort-columns
 ```
 
 L’esecuzione predefinita:
