@@ -29,9 +29,11 @@ from strategies.rolling_frequency import (
 )
 
 
-DEFAULT_DATABASES = tuple(
-    Path(f"data/lotto-{year}.sqlite3")
-    for year in (2023, 2024, 2025, 2026)
+DEFAULT_DATABASES = (
+    Path("data/lotto-2023.sqlite3"),
+    Path("data/lotto-2024.sqlite3"),
+    Path("data/lotto-2025.sqlite3"),
+    Path("data/lotto-current.sqlite3"),
 )
 
 DEFAULT_WINDOW_SIZES = (
