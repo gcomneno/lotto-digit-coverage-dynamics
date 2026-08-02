@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import Sequence
 
 
-REPOSITORY_ROOT = Path(__file__).resolve().parent.parent
+REPOSITORY_ROOT = Path(__file__).resolve().parent
 DEFAULT_FROM_YEAR = 1871
 
 
