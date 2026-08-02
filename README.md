@@ -222,10 +222,14 @@ Inspect the current coverage state:
 draw-number cutoff; `--to_num` is retained as an equivalent spelling. The two
 cutoff options are mutually exclusive.
 
-Update and inspect the current annual database:
+Update one or more annual databases and inspect them:
 
 ```bash
 ./lotto.py update
+./lotto.py db update
+./lotto.py db update --year 2025
+./lotto.py db update --from-year 2021 --to-year 2026
+./lotto.py db update --from-year 2021 --to-year 2026 --dry-run
 ./lotto.py db
 ./lotto.py db --digit 1,7,9
 ./lotto.py db --number 1,17,90
@@ -233,6 +237,24 @@ Update and inspect the current annual database:
 ./lotto.py db --latest-occurrences
 ./lotto.py db --database data/lotto-2025.sqlite3 --latest-occurrences 100
 ```
+
+`./lotto.py update` retains the conservative single-database updater for the
+current annual archive. `./lotto.py db update` is the multi-year orchestrator.
+Without year options it updates the current year; `--year YYYY` selects one
+year, while `--from-year YYYY --to-year YYYY` selects an inclusive range.
+`--dry-run` downloads, parses and compares without changing SQLite files.
+`--keep-going` continues after independent annual failures.
+
+Completed years are stored as `data/lotto-YYYY.sqlite3`; the current year uses
+the mutable, ignored `data/lotto-current.sqlite3`. Every replacement is built
+and verified in a temporary database, with a timestamped backup of an existing
+destination. A remote archive is not allowed to silently remove local draws or
+wheel results, or to change dates or numbers already stored.
+
+At the first update of a new year, the orchestrator validates and rebuilds the
+historical database for the year contained in `lotto-current.sqlite3` before
+replacing the current database. Any conflict, warning or failed verification
+blocks that rollover.
 
 `--digit` highlights each selected digit wherever it appears. `--number` highlights complete Lotto numbers from `1` to `90`; the option is repeatable and also accepts comma-separated values. When both selectors match, highlighting the complete number takes precedence over highlighting its individual digits.
 
@@ -264,7 +286,8 @@ recommendation.
 ├── generate_structural_analysis.py
 ├── verify_transition_kernel.py   independent exhaustive verification
 ├── import_lotto.py               annual archive importer
-├── update_lotto_database.py      safe complete-archive updater
+├── update_lotto_database.py      conservative current-database updater
+├── update_lotto_databases.py     safe multi-year database orchestrator
 └── view_lotto_database.sh        terminal database browser
 ```
 

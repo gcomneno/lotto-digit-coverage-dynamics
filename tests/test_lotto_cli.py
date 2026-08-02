@@ -21,14 +21,20 @@ class LottoCliTests(unittest.TestCase):
 
         self.assertEqual(result, 0)
         self.assertIn(
-            "CLI disponibili: 17",
+            f"CLI disponibili: {len(lotto.TOOLS)}",
             rendered,
         )
 
         for tool in lotto.TOOLS:
             with self.subTest(command=tool.command):
+                display_command = (
+                    "db update"
+                    if tool.command == "db-update"
+                    else tool.command
+                )
+
                 self.assertIn(
-                    tool.command,
+                    display_command,
                     rendered,
                 )
                 self.assertIn(
