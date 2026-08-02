@@ -2,14 +2,19 @@ from __future__ import annotations
 
 import argparse
 import io
+import json
+import tempfile
 import unittest
 from contextlib import redirect_stderr, redirect_stdout
 from datetime import date
+from pathlib import Path
 
 from analyze_coverage_anomalies import AnomalyEvent
 from analyze_current_coverage import (
     active_anomalies,
     build_parser,
+    checkpoint_current_states,
+    checkpoint_for_current_archive,
     format_digits,
     format_next_draw_number,
     format_numbers,
@@ -98,6 +103,199 @@ def anomaly_event(
         previous_target_date=None,
         recurrence_gap=None,
     )
+
+
+class CurrentCoverageCheckpointTests(
+    unittest.TestCase
+):
+    def test_parser_enables_checkpoint_by_default(
+        self,
+    ) -> None:
+        args = build_parser().parse_args([])
+
+        self.assertFalse(
+            args.without_checkpoint
+        )
+        self.assertIsNone(args.checkpoint)
+
+    def test_parser_accepts_explicit_checkpoint(
+        self,
+    ) -> None:
+        args = build_parser().parse_args(
+            [
+                "--checkpoint",
+                "state.json",
+            ]
+        )
+
+        self.assertEqual(
+            args.checkpoint,
+            Path("state.json"),
+        )
+
+    def test_selects_checkpoint_for_database_year(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "source.sqlite3"
+            source.write_bytes(b"source")
+
+            checkpoint = (
+                root
+                / "coverage-state-2025-12-30.json"
+            )
+
+            payload = {
+                "schema_version": 1,
+                "artifact_family": (
+                    "historical-coverage-checkpoint"
+                ),
+                "generated_at": (
+                    "2026-01-01T00:00:00+00:00"
+                ),
+                "current_year": 2026,
+                "checkpoint_year": 2025,
+                "checkpoint_date": "2025-12-30",
+                "first_historical_year": 1871,
+                "total_draw_snapshots": 1,
+                "source_archives": [
+                    {
+                        "path": str(source),
+                        "first_year": 2025,
+                        "last_year": 2025,
+                        "bytes": 6,
+                        "sha256": (
+                            "41cf6794ba4200b839c5"
+                            "e2f8d3e50c0f28b16d"
+                            "d6efc2d50ad02d4d13"
+                            "1d8f1"
+                        ),
+                    }
+                ],
+                "wheels": [
+                    {
+                        "wheel": "Bari",
+                        "wheel_order": 1,
+                        "latest_draw": 208,
+                        "latest_date": "2025-12-30",
+                        "completed_cycles": 10,
+                        "synchronized": True,
+                        "draws_in_cycle": 0,
+                        "cycle_start_draw": None,
+                        "cycle_start_date": None,
+                        "covered_digits": [],
+                        "missing_digits": list(range(10)),
+                        "digit_occurrences": [0] * 10,
+                        "most_present_digits": [],
+                    }
+                ],
+            }
+
+            checkpoint.write_text(
+                json.dumps(payload),
+                encoding="utf-8",
+            )
+
+            selected, loaded = (
+                checkpoint_for_current_archive(
+                    explicit_path=checkpoint,
+                    current_draws_by_wheel={
+                        "Bari": (
+                            DrawSnapshot(
+                                draw_number=1,
+                                draw_date="2026-01-02",
+                                wheel="Bari",
+                                wheel_order=1,
+                                numbers=(
+                                    1,
+                                    2,
+                                    3,
+                                    4,
+                                    5,
+                                ),
+                            ),
+                        )
+                    },
+                )
+            )
+
+        self.assertEqual(
+            selected,
+            checkpoint,
+        )
+        self.assertEqual(
+            loaded["current_year"],
+            2026,
+        )
+
+    def test_checkpoint_state_includes_historical_cycles(
+        self,
+    ) -> None:
+        payload = {
+            "schema_version": 1,
+            "artifact_family": (
+                "historical-coverage-checkpoint"
+            ),
+            "current_year": 2026,
+            "checkpoint_year": 2025,
+            "checkpoint_date": "2025-12-30",
+            "source_archives": [
+                {"path": "source.sqlite3"}
+            ],
+            "wheels": [
+                {
+                    "wheel": "Bari",
+                    "wheel_order": 1,
+                    "latest_draw": 208,
+                    "latest_date": "2025-12-30",
+                    "completed_cycles": 100,
+                    "synchronized": True,
+                    "draws_in_cycle": 0,
+                    "cycle_start_draw": None,
+                    "cycle_start_date": None,
+                    "covered_digits": [],
+                    "missing_digits": list(range(10)),
+                    "digit_occurrences": [0] * 10,
+                    "most_present_digits": [],
+                }
+            ],
+        }
+
+        states = checkpoint_current_states(
+            payload=payload,
+            draws_by_wheel={
+                "Bari": (
+                    DrawSnapshot(
+                        draw_number=1,
+                        draw_date="2026-01-02",
+                        wheel="Bari",
+                        wheel_order=1,
+                        numbers=(
+                            1,
+                            23,
+                            45,
+                            67,
+                            89,
+                        ),
+                    ),
+                )
+            },
+        )
+
+        self.assertEqual(len(states), 1)
+        self.assertEqual(
+            states[0].completed_cycles,
+            101,
+        )
+        self.assertEqual(
+            states[0].latest_draw,
+            1,
+        )
+        self.assertEqual(
+            states[0].latest_date,
+            "2026-01-02",
+        )
 
 
 class CurrentCoverageStateTests(unittest.TestCase):

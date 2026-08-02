@@ -155,6 +155,7 @@ them through one discoverable dispatcher:
 ./lotto.py list
 ./lotto.py help current
 ./lotto.py current
+# Uses the compatible historical checkpoint and applies only the current-year tail.
 ./lotto.py current --to 2026-07-25
 ./lotto.py current --to-num 119
 ```

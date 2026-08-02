@@ -161,6 +161,7 @@ li espone attraverso un unico dispatcher facilmente esplorabile:
 ./lotto.py list
 ./lotto.py help current
 ./lotto.py current
+# Usa il checkpoint storico compatibile e applica soltanto la coda dell'anno corrente.
 ./lotto.py current --to 2026-07-25
 ./lotto.py current --to-num 119
 ```

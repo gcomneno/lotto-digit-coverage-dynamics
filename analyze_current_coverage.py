@@ -18,6 +18,12 @@ from analyze_coverage_anomalies import (
     build_all_transitions,
     detect_anomalies,
 )
+from strategies.coverage_checkpoint import (
+    apply_draws as apply_checkpoint_draws,
+    freeze_state as freeze_checkpoint_state,
+    read_checkpoint,
+    states_from_checkpoint,
+)
 from strategies.coverage_completion import (
     CurrentCoverageState,
     current_coverage_state,
@@ -31,6 +37,9 @@ from strategies.lotto_repository import (
 
 
 DEFAULT_DATABASE = Path("data/lotto-current.sqlite3")
+DEFAULT_CHECKPOINT_DIRECTORY = Path(
+    "artifacts/coverage-checkpoints"
+)
 HORIZONS = (1, 2, 3, 5)
 
 ANSI_RESET = "\033[0m"
@@ -463,6 +472,24 @@ def build_parser() -> argparse.ArgumentParser:
     )
 
     parser.add_argument(
+        "--checkpoint",
+        type=Path,
+        help=(
+            "Checkpoint storico esplicito. "
+            "In assenza viene selezionato automaticamente "
+            "quello compatibile con l'anno del database."
+        ),
+    )
+    parser.add_argument(
+        "--without-checkpoint",
+        action="store_true",
+        help=(
+            "Disabilita la ripresa storica e ricostruisce "
+            "lo stato soltanto dal database indicato."
+        ),
+    )
+
+    parser.add_argument(
         "--database",
         type=Path,
         default=DEFAULT_DATABASE,
@@ -780,6 +807,216 @@ def print_active_anomalies(
         )
 
 
+def checkpoint_for_current_archive(
+    *,
+    explicit_path: Path | None,
+    current_draws_by_wheel: dict[
+        str,
+        tuple[DrawSnapshot, ...],
+    ],
+    directory: Path = DEFAULT_CHECKPOINT_DIRECTORY,
+) -> tuple[Path, dict[str, object]]:
+    """
+    Seleziona il checkpoint compatibile con l'anno corrente.
+
+    La compatibilità deriva dall'anno dell'ultima data
+    presente nel database operativo, non dall'orologio
+    di sistema.
+    """
+
+    dates = [
+        draw.draw_date
+        for draws in current_draws_by_wheel.values()
+        for draw in draws
+    ]
+
+    if not dates:
+        raise RuntimeError(
+            "Il database corrente non contiene estrazioni."
+        )
+
+    latest_date = max(dates)
+
+    try:
+        archive_year = int(latest_date[:4])
+    except ValueError as error:
+        raise RuntimeError(
+            f"Data estrazione non valida: {latest_date}."
+        ) from error
+
+    candidates = (
+        (explicit_path,)
+        if explicit_path is not None
+        else tuple(
+            sorted(
+                directory.glob(
+                    "coverage-state-*.json"
+                ),
+                reverse=True,
+            )
+        )
+    )
+
+    if not candidates:
+        raise FileNotFoundError(
+            "Nessun checkpoint storico disponibile in "
+            f"{directory}."
+        )
+
+    incompatibilities: list[str] = []
+
+    for candidate in candidates:
+        if candidate is None:
+            continue
+
+        try:
+            payload = read_checkpoint(candidate)
+        except (
+            FileNotFoundError,
+            OSError,
+            ValueError,
+        ) as error:
+            if explicit_path is not None:
+                raise
+
+            incompatibilities.append(
+                f"{candidate}: {error}"
+            )
+            continue
+
+        if payload["current_year"] != archive_year:
+            incompatibilities.append(
+                f"{candidate}: atteso anno corrente "
+                f"{archive_year}, trovato "
+                f"{payload['current_year']}"
+            )
+            continue
+
+        if payload["checkpoint_year"] != archive_year - 1:
+            incompatibilities.append(
+                f"{candidate}: anno checkpoint non "
+                "immediatamente precedente"
+            )
+            continue
+
+        checkpoint_date = str(
+            payload["checkpoint_date"]
+        )
+
+        if checkpoint_date >= latest_date:
+            incompatibilities.append(
+                f"{candidate}: data checkpoint "
+                f"{checkpoint_date} non precedente "
+                f"a {latest_date}"
+            )
+            continue
+
+        return candidate, payload
+
+    details = (
+        "; ".join(incompatibilities)
+        if incompatibilities
+        else "nessun candidato leggibile"
+    )
+
+    raise RuntimeError(
+        "Nessun checkpoint compatibile con il database "
+        f"dell'anno {archive_year}: {details}."
+    )
+
+
+def checkpoint_current_states(
+    *,
+    payload: dict[str, object],
+    draws_by_wheel: dict[
+        str,
+        tuple[DrawSnapshot, ...],
+    ],
+) -> tuple[CurrentCoverageState, ...]:
+    """Riprende il checkpoint e applica la coda corrente."""
+
+    mutable_states = states_from_checkpoint(
+        payload
+    )
+
+    checkpoint_date = str(
+        payload["checkpoint_date"]
+    )
+
+    current_draws = tuple(
+        draw
+        for draws in draws_by_wheel.values()
+        for draw in draws
+        if draw.draw_date > checkpoint_date
+    )
+
+    if not current_draws:
+        raise RuntimeError(
+            "Nessuna estrazione successiva al checkpoint "
+            f"del {checkpoint_date}."
+        )
+
+    checkpoint_wheels = set(mutable_states)
+    current_wheels = set(draws_by_wheel)
+
+    if checkpoint_wheels != current_wheels:
+        missing = sorted(
+            checkpoint_wheels - current_wheels
+        )
+        unexpected = sorted(
+            current_wheels - checkpoint_wheels
+        )
+
+        raise RuntimeError(
+            "Ruote non allineate tra checkpoint e "
+            f"database corrente; mancanti={missing}, "
+            f"inattese={unexpected}."
+        )
+
+    apply_checkpoint_draws(
+        mutable_states,
+        current_draws,
+    )
+
+    converted: list[CurrentCoverageState] = []
+
+    for state in mutable_states.values():
+        frozen = freeze_checkpoint_state(state)
+
+        converted.append(
+            CurrentCoverageState(
+                wheel=frozen.wheel,
+                wheel_order=frozen.wheel_order,
+                latest_draw=frozen.latest_draw,
+                latest_date=frozen.latest_date,
+                completed_cycles=(
+                    frozen.completed_cycles
+                ),
+                draws_in_cycle=frozen.draws_in_cycle,
+                covered_digits=frozenset(
+                    frozen.covered_digits
+                ),
+                missing_digits=frozenset(
+                    frozen.missing_digits
+                ),
+                synchronized=frozen.synchronized,
+                most_present_digits=frozenset(
+                    frozen.most_present_digits
+                ),
+            )
+        )
+
+    return tuple(
+        sorted(
+            converted,
+            key=lambda state: (
+                state.wheel_order,
+                state.wheel,
+            ),
+        )
+    )
+
+
 def main() -> int:
     args = build_parser().parse_args()
 
@@ -800,10 +1037,31 @@ def main() -> int:
                 args.to_date,
             )
 
-        states = tuple(
-            current_coverage_state(draws)
-            for draws in draws_by_wheel.values()
-        )
+        checkpoint_path: Path | None = None
+        checkpoint_payload_value: (
+            dict[str, object] | None
+        ) = None
+
+        if args.without_checkpoint:
+            states = tuple(
+                current_coverage_state(draws)
+                for draws in draws_by_wheel.values()
+            )
+        else:
+            (
+                checkpoint_path,
+                checkpoint_payload_value,
+            ) = checkpoint_for_current_archive(
+                explicit_path=args.checkpoint,
+                current_draws_by_wheel=(
+                    all_draws_by_wheel
+                ),
+            )
+
+            states = checkpoint_current_states(
+                payload=checkpoint_payload_value,
+                draws_by_wheel=draws_by_wheel,
+            )
 
         unsynchronized = tuple(
             state
@@ -840,6 +1098,23 @@ def main() -> int:
         )
 
         print(f"Database: {args.database}")
+
+        if checkpoint_path is None:
+            print(
+                "Checkpoint storico: disabilitato"
+            )
+        else:
+            assert (
+                checkpoint_payload_value
+                is not None
+            )
+
+            print(
+                "Checkpoint storico: "
+                f"{checkpoint_path} "
+                f"(fino al "
+                f"{checkpoint_payload_value['checkpoint_date']})"
+            )
 
         if args.to_date is not None:
             print(
