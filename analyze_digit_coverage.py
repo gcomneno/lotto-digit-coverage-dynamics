@@ -16,7 +16,7 @@ from strategies.digit_coverage import (
 from strategies.lotto_repository import LottoRepository
 
 
-DEFAULT_DATABASE = Path("data/lotto-2026.sqlite3")
+DEFAULT_DATABASE = Path("data/lotto-current.sqlite3")
 
 
 def percentage(value: int, total: int) -> float:

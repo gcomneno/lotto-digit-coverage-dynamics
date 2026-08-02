@@ -15,7 +15,7 @@ from strategies.lotto_repository import (
 )
 
 
-DATABASE_PATH = Path("data/lotto-2026.sqlite3")
+DATABASE_PATH = Path("data/lotto-current.sqlite3")
 
 
 def snapshot(

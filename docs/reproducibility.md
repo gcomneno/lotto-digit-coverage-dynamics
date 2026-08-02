@@ -106,7 +106,7 @@ python3 analyze_historical_cycle_distribution.py \
     data/lotto-2023.sqlite3 \
     data/lotto-2024.sqlite3 \
     data/lotto-2025.sqlite3 \
-    data/lotto-2026.sqlite3 \
+    data/lotto-current.sqlite3 \
     --text-output \
     _work/reproduction/historical-cycle-distribution.txt \
     --json-output \
@@ -134,7 +134,7 @@ python3 analyze_historical_symmetry_classes.py \
     --database data/lotto-2023.sqlite3 \
     --database data/lotto-2024.sqlite3 \
     --database data/lotto-2025.sqlite3 \
-    --database data/lotto-2026.sqlite3 \
+    --database data/lotto-current.sqlite3 \
     --csv-output \
     _work/reproduction/historical-symmetry-classes.csv \
     --json-output \
@@ -155,7 +155,7 @@ python3 analyze_coverage_anomalies.py \
     --database data/lotto-2023.sqlite3 \
     --database data/lotto-2024.sqlite3 \
     --database data/lotto-2025.sqlite3 \
-    --database data/lotto-2026.sqlite3 \
+    --database data/lotto-current.sqlite3 \
     --label historical-2023-2026 \
     --output-prefix \
     _work/reproduction/coverage-anomalies-2023-2026

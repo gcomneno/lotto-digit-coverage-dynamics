@@ -39,7 +39,7 @@ DEFAULT_DATABASES = (
     Path("data/lotto-2023.sqlite3"),
     Path("data/lotto-2024.sqlite3"),
     Path("data/lotto-2025.sqlite3"),
-    Path("data/lotto-2026.sqlite3"),
+    Path("data/lotto-current.sqlite3"),
 )
 
 DEFAULT_CSV_OUTPUT = Path(

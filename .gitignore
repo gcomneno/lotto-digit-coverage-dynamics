@@ -19,9 +19,4 @@ venv/
 reports/*.csv
 
 # Mutable current-year Lotto database
-data/lotto-2026.sqlite3
-
-# SQLite transient files
-data/*.sqlite3-wal
-data/*.sqlite3-shm
-data/*.sqlite3-journal
+data/lotto-current.sqlite3
