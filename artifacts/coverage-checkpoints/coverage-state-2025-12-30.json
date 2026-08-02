@@ -1,0 +1,475 @@
+{
+  "schema_version": 1,
+  "artifact_family": "historical-coverage-checkpoint",
+  "generated_at": "2026-08-02T15:51:15.288972+00:00",
+  "current_year": 2026,
+  "checkpoint_year": 2025,
+  "checkpoint_date": "2025-12-30",
+  "first_historical_year": 1871,
+  "total_draw_snapshots": 103682,
+  "source_archives": [
+    {
+      "path": "data/lotto-1871-1900.sqlite3",
+      "first_year": 1871,
+      "last_year": 1900,
+      "bytes": 3923968,
+      "sha256": "5448bb3ad93821b7f6359c4d4f5a94176bd5c53be0f60a3cf7a4d274da88620e"
+    },
+    {
+      "path": "data/lotto-1901-1950.sqlite3",
+      "first_year": 1901,
+      "last_year": 1950,
+      "bytes": 7000064,
+      "sha256": "0b1971751e46ade8d92c17e8f51817b9c8de7b5121da8ea444ff5e471b83b0b8"
+    },
+    {
+      "path": "data/lotto-1951-2000.sqlite3",
+      "first_year": 1951,
+      "last_year": 2000,
+      "bytes": 8945664,
+      "sha256": "be2264efcfa93831321b183b19ceb434eeb680e424782385344099a29ae392e2"
+    },
+    {
+      "path": "data/lotto-2001-2020.sqlite3",
+      "first_year": 2001,
+      "last_year": 2020,
+      "bytes": 10010624,
+      "sha256": "8f08241a27b7a39229761313d501e5a37441f61a8cab2845806f0dd02ef1aa6a"
+    },
+    {
+      "path": "data/lotto-2021-2025.sqlite3",
+      "first_year": 2021,
+      "last_year": 2025,
+      "bytes": 3084288,
+      "sha256": "49d76ff2d052332ff4ff69e86ab917b7b2a7242e564d408ad06f1ffe3342cd6e"
+    }
+  ],
+  "wheels": [
+    {
+      "wheel": "Bari",
+      "wheel_order": 1,
+      "latest_draw": 912,
+      "latest_date": "2025-12-30",
+      "completed_cycles": 3025,
+      "synchronized": true,
+      "draws_in_cycle": 0,
+      "cycle_start_draw": null,
+      "cycle_start_date": null,
+      "covered_digits": [],
+      "missing_digits": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "digit_occurrences": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "most_present_digits": []
+    },
+    {
+      "wheel": "Cagliari",
+      "wheel_order": 2,
+      "latest_draw": 912,
+      "latest_date": "2025-12-30",
+      "completed_cycles": 2040,
+      "synchronized": true,
+      "draws_in_cycle": 0,
+      "cycle_start_draw": null,
+      "cycle_start_date": null,
+      "covered_digits": [],
+      "missing_digits": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "digit_occurrences": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "most_present_digits": []
+    },
+    {
+      "wheel": "Firenze",
+      "wheel_order": 3,
+      "latest_draw": 912,
+      "latest_date": "2025-12-30",
+      "completed_cycles": 3034,
+      "synchronized": true,
+      "draws_in_cycle": 1,
+      "cycle_start_draw": 912,
+      "cycle_start_date": "2025-12-30",
+      "covered_digits": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "missing_digits": [
+        0,
+        9
+      ],
+      "digit_occurrences": [
+        0,
+        1,
+        3,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        0
+      ],
+      "most_present_digits": [
+        2
+      ]
+    },
+    {
+      "wheel": "Genova",
+      "wheel_order": 4,
+      "latest_draw": 912,
+      "latest_date": "2025-12-30",
+      "completed_cycles": 2060,
+      "synchronized": true,
+      "draws_in_cycle": 2,
+      "cycle_start_draw": 911,
+      "cycle_start_date": "2025-12-29",
+      "covered_digits": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        7,
+        8,
+        9
+      ],
+      "missing_digits": [
+        6
+      ],
+      "digit_occurrences": [
+        1,
+        2,
+        1,
+        3,
+        2,
+        6,
+        0,
+        1,
+        3,
+        1
+      ],
+      "most_present_digits": [
+        5
+      ]
+    },
+    {
+      "wheel": "Milano",
+      "wheel_order": 5,
+      "latest_draw": 912,
+      "latest_date": "2025-12-30",
+      "completed_cycles": 3115,
+      "synchronized": true,
+      "draws_in_cycle": 1,
+      "cycle_start_draw": 912,
+      "cycle_start_date": "2025-12-30",
+      "covered_digits": [
+        0,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        9
+      ],
+      "missing_digits": [
+        1,
+        8
+      ],
+      "digit_occurrences": [
+        2,
+        0,
+        2,
+        1,
+        1,
+        1,
+        1,
+        1,
+        0,
+        1
+      ],
+      "most_present_digits": [
+        0,
+        2
+      ]
+    },
+    {
+      "wheel": "Napoli",
+      "wheel_order": 6,
+      "latest_draw": 912,
+      "latest_date": "2025-12-30",
+      "completed_cycles": 3096,
+      "synchronized": true,
+      "draws_in_cycle": 0,
+      "cycle_start_draw": null,
+      "cycle_start_date": null,
+      "covered_digits": [],
+      "missing_digits": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "digit_occurrences": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "most_present_digits": []
+    },
+    {
+      "wheel": "Palermo",
+      "wheel_order": 7,
+      "latest_draw": 912,
+      "latest_date": "2025-12-30",
+      "completed_cycles": 3098,
+      "synchronized": true,
+      "draws_in_cycle": 2,
+      "cycle_start_draw": 911,
+      "cycle_start_date": "2025-12-29",
+      "covered_digits": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        6,
+        7,
+        8,
+        9
+      ],
+      "missing_digits": [
+        5
+      ],
+      "digit_occurrences": [
+        5,
+        1,
+        3,
+        1,
+        2,
+        0,
+        1,
+        2,
+        2,
+        3
+      ],
+      "most_present_digits": [
+        0
+      ]
+    },
+    {
+      "wheel": "Roma",
+      "wheel_order": 8,
+      "latest_draw": 912,
+      "latest_date": "2025-12-30",
+      "completed_cycles": 3082,
+      "synchronized": true,
+      "draws_in_cycle": 3,
+      "cycle_start_draw": 910,
+      "cycle_start_date": "2025-12-27",
+      "covered_digits": [
+        0,
+        1,
+        2,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "missing_digits": [
+        3
+      ],
+      "digit_occurrences": [
+        1,
+        1,
+        5,
+        0,
+        2,
+        6,
+        4,
+        4,
+        5,
+        2
+      ],
+      "most_present_digits": [
+        5
+      ]
+    },
+    {
+      "wheel": "Torino",
+      "wheel_order": 9,
+      "latest_draw": 912,
+      "latest_date": "2025-12-30",
+      "completed_cycles": 3119,
+      "synchronized": true,
+      "draws_in_cycle": 0,
+      "cycle_start_draw": null,
+      "cycle_start_date": null,
+      "covered_digits": [],
+      "missing_digits": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "digit_occurrences": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "most_present_digits": []
+    },
+    {
+      "wheel": "Venezia",
+      "wheel_order": 10,
+      "latest_draw": 912,
+      "latest_date": "2025-12-30",
+      "completed_cycles": 3051,
+      "synchronized": true,
+      "draws_in_cycle": 1,
+      "cycle_start_draw": 912,
+      "cycle_start_date": "2025-12-30",
+      "covered_digits": [
+        0,
+        3,
+        6,
+        8
+      ],
+      "missing_digits": [
+        1,
+        2,
+        4,
+        5,
+        7,
+        9
+      ],
+      "digit_occurrences": [
+        3,
+        0,
+        0,
+        2,
+        0,
+        0,
+        4,
+        0,
+        1,
+        0
+      ],
+      "most_present_digits": [
+        6
+      ]
+    },
+    {
+      "wheel": "Nazionale",
+      "wheel_order": 11,
+      "latest_draw": 912,
+      "latest_date": "2025-12-30",
+      "completed_cycles": 941,
+      "synchronized": true,
+      "draws_in_cycle": 0,
+      "cycle_start_draw": null,
+      "cycle_start_date": null,
+      "covered_digits": [],
+      "missing_digits": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "digit_occurrences": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "most_present_digits": []
+    }
+  ]
+}
