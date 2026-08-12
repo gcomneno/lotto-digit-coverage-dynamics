@@ -14,6 +14,10 @@
     return values.length ? `{${values.join(',')}}` : '—';
   }
 
+  function digitAria(values: number[]): string {
+    return values.length ? values.join(', ') : 'nessuna cifra';
+  }
+
   function probability(value: number | undefined): string {
     return value === undefined ? '—' : `${(value * 100).toFixed(2)}%`;
   }
@@ -85,8 +89,30 @@
             <span>età {state.draws_in_cycle}</span>
           </div>
           <dl class="compact-list">
-            <div><dt>TOP</dt><dd>{digitSet(state.most_present_digits)}</dd></div>
-            <div><dt>Mancanti</dt><dd>{digitSet(state.missing_digits)}</dd></div>
+            <div>
+              <dt>TOP</dt>
+              <dd class="digit-strip digit-strip--top" aria-label={`TOP: ${digitAria(state.most_present_digits)}`}>
+                {#if state.most_present_digits.length}
+                  {#each state.most_present_digits as digit (digit)}
+                    <span class="digit-chip">{digit}</span>
+                  {/each}
+                {:else}
+                  <span class="digit-empty">—</span>
+                {/if}
+              </dd>
+            </div>
+            <div>
+              <dt>Mancanti</dt>
+              <dd class="digit-strip digit-strip--missing" aria-label={`Mancanti: ${digitAria(state.missing_digits)}`}>
+                {#if state.missing_digits.length}
+                  {#each state.missing_digits as digit (digit)}
+                    <span class="digit-chip">{digit}</span>
+                  {/each}
+                {:else}
+                  <span class="digit-empty">—</span>
+                {/if}
+              </dd>
+            </div>
             <div><dt>Cicli completi</dt><dd>{state.completed_cycles}</dd></div>
           </dl>
         </article>
