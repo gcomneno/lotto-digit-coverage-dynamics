@@ -195,7 +195,7 @@ class LottoGuiApi:
 
     def get_current(
         self,
-        database: str = str(DEFAULT_DATABASE),
+        database: str | None = str(DEFAULT_DATABASE),
         to_draw_number: int | None = None,
         to_date: str | None = None,
         use_checkpoint: bool = True,
@@ -203,7 +203,7 @@ class LottoGuiApi:
         try:
             payload = self._current_loader(
                 root=self._root,
-                database=database,
+                database=database or str(DEFAULT_DATABASE),
                 to_draw_number=to_draw_number,
                 to_date=to_date,
                 use_checkpoint=use_checkpoint,
@@ -214,14 +214,14 @@ class LottoGuiApi:
 
     def get_occurrence_groups(
         self,
-        database: str = str(DEFAULT_DATABASE),
+        database: str | None = str(DEFAULT_DATABASE),
         group_size: int = 10,
         requested_draw_number: int | None = None,
     ) -> dict[str, Any]:
         try:
             payload = self._occurrence_loader(
                 root=self._root,
-                database=database,
+                database=database or str(DEFAULT_DATABASE),
                 group_size=group_size,
                 requested_draw_number=requested_draw_number,
             )

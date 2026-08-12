@@ -65,6 +65,27 @@ class GuiBridgeTests(unittest.TestCase):
             use_checkpoint=False,
         )
 
+    def test_occurrence_bridge_uses_default_database_when_js_passes_none(self) -> None:
+        loader = Mock(
+            return_value={
+                "schema": "lotto.occurrence-groups",
+                "schema_version": 1,
+            }
+        )
+        root = Path("/tmp/project")
+        api = LottoGuiApi(root, occurrence_loader=loader)
+
+        response = api.get_occurrence_groups(None, 6, 128)
+
+        self.assertTrue(response["ok"])
+        self.assertEqual(response["data"]["schema"], "lotto.occurrence-groups")
+        loader.assert_called_once_with(
+            root=root,
+            database="data/lotto-current.sqlite3",
+            group_size=6,
+            requested_draw_number=128,
+        )
+
     def test_bridge_normalizes_errors_without_terminal_output(self) -> None:
         loader = Mock(side_effect=ValueError("cutoff non valido"))
         api = LottoGuiApi(Path("/tmp/project"), current_loader=loader)
