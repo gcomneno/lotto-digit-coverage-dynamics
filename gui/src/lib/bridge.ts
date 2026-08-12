@@ -252,14 +252,43 @@ export type LottoBridge = {
   researchReport(reportId: string): Promise<Envelope<ResearchReport>>;
 };
 
+function withTimeout<T>(
+  promise: Promise<T>,
+  timeoutMs: number,
+  operation: string
+): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timeout = globalThis.setTimeout(() => {
+      reject(new Error(`${operation}: nessuna risposta dal bridge Python entro ${timeoutMs / 1000}s.`));
+    }, timeoutMs);
+
+    promise.then(
+      (value) => {
+        globalThis.clearTimeout(timeout);
+        resolve(value);
+      },
+      (error) => {
+        globalThis.clearTimeout(timeout);
+        reject(error);
+      }
+    );
+  });
+}
+
 export function createBridge(api: PywebviewApi): LottoBridge {
   return {
-    capabilities: () => api.get_capabilities(),
-    current: () => api.get_current(),
+    capabilities: () => withTimeout(api.get_capabilities(), 10_000, 'Handshake GUI'),
+    current: () => withTimeout(api.get_current(), 15_000, 'Report corrente'),
     occurrenceGroups: (groupSize, requestedDrawNumber = null) =>
-      api.get_occurrence_groups(undefined, groupSize, requestedDrawNumber),
-    researchCatalog: () => api.get_research_catalog(),
-    researchReport: (reportId) => api.get_research_report(reportId)
+      withTimeout(
+        api.get_occurrence_groups(undefined, groupSize, requestedDrawNumber),
+        15_000,
+        'Occorrenze'
+      ),
+    researchCatalog: () =>
+      withTimeout(api.get_research_catalog(), 10_000, 'Catalogo ricerca'),
+    researchReport: (reportId) =>
+      withTimeout(api.get_research_report(reportId), 120_000, 'Report di ricerca')
   };
 }
 
@@ -271,18 +300,35 @@ declare global {
   }
 }
 
-export async function desktopBridge(): Promise<LottoBridge> {
+async function waitForPywebviewApi(): Promise<PywebviewApi> {
   if (window.pywebview?.api) {
-    return createBridge(window.pywebview.api);
+    return window.pywebview.api;
   }
 
-  await new Promise<void>((resolve) => {
-    window.addEventListener('pywebviewready', () => resolve(), { once: true });
-  });
+  await withTimeout(
+    new Promise<void>((resolve) => {
+      window.addEventListener('pywebviewready', () => resolve(), { once: true });
+    }),
+    10_000,
+    'Inizializzazione pywebview'
+  );
 
   if (!window.pywebview?.api) {
-    throw new Error('Bridge pywebview non disponibile.');
+    throw new Error('Bridge pywebview non disponibile dopo pywebviewready.');
   }
 
-  return createBridge(window.pywebview.api);
+  return window.pywebview.api;
+}
+
+export async function desktopBridge(): Promise<LottoBridge> {
+  const bridge = createBridge(await waitForPywebviewApi());
+  const capabilities = await bridge.capabilities();
+
+  if (!capabilities.ok || !capabilities.data) {
+    throw new Error(
+      capabilities.error?.message ?? 'Handshake con il core Python non riuscito.'
+    );
+  }
+
+  return bridge;
 }
