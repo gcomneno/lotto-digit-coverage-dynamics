@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
   createBridge,
+  isCompletePywebviewApi,
   type Capabilities,
   type CurrentContract,
   type Envelope,
@@ -16,6 +17,24 @@ const numberRepresentation = {
   maximum: 90,
   display_width: 2
 };
+
+describe('pywebview API readiness', () => {
+  it('does not accept the partially injected object seen during desktop startup', () => {
+    expect(isCompletePywebviewApi({})).toBe(false);
+    expect(isCompletePywebviewApi({ get_current: vi.fn() })).toBe(false);
+  });
+
+  it('accepts only the complete GUI API surface', () => {
+    const api = {
+      get_capabilities: vi.fn(),
+      get_current: vi.fn(),
+      get_occurrence_groups: vi.fn(),
+      get_research_catalog: vi.fn(),
+      get_research_report: vi.fn()
+    };
+    expect(isCompletePywebviewApi(api)).toBe(true);
+  });
+});
 
 describe('createBridge', () => {
   it('forwards structured calls without CLI text', async () => {

@@ -275,6 +275,18 @@ function withTimeout<T>(
   });
 }
 
+export function isCompletePywebviewApi(value: unknown): value is PywebviewApi {
+  if (!value || typeof value !== 'object') return false;
+  const api = value as Record<string, unknown>;
+  return [
+    'get_capabilities',
+    'get_current',
+    'get_occurrence_groups',
+    'get_research_catalog',
+    'get_research_report'
+  ].every((method) => typeof api[method] === 'function');
+}
+
 export function createBridge(api: PywebviewApi): LottoBridge {
   return {
     capabilities: () => withTimeout(api.get_capabilities(), 10_000, 'Handshake GUI'),
@@ -301,23 +313,28 @@ declare global {
 }
 
 async function waitForPywebviewApi(): Promise<PywebviewApi> {
-  if (window.pywebview?.api) {
+  if (isCompletePywebviewApi(window.pywebview?.api)) {
     return window.pywebview.api;
   }
 
-  await withTimeout(
-    new Promise<void>((resolve) => {
-      window.addEventListener('pywebviewready', () => resolve(), { once: true });
+  return withTimeout(
+    new Promise<PywebviewApi>((resolve) => {
+      let interval: ReturnType<typeof globalThis.setInterval> | undefined;
+      const finishIfReady = () => {
+        const api = window.pywebview?.api;
+        if (!isCompletePywebviewApi(api)) return;
+        if (interval !== undefined) globalThis.clearInterval(interval);
+        window.removeEventListener('pywebviewready', finishIfReady);
+        resolve(api);
+      };
+
+      window.addEventListener('pywebviewready', finishIfReady);
+      interval = globalThis.setInterval(finishIfReady, 25);
+      finishIfReady();
     }),
     10_000,
-    'Inizializzazione pywebview'
+    'Inizializzazione API pywebview completa'
   );
-
-  if (!window.pywebview?.api) {
-    throw new Error('Bridge pywebview non disponibile dopo pywebviewready.');
-  }
-
-  return window.pywebview.api;
 }
 
 export async function desktopBridge(): Promise<LottoBridge> {
