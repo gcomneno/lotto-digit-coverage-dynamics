@@ -4,14 +4,19 @@
 
 from __future__ import annotations
 
+import io
+import os
+import shutil
 import subprocess
 import sys
+from contextlib import contextmanager, redirect_stdout
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Sequence
 
 
 ROOT = Path(__file__).resolve().parent
+DIRECT_COMMANDS = frozenset({"current", "db"})
 
 
 @dataclass(frozen=True)
@@ -24,138 +29,25 @@ class Tool:
 
 
 TOOLS = (
-    Tool(
-        "current",
-        "analyze_current_consensus.py",
-        "Uso corrente",
-        "Classifica Markov, consensus trasversale e anomalie attive.",
-        ("now",),
-    ),
-    Tool(
-        "update",
-        "update_lotto_database.py",
-        "Uso corrente",
-        "Aggiorna e verifica il database annuale corrente.",
-    ),
-    Tool(
-        "db",
-        "view_lotto_database.sh",
-        "Uso corrente",
-        "Mostra il contenuto del database Lotto.",
-        ("view",),
-    ),
-    Tool(
-        "db-update",
-        "update_lotto_databases.py",
-        "Gestione dati",
-        "Aggiorna uno o più database annuali.",
-    ),
-    Tool(
-        "anomalies",
-        "analyze_coverage_anomalies.py",
-        "Analisi storiche",
-        "Rileva e riepiloga le anomalie A1–A4.",
-    ),
-    Tool(
-        "completion",
-        "analyze_coverage_completion.py",
-        "Analisi storiche",
-        "Analizza le chiusure dei cicli di copertura.",
-    ),
-    Tool(
-        "residuals",
-        "analyze_coverage_markov_residuals.py",
-        "Analisi storiche",
-        "Confronta distribuzioni residue teoriche e osservate.",
-    ),
-    Tool(
-        "validation",
-        "analyze_coverage_markov_validation.py",
-        "Analisi storiche",
-        "Valida empiricamente le probabilità del modello Markov.",
-    ),
-    Tool(
-        "digit-coverage",
-        "analyze_digit_coverage.py",
-        "Analisi storiche",
-        "Analizza la copertura delle cifre per finestra.",
-        ("digits",),
-    ),
-    Tool(
-        "rolling-frequency",
-        "analyze_rolling_frequency.py",
-        "Analisi storiche",
-        (
-            "Backtesta le frequenze rolling "
-            "contro rose casuali equivalenti."
-        ),
-        ("rolling",),
-    ),
-    Tool(
-        "coverage-hits",
-        "analyze_coverage_hit_statistics.py",
-        "Analisi storiche",
-        (
-            "Misura le quasi-chiusure recenti "
-            "per quantità di cifre TOP e Mancanti."
-        ),
-        ("hits",),
-    ),
-    Tool(
-        "twins",
-        "analyze_twin_numbers.py",
-        "Analisi storiche",
-        (
-            "Valuta i gemelli 11–88 contro il null 1/18 "
-            "usando soltanto stati ex ante."
-        ),
-        ("gemelli",),
-    ),
-    Tool(
-        "return-times",
-        "analyze_digit_return_times.py",
-        "Analisi storiche",
-        "Analizza i tempi di ritorno delle cifre.",
-        ("returns",),
-    ),
-    Tool(
-        "cycles",
-        "analyze_historical_cycle_distribution.py",
-        "Analisi storiche",
-        "Confronta la durata storica dei cicli con la teoria.",
-        ("cycle-distribution",),
-    ),
-    Tool(
-        "symmetry-history",
-        "analyze_historical_symmetry_classes.py",
-        "Analisi storiche",
-        "Analizza le classi strutturali osservate storicamente.",
-        ("symmetry",),
-    ),
-    Tool(
-        "atlas",
-        "generate_state_atlas.py",
-        "Teoria e artefatti",
-        "Genera l’atlante completo dei 1.024 stati.",
-    ),
-    Tool(
-        "structure",
-        "generate_structural_analysis.py",
-        "Teoria e artefatti",
-        "Genera l’analisi strutturale e delle simmetrie.",
-    ),
-    Tool(
-        "kernel",
-        "verify_transition_kernel.py",
-        "Teoria e artefatti",
-        "Verifica indipendentemente il kernel di transizione.",
-    ),
-    Tool(
-        "import",
-        "import_lotto.py",
-        "Gestione dati",
-        "Importa un archivio annuale nel database SQLite.",
-    ),
+    Tool("current", "analyze_current_consensus.py", "Uso corrente", "Classifica Markov, consensus trasversale e anomalie attive.", ("now",)),
+    Tool("update", "update_lotto_database.py", "Uso corrente", "Aggiorna e verifica il database annuale corrente."),
+    Tool("db", "view_lotto_database.sh", "Uso corrente", "Mostra il contenuto del database Lotto.", ("view",)),
+    Tool("db-update", "update_lotto_databases.py", "Gestione dati", "Aggiorna uno o più database annuali."),
+    Tool("anomalies", "analyze_coverage_anomalies.py", "Analisi storiche", "Rileva e riepiloga le anomalie A1–A4."),
+    Tool("completion", "analyze_coverage_completion.py", "Analisi storiche", "Analizza le chiusure dei cicli di copertura."),
+    Tool("residuals", "analyze_coverage_markov_residuals.py", "Analisi storiche", "Confronta distribuzioni residue teoriche e osservate."),
+    Tool("validation", "analyze_coverage_markov_validation.py", "Analisi storiche", "Valida empiricamente le probabilità del modello Markov."),
+    Tool("digit-coverage", "analyze_digit_coverage.py", "Analisi storiche", "Analizza la copertura delle cifre per finestra.", ("digits",)),
+    Tool("rolling-frequency", "analyze_rolling_frequency.py", "Analisi storiche", "Backtesta le frequenze rolling contro rose casuali equivalenti.", ("rolling",)),
+    Tool("coverage-hits", "analyze_coverage_hit_statistics.py", "Analisi storiche", "Misura le quasi-chiusure recenti per quantità di cifre TOP e Mancanti.", ("hits",)),
+    Tool("twins", "analyze_twin_numbers.py", "Analisi storiche", "Valuta i gemelli 11–88 contro il null 1/18 usando soltanto stati ex ante.", ("gemelli",)),
+    Tool("return-times", "analyze_digit_return_times.py", "Analisi storiche", "Analizza i tempi di ritorno delle cifre.", ("returns",)),
+    Tool("cycles", "analyze_historical_cycle_distribution.py", "Analisi storiche", "Confronta la durata storica dei cicli con la teoria.", ("cycle-distribution",)),
+    Tool("symmetry-history", "analyze_historical_symmetry_classes.py", "Analisi storiche", "Analizza le classi strutturali osservate storicamente.", ("symmetry",)),
+    Tool("atlas", "generate_state_atlas.py", "Teoria e artefatti", "Genera l’atlante completo dei 1.024 stati."),
+    Tool("structure", "generate_structural_analysis.py", "Teoria e artefatti", "Genera l’analisi strutturale e delle simmetrie."),
+    Tool("kernel", "verify_transition_kernel.py", "Teoria e artefatti", "Verifica indipendentemente il kernel di transizione."),
+    Tool("import", "import_lotto.py", "Gestione dati", "Importa un archivio annuale nel database SQLite."),
 )
 
 
@@ -177,10 +69,7 @@ def print_usage() -> None:
     print("  ./lotto.py current --to-num 119")
     print("  ./lotto.py update")
     print("  ./lotto.py twins")
-    print(
-        "  ./lotto.py db update "
-        "--from-year 2021 --to-year 2026"
-    )
+    print("  ./lotto.py db update --from-year 2021 --to-year 2026")
     print("  ./lotto.py anomalies --help")
     print()
     print("Usa './lotto.py list' per vedere tutti i comandi.")
@@ -188,80 +77,97 @@ def print_usage() -> None:
 
 def print_tools() -> None:
     categories: list[str] = []
-
     for tool in TOOLS:
         if tool.category not in categories:
             categories.append(tool.category)
 
     print(f"CLI disponibili: {len(TOOLS)}")
-
     for category in categories:
         print()
         print(category)
         print("-" * len(category))
-
         for tool in TOOLS:
             if tool.category != category:
                 continue
-
-            aliases = (
-                f"  alias: {', '.join(tool.aliases)}"
-                if tool.aliases
-                else ""
-            )
-
-            display_command = (
-                "db update"
-                if tool.command == "db-update"
-                else tool.command
-            )
-
-            print(
-                f"{display_command:<18} "
-                f"{tool.description}"
-            )
-            print(
-                f"{'':18} "
-                f"→ {tool.script}{aliases}"
-            )
+            aliases = f"  alias: {', '.join(tool.aliases)}" if tool.aliases else ""
+            display_command = "db update" if tool.command == "db-update" else tool.command
+            print(f"{display_command:<18} {tool.description}")
+            print(f"{'':18} → {tool.script}{aliases}")
 
 
-def command_line(
-    tool: Tool,
-    forwarded_arguments: Sequence[str],
-) -> list[str]:
+def command_line(tool: Tool, forwarded_arguments: Sequence[str]) -> list[str]:
     script = ROOT / tool.script
-
     if not script.is_file():
-        raise FileNotFoundError(
-            f"Tool non trovato: {script}"
-        )
-
-    if script.suffix == ".py":
-        runner = [sys.executable, str(script)]
-    else:
-        runner = [str(script)]
-
+        raise FileNotFoundError(f"Tool non trovato: {script}")
+    runner = [sys.executable, str(script)] if script.suffix == ".py" else [str(script)]
     return [*runner, *forwarded_arguments]
 
 
-def main(argv: Sequence[str] | None = None) -> int:
-    arguments = list(
-        sys.argv[1:]
-        if argv is None
-        else argv
+@contextmanager
+def _project_working_directory():
+    """Preserve the old subprocess cwd semantics for direct handlers."""
+
+    previous = Path.cwd()
+    os.chdir(ROOT)
+    try:
+        yield
+    finally:
+        os.chdir(previous)
+
+
+def _page_database_output(handler, forwarded_arguments: Sequence[str]) -> int:
+    """Keep terminal paging while calculations execute in-process."""
+
+    if "--help" in forwarded_arguments or not sys.stdout.isatty():
+        return handler(tuple(forwarded_arguments))
+
+    buffer = io.StringIO()
+    with redirect_stdout(buffer):
+        result = handler(tuple(forwarded_arguments))
+
+    if result != 0:
+        return result
+
+    pager = shutil.which("less")
+    if pager is None:
+        print("ERRORE: comando less non disponibile.", file=sys.stderr)
+        return 1
+
+    completed = subprocess.run(
+        [pager, "-RS"],
+        input=buffer.getvalue(),
+        text=True,
+        check=False,
     )
+    return completed.returncode
+
+
+def run_direct_command(command: str, forwarded_arguments: Sequence[str]) -> int:
+    """Invoke migrated CLI adapters in-process over application services."""
+
+    with _project_working_directory():
+        if command == "current":
+            from lotto_digit_coverage.interfaces.cli.current_command import main
+            return main(tuple(forwarded_arguments))
+
+        if command == "db":
+            from lotto_digit_coverage.interfaces.cli.database_command import main
+            return _page_database_output(main, forwarded_arguments)
+
+    raise ValueError(f"Comando diretto non registrato: {command}")
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    arguments = list(sys.argv[1:] if argv is None else argv)
 
     if not arguments:
         print_usage()
         return 0
 
     first = arguments.pop(0)
-
     if first in {"-h", "--help"}:
         print_usage()
         return 0
-
     if first in {"list", "tools"}:
         print_tools()
         return 0
@@ -270,47 +176,32 @@ def main(argv: Sequence[str] | None = None) -> int:
         if not arguments:
             print_usage()
             return 0
-
-        if (
-            len(arguments) >= 2
-            and arguments[0] == "db"
-            and arguments[1] == "update"
-        ):
+        if len(arguments) >= 2 and arguments[0] == "db" and arguments[1] == "update":
             del arguments[:2]
             first = "db-update"
         else:
             first = arguments.pop(0)
-
         arguments.insert(0, "--help")
-    elif (
-        first == "db"
-        and arguments
-        and arguments[0] == "update"
-    ):
+    elif first == "db" and arguments and arguments[0] == "update":
         arguments.pop(0)
         first = "db-update"
 
     tool = BY_COMMAND.get(first)
-
     if tool is None:
-        print(
-            f"ERRORE: comando sconosciuto: {first}",
-            file=sys.stderr,
-        )
-        print(
-            "Usa './lotto.py list' per vedere "
-            "i comandi disponibili.",
-            file=sys.stderr,
-        )
+        print(f"ERRORE: comando sconosciuto: {first}", file=sys.stderr)
+        print("Usa './lotto.py list' per vedere i comandi disponibili.", file=sys.stderr)
         return 2
 
     try:
+        if tool.command in DIRECT_COMMANDS:
+            return run_direct_command(tool.command, arguments)
+
         completed = subprocess.run(
             command_line(tool, arguments),
             cwd=ROOT,
             check=False,
         )
-    except FileNotFoundError as error:
+    except (FileNotFoundError, ValueError) as error:
         print(f"ERRORE: {error}", file=sys.stderr)
         return 1
     except KeyboardInterrupt:

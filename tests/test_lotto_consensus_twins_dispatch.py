@@ -8,7 +8,7 @@ import lotto
 
 
 class LottoConsensusTwinsDispatchTests(unittest.TestCase):
-    def run_dispatch(self, arguments: list[str]) -> list[str]:
+    def run_legacy_dispatch(self, arguments: list[str]) -> list[str]:
         with patch(
             "lotto.subprocess.run",
             return_value=SimpleNamespace(returncode=0),
@@ -18,15 +18,22 @@ class LottoConsensusTwinsDispatchTests(unittest.TestCase):
         self.assertEqual(exit_code, 0)
         return runner.call_args.args[0]
 
-    def test_current_uses_consensus_wrapper(self) -> None:
-        command = self.run_dispatch(["current", "--to-num", "127"])
+    def test_current_uses_direct_application_adapter(self) -> None:
+        with patch(
+            "lotto.run_direct_command",
+            return_value=0,
+        ) as direct:
+            exit_code = lotto.main(["current", "--to-num", "127"])
 
-        self.assertTrue(command[1].endswith("analyze_current_consensus.py"))
-        self.assertEqual(command[-2:], ["--to-num", "127"])
+        self.assertEqual(exit_code, 0)
+        direct.assert_called_once_with(
+            "current",
+            ["--to-num", "127"],
+        )
 
-    def test_twins_and_gemelli_use_same_analyzer(self) -> None:
-        twins = self.run_dispatch(["twins"])
-        gemelli = self.run_dispatch(["gemelli"])
+    def test_twins_and_gemelli_use_same_legacy_analyzer(self) -> None:
+        twins = self.run_legacy_dispatch(["twins"])
+        gemelli = self.run_legacy_dispatch(["gemelli"])
 
         self.assertTrue(twins[1].endswith("analyze_twin_numbers.py"))
         self.assertEqual(twins, gemelli)
