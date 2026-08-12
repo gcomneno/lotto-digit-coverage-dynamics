@@ -8,6 +8,13 @@ import {
   type PywebviewApi
 } from './bridge';
 
+const numberRepresentation = {
+  type: 'integer',
+  minimum: 1,
+  maximum: 90,
+  display_width: 2
+};
+
 describe('createBridge', () => {
   it('forwards current and occurrence calls without CLI text', async () => {
     const capabilities: Envelope<Capabilities> = {
@@ -24,6 +31,7 @@ describe('createBridge', () => {
       data: {
         schema: 'lotto.current',
         schema_version: 1,
+        number_representation: numberRepresentation,
         target: { draw_number: 128, draw_date: '2026-08-11' },
         states: [],
         markov_ranking: [],
@@ -39,6 +47,7 @@ describe('createBridge', () => {
       data: {
         schema: 'lotto.occurrence-groups',
         schema_version: 1,
+        number_representation: numberRepresentation,
         reference: {
           draw_number: 128,
           draw_date: '2026-08-11',
@@ -57,11 +66,11 @@ describe('createBridge', () => {
 
     const bridge = createBridge(api);
     const current = await bridge.current();
-    const occurrences = await bridge.occurrenceGroups(10);
+    const occurrences = await bridge.occurrenceGroups(10, 120);
 
     expect(current.data?.schema).toBe('lotto.current');
     expect(occurrences.data?.schema).toBe('lotto.occurrence-groups');
     expect(api.get_current).toHaveBeenCalledOnce();
-    expect(api.get_occurrence_groups).toHaveBeenCalledWith(undefined, 10, null);
+    expect(api.get_occurrence_groups).toHaveBeenCalledWith(undefined, 10, 120);
   });
 });

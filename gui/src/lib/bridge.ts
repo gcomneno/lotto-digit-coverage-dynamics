@@ -22,41 +22,160 @@ export type CurrentState = {
   synchronized: boolean;
 };
 
+export type MarkovRow = {
+  position: number;
+  wheel: string;
+  wheel_order: number;
+  expected_remaining_draws: number;
+  completion_within: Record<string, number>;
+};
+
+export type CoverageHitRow = {
+  position: number;
+  wheel: string;
+  wheel_order: number;
+  draws_in_cycle: number;
+  class: {
+    most_present_count: number;
+    missing_count: number;
+  };
+  most_present_digits: number[];
+  missing_digits: number[];
+  historical: {
+    threshold: number;
+    cases: number;
+    obtained: number;
+    success_rate: number;
+    expected_probability: number;
+    evidence_level: string;
+  };
+  current_event_probability: number;
+  completion_within_one: number;
+  lower_success_bound: number;
+  conservative_excess: number;
+  conservative_probability: number;
+};
+
+export type ConsensusRow = {
+  digit: number;
+  missing_count: number;
+  top_count: number;
+  missing_wheels: string[];
+  top_wheels: string[];
+  involved_wheels: string[];
+};
+
+export type AnomalyRow = {
+  category: string;
+  signature: string;
+  recurrence_key: string;
+  wheel: string;
+  wheel_order: number;
+  cycle_number: number;
+  event_index: number;
+  target_draw: number;
+  target_date: string;
+  source_state: string;
+  target_state: string;
+  horizon: number | null;
+  conditional_probability: number;
+  atom_probability: number | null;
+  previous_conditional_probability: number | null;
+  pair_probability: number | null;
+  surprisal: number;
+  severity: string;
+  right_censored: boolean;
+  previous_target_draw: number | null;
+  previous_target_date: string | null;
+  recurrence_gap: number | null;
+};
+
+export type ValidationDraw = {
+  draw_number: number;
+  draw_date: string;
+  wheel: string;
+  wheel_order: number;
+  numbers: number[];
+};
+
 export type CurrentContract = {
   schema: 'lotto.current';
   schema_version: number;
+  number_representation: {
+    type: string;
+    minimum: number;
+    maximum: number;
+    display_width: number;
+  };
   target: {
     draw_number: number;
     draw_date: string;
   };
   states: CurrentState[];
-  markov_ranking: Array<{
-    position: number;
-    wheel: string;
-    wheel_order: number;
-    expected_remaining_draws: number;
-    completion_within: Record<string, number>;
-  }>;
-  coverage_hit_ranking: Array<Record<string, unknown>>;
-  consensus: Array<Record<string, unknown>>;
+  markov_ranking: MarkovRow[];
+  coverage_hit_ranking: CoverageHitRow[];
+  consensus: ConsensusRow[];
   anomalies: {
     transition_count: number;
-    history: Array<Record<string, unknown>>;
-    active: Array<Record<string, unknown>>;
+    history: AnomalyRow[];
+    active: AnomalyRow[];
   };
-  next_draw_validation: Array<Record<string, unknown>>;
+  next_draw_validation: ValidationDraw[];
+};
+
+export type OccurrenceDrawWheel = {
+  wheel: string;
+  numbers: number[];
+};
+
+export type OccurrenceDraw = {
+  draw_number: number;
+  draw_date: string;
+  wheels: OccurrenceDrawWheel[];
+};
+
+export type OccurrenceWheelSummary = {
+  wheel: string;
+  reference_numbers: number[];
+  occurrence_counts: number[];
+};
+
+export type OccurrenceGroup = {
+  reference: {
+    draw_number: number;
+    draw_date: string;
+  };
+  range: {
+    newest: {
+      draw_number: number;
+      draw_date: string;
+    };
+    oldest: {
+      draw_number: number;
+      draw_date: string;
+    };
+  };
+  actual_size: number;
+  draws: OccurrenceDraw[];
+  wheels: OccurrenceWheelSummary[];
 };
 
 export type OccurrenceContract = {
   schema: 'lotto.occurrence-groups';
   schema_version: number;
+  number_representation: {
+    type: string;
+    minimum: number;
+    maximum: number;
+    display_width: number;
+  };
   reference: {
     draw_number: number;
     draw_date: string;
     kind: string;
   };
   group_size: number;
-  groups: Array<Record<string, unknown>>;
+  groups: OccurrenceGroup[];
 };
 
 export type Capabilities = {
@@ -83,15 +202,18 @@ export type PywebviewApi = {
 export type LottoBridge = {
   capabilities(): Promise<Envelope<Capabilities>>;
   current(): Promise<Envelope<CurrentContract>>;
-  occurrenceGroups(groupSize: number): Promise<Envelope<OccurrenceContract>>;
+  occurrenceGroups(
+    groupSize: number,
+    requestedDrawNumber?: number | null
+  ): Promise<Envelope<OccurrenceContract>>;
 };
 
 export function createBridge(api: PywebviewApi): LottoBridge {
   return {
     capabilities: () => api.get_capabilities(),
     current: () => api.get_current(),
-    occurrenceGroups: (groupSize) =>
-      api.get_occurrence_groups(undefined, groupSize, null)
+    occurrenceGroups: (groupSize, requestedDrawNumber = null) =>
+      api.get_occurrence_groups(undefined, groupSize, requestedDrawNumber)
   };
 }
 
