@@ -1,18 +1,10 @@
-"""Primitive riusabili per le interfacce tabellari CLI."""
+"""Backward-compatible import for legacy CLI table helpers.
 
-from __future__ import annotations
+New interface code should import from
+``lotto_digit_coverage.interfaces.cli.table``. The compatibility module remains
+in place while existing scripts are migrated incrementally under issue #9.
+"""
 
-from dataclasses import dataclass
-from typing import Callable, Generic, TypeVar
+from lotto_digit_coverage.interfaces.cli.table import Column
 
-
-RowT = TypeVar("RowT")
-
-
-@dataclass(frozen=True)
-class Column(Generic[RowT]):
-    """Descrive una colonna esposta da un report tabellare."""
-
-    key: str
-    label: str
-    getter: Callable[[RowT], object]
+__all__ = ["Column"]
