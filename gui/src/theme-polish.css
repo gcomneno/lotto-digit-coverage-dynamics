@@ -1,21 +1,28 @@
 :root {
-  --ui-text: #172033;
-  --ui-muted: #475569;
-  --ui-subtle: #64748b;
-  --ui-border: #94a3b8;
-  --ui-border-strong: #64748b;
-  --ui-surface: #ffffff;
-  --ui-surface-soft: #f8fafc;
-  --ui-missing-bg: #e8f0ff;
-  --ui-missing-border: #6b8fcf;
-  --ui-missing-text: #163b73;
-  --ui-top-bg: #fff4d6;
-  --ui-top-border: #c58c20;
-  --ui-top-text: #714c00;
+  color: var(--giu-theme-text);
+  background: var(--giu-theme-base);
+  color-scheme: var(--giu-theme-color-scheme);
+
+  /* Lotto-domain semantic accents. Generic text/surface/border colors come
+   * exclusively from the GIADA UI theme contract. */
+  --lotto-missing-bg: #e8f0ff;
+  --lotto-missing-border: #6b8fcf;
+  --lotto-missing-text: #163b73;
+  --lotto-top-bg: #fff4d6;
+  --lotto-top-border: #c58c20;
+  --lotto-top-text: #714c00;
 }
 
 body {
-  color: var(--ui-text);
+  color: var(--giu-theme-text);
+  background: var(--giu-theme-base);
+}
+
+input,
+select {
+  border-color: var(--giu-theme-border);
+  background: var(--giu-theme-card);
+  color: var(--giu-theme-text);
 }
 
 .metric-list dt,
@@ -28,7 +35,7 @@ body {
 .filter-count,
 .research-placeholder,
 .empty-state {
-  color: var(--ui-muted);
+  color: var(--giu-theme-muted);
 }
 
 .primary-nav,
@@ -36,7 +43,7 @@ body {
 .research-card,
 .research-metric,
 .research-filters {
-  border-color: var(--ui-border);
+  border-color: var(--giu-theme-border);
 }
 
 .wheel-grid {
@@ -44,7 +51,15 @@ body {
 }
 
 .wheel-card {
-  background: var(--ui-surface-soft);
+  color: var(--giu-theme-text);
+  background: var(--giu-theme-card);
+}
+
+.wheel-card__heading,
+.wheel-card__heading strong,
+.wheel-card__heading span,
+.compact-list dd {
+  color: var(--giu-theme-text);
 }
 
 .compact-list div {
@@ -76,7 +91,7 @@ body {
   width: 1.42rem;
   height: 1.42rem;
   place-items: center;
-  border: 1px solid var(--ui-border-strong);
+  border: 1px solid var(--giu-theme-border);
   border-radius: 0.35rem;
   font-size: 0.82rem;
   font-weight: 800;
@@ -85,25 +100,51 @@ body {
 }
 
 .digit-strip--missing .digit-chip {
-  border-color: var(--ui-missing-border);
-  background: var(--ui-missing-bg);
-  color: var(--ui-missing-text);
+  border-color: var(--lotto-missing-border);
+  background: var(--lotto-missing-bg);
+  color: var(--lotto-missing-text);
 }
 
 .digit-strip--top .digit-chip {
-  border-color: var(--ui-top-border);
-  background: var(--ui-top-bg);
-  color: var(--ui-top-text);
+  border-color: var(--lotto-top-border);
+  background: var(--lotto-top-bg);
+  color: var(--lotto-top-text);
 }
 
 .digit-empty {
-  color: var(--ui-muted);
+  color: var(--giu-theme-muted);
   font-weight: 700;
+}
+
+.checkbox-field input[type='checkbox'] {
+  accent-color: var(--giu-theme-accent);
+}
+
+.research-card {
+  color: var(--giu-theme-text);
+  background: var(--giu-theme-card);
+}
+
+.research-card.selected-research {
+  border-color: var(--giu-theme-heading);
+  box-shadow: inset 3px 0 0 var(--giu-theme-heading);
+}
+
+.research-placeholder,
+.empty-state {
+  color: var(--giu-theme-muted);
+}
+
+.error {
+  border-color: #a51f1f;
+  background: #fff0f0;
+  color: #681010;
 }
 
 th,
 td {
-  border-bottom-color: #a8b3c2;
+  color: var(--giu-theme-text);
+  border-bottom-color: var(--giu-theme-border);
 }
 
 @media (max-width: 760px) {
@@ -129,28 +170,5 @@ td {
     width: 1.35rem;
     height: 1.35rem;
     font-size: 0.78rem;
-  }
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --ui-text: #f1f5f9;
-    --ui-muted: #cbd5e1;
-    --ui-subtle: #94a3b8;
-    --ui-border: #64748b;
-    --ui-border-strong: #94a3b8;
-    --ui-surface: #171717;
-    --ui-surface-soft: #20242a;
-    --ui-missing-bg: #17345f;
-    --ui-missing-border: #7aa2df;
-    --ui-missing-text: #e3edff;
-    --ui-top-bg: #4f3b12;
-    --ui-top-border: #d6a844;
-    --ui-top-text: #fff2c2;
-  }
-
-  th,
-  td {
-    border-bottom-color: #586474;
   }
 }

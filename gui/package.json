@@ -11,7 +11,7 @@
     "validate": "npm run check && npm test && npm run build"
   },
   "dependencies": {
-    "giadaware-ui-components": "git+https://github.com/gcomneno/giadaware-ui-components.git#1000288190ad1e4869810514edf4bea34c867770",
+    "giadaware-ui-components": "git+https://github.com/gcomneno/giadaware-ui-components.git#26f9e2068696ecfa215b75b2628cfce2736c164b",
     "svelte": "5.56.1"
   },
   "devDependencies": {
