@@ -2,6 +2,7 @@
   font-family: Inter, ui-sans-serif, system-ui, sans-serif;
   color: #202020;
   background: #f2f2f2;
+  color-scheme: light;
   font-synthesis: none;
   --occurrence-position-0: #ffd4d4;
   --occurrence-position-1: #d8f3dc;
@@ -31,10 +32,10 @@ input,
 select {
   width: 100%;
   padding: 0.55rem 0.65rem;
-  border: 1px solid #8a8a8a;
+  border: 1px solid #7a7a7a;
   border-radius: 0.35rem;
-  background: inherit;
-  color: inherit;
+  background: #fff;
+  color: #202020;
 }
 
 input[type='number'] {
@@ -126,7 +127,7 @@ input[type='number']::-webkit-outer-spin-button {
 
 .metric-list dt,
 .compact-list dt {
-  color: #454545;
+  color: #303030;
 }
 
 .metric-list dd,
@@ -146,7 +147,7 @@ input[type='number']::-webkit-outer-spin-button {
 
 .muted,
 .source-line {
-  color: #4a4a4a;
+  color: #3b3b3b;
 }
 
 .source-line code {
@@ -216,8 +217,13 @@ input[type='number']::-webkit-outer-spin-button {
   font-weight: 650;
 }
 
-.checkbox-field input {
-  width: auto;
+.checkbox-field input[type='checkbox'] {
+  flex: 0 0 auto;
+  width: 1.05rem;
+  height: 1.05rem;
+  margin: 0;
+  padding: 0;
+  accent-color: #303030;
 }
 
 .group-meta {
@@ -226,7 +232,7 @@ input[type='number']::-webkit-outer-spin-button {
   justify-content: space-between;
   gap: 0.5rem 1rem;
   margin-bottom: 0.75rem;
-  color: #4a4a4a;
+  color: #3b3b3b;
 }
 
 .reference-strip {
@@ -349,7 +355,9 @@ td:nth-child(2) {
 }
 
 .research-kind {
+  color: #3b3b3b;
   font-size: 0.85rem;
+  opacity: 1;
 }
 
 .research-workspace {
@@ -364,10 +372,10 @@ td:nth-child(2) {
   min-height: 12rem;
   place-content: center;
   padding: 2rem;
-  border: 1px dashed #9a9a9a;
+  border: 1px dashed #8a8a8a;
   border-radius: 0.5rem;
   text-align: center;
-  color: #444;
+  color: #333;
 }
 
 .research-metrics {
@@ -385,7 +393,7 @@ td:nth-child(2) {
 }
 
 .research-metric span {
-  color: #4a4a4a;
+  color: #3b3b3b;
 }
 
 .research-filters {
@@ -397,7 +405,7 @@ td:nth-child(2) {
 
 .filter-count {
   margin: 0;
-  color: #4a4a4a;
+  color: #3b3b3b;
   text-align: right;
 }
 
@@ -406,7 +414,7 @@ td:nth-child(2) {
   padding: 0.75rem;
   border-radius: 0.35rem;
   background: rgba(127, 127, 127, 0.1);
-  color: #444;
+  color: #333;
 }
 
 .candidate-cell {
@@ -442,6 +450,13 @@ td:nth-child(2) {
   :root {
     color: #f1f1f1;
     background: #171717;
+    color-scheme: dark;
+  }
+
+  input,
+  select {
+    background: #242424;
+    color: #f1f1f1;
   }
 
   .primary-nav,
@@ -454,16 +469,21 @@ td:nth-child(2) {
     border-color: #656565;
   }
 
+  .checkbox-field input[type='checkbox'] {
+    accent-color: #f1f1f1;
+  }
+
   .metric-list dt,
   .compact-list dt,
   .muted,
   .source-line,
   .group-meta,
+  .research-kind,
   .research-metric span,
   .filter-count,
   .research-placeholder,
   .empty-state {
-    color: #d0d0d0;
+    color: #d7d7d7;
   }
 
   .error {
