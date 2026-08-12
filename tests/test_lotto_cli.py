@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import io
-import sys
 import unittest
 from contextlib import redirect_stderr, redirect_stdout
 from types import SimpleNamespace
@@ -32,28 +31,17 @@ class LottoCliTests(unittest.TestCase):
                     if tool.command == "db-update"
                     else tool.command
                 )
-
                 self.assertIn(display_command, rendered)
                 self.assertIn(tool.script, rendered)
 
     def test_current_calls_direct_adapter_with_forwarded_arguments(self) -> None:
-        with patch(
-            "lotto.run_direct_command",
-            return_value=7,
-        ) as direct:
+        with patch("lotto.run_direct_command", return_value=7) as direct:
             result = lotto.main(("current", "--to-num", "119"))
-
         self.assertEqual(result, 7)
-        direct.assert_called_once_with(
-            "current",
-            ["--to-num", "119"],
-        )
+        direct.assert_called_once_with("current", ["--to-num", "119"])
 
     def test_db_calls_direct_adapter_with_forwarded_arguments(self) -> None:
-        with patch(
-            "lotto.run_direct_command",
-            return_value=0,
-        ) as direct:
+        with patch("lotto.run_direct_command", return_value=0) as direct:
             result = lotto.main(
                 (
                     "db",
@@ -63,7 +51,6 @@ class LottoCliTests(unittest.TestCase):
                     "100",
                 )
             )
-
         self.assertEqual(result, 0)
         direct.assert_called_once_with(
             "db",
@@ -75,31 +62,20 @@ class LottoCliTests(unittest.TestCase):
             ],
         )
 
-    def test_forwards_rolling_frequency_tool(self) -> None:
-        completed = SimpleNamespace(returncode=0)
-
+    def test_rolling_frequency_uses_direct_adapter(self) -> None:
         with patch(
-            "lotto.subprocess.run",
-            return_value=completed,
-        ) as run:
+            "lotto.run_direct_command",
+            return_value=0,
+        ) as direct, patch("lotto.subprocess.run") as subprocess_run:
             result = lotto.main(
-                (
-                    "rolling-frequency",
-                    "--repetitions",
-                    "25",
-                )
+                ("rolling-frequency", "--repetitions", "25")
             )
-
         self.assertEqual(result, 0)
-        self.assertEqual(
-            run.call_args.args[0],
-            [
-                sys.executable,
-                str(lotto.ROOT / "analyze_rolling_frequency.py"),
-                "--repetitions",
-                "25",
-            ],
+        direct.assert_called_once_with(
+            "rolling-frequency",
+            ["--repetitions", "25"],
         )
+        subprocess_run.assert_not_called()
 
     def test_coverage_hits_uses_direct_adapter(self) -> None:
         with patch(
@@ -107,14 +83,8 @@ class LottoCliTests(unittest.TestCase):
             return_value=0,
         ) as direct, patch("lotto.subprocess.run") as subprocess_run:
             result = lotto.main(
-                (
-                    "coverage-hits",
-                    "--last",
-                    "10",
-                    "--details",
-                )
+                ("coverage-hits", "--last", "10", "--details")
             )
-
         self.assertEqual(result, 0)
         direct.assert_called_once_with(
             "coverage-hits",
@@ -123,53 +93,34 @@ class LottoCliTests(unittest.TestCase):
         subprocess_run.assert_not_called()
 
     def test_coverage_hits_alias_selects_direct_tool(self) -> None:
-        with patch(
-            "lotto.run_direct_command",
-            return_value=0,
-        ) as direct:
+        with patch("lotto.run_direct_command", return_value=0) as direct:
             result = lotto.main(("hits", "--help"))
-
         self.assertEqual(result, 0)
         direct.assert_called_once_with("coverage-hits", ["--help"])
 
     def test_current_alias_selects_direct_adapter(self) -> None:
-        with patch(
-            "lotto.run_direct_command",
-            return_value=0,
-        ) as direct:
+        with patch("lotto.run_direct_command", return_value=0) as direct:
             result = lotto.main(("now", "--help"))
-
         self.assertEqual(result, 0)
         direct.assert_called_once_with("current", ["--help"])
 
     def test_help_forwards_to_selected_legacy_tool(self) -> None:
         completed = SimpleNamespace(returncode=0)
-
-        with patch(
-            "lotto.subprocess.run",
-            return_value=completed,
-        ) as run:
+        with patch("lotto.subprocess.run", return_value=completed) as run:
             result = lotto.main(("help", "update"))
-
         self.assertEqual(result, 0)
         self.assertEqual(run.call_args.args[0][-1], "--help")
 
     def test_help_current_uses_direct_adapter(self) -> None:
-        with patch(
-            "lotto.run_direct_command",
-            return_value=0,
-        ) as direct:
+        with patch("lotto.run_direct_command", return_value=0) as direct:
             result = lotto.main(("help", "current"))
-
         self.assertEqual(result, 0)
         direct.assert_called_once_with("current", ["--help"])
 
     def test_unknown_command_is_rejected(self) -> None:
         error = io.StringIO()
-
         with redirect_stderr(error):
             result = lotto.main(("radioactive-banana",))
-
         self.assertEqual(result, 2)
         self.assertIn("comando sconosciuto", error.getvalue())
 

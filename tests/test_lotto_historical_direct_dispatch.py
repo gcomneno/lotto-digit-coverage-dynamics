@@ -7,15 +7,17 @@ import lotto
 
 
 class LottoHistoricalDirectDispatchTests(unittest.TestCase):
-    def test_migrated_historical_commands_use_direct_dispatch(self) -> None:
-        for command in (
-            "completion",
-            "residuals",
-            "validation",
-            "coverage-hits",
-            "return-times",
-            "digit-coverage",
-        ):
+    def test_every_historical_analysis_command_is_direct(self) -> None:
+        historical = tuple(
+            tool.command
+            for tool in lotto.TOOLS
+            if tool.category == "Analisi storiche"
+        )
+
+        self.assertTrue(historical)
+        self.assertTrue(set(historical).issubset(lotto.DIRECT_COMMANDS))
+
+        for command in historical:
             with self.subTest(command=command):
                 with patch(
                     "lotto.run_direct_command",
@@ -29,11 +31,12 @@ class LottoHistoricalDirectDispatchTests(unittest.TestCase):
                 direct.assert_called_once_with(command, ["--help"])
                 subprocess_run.assert_not_called()
 
-    def test_migrated_aliases_resolve_to_canonical_direct_command(self) -> None:
+    def test_historical_aliases_resolve_to_canonical_direct_command(self) -> None:
         aliases = {
-            "hits": "coverage-hits",
-            "returns": "return-times",
-            "digits": "digit-coverage",
+            alias: tool.command
+            for tool in lotto.TOOLS
+            if tool.category == "Analisi storiche"
+            for alias in tool.aliases
         }
         for alias, command in aliases.items():
             with self.subTest(alias=alias):

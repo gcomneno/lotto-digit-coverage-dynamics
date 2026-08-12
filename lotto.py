@@ -20,12 +20,17 @@ DIRECT_COMMANDS = frozenset(
     {
         "current",
         "db",
+        "anomalies",
         "completion",
         "residuals",
         "validation",
-        "coverage-hits",
-        "return-times",
         "digit-coverage",
+        "rolling-frequency",
+        "coverage-hits",
+        "twins",
+        "return-times",
+        "cycles",
+        "symmetry-history",
     }
 )
 
@@ -160,33 +165,41 @@ def run_direct_command(command: str, forwarded_arguments: Sequence[str]) -> int:
         if command == "current":
             from lotto_digit_coverage.interfaces.cli.current_command import main
             return main(tuple(forwarded_arguments))
-
         if command == "db":
             from lotto_digit_coverage.interfaces.cli.database_command import main
             return _page_database_output(main, forwarded_arguments)
-
+        if command == "anomalies":
+            from analyze_coverage_anomalies import main
+            return main(tuple(forwarded_arguments))
         if command == "completion":
             from analyze_coverage_completion import main
             return main(tuple(forwarded_arguments))
-
         if command == "residuals":
             from analyze_coverage_markov_residuals import main
             return main(tuple(forwarded_arguments))
-
         if command == "validation":
             from analyze_coverage_markov_validation import main
             return main(tuple(forwarded_arguments))
-
+        if command == "digit-coverage":
+            from analyze_digit_coverage import main
+            return main(tuple(forwarded_arguments))
+        if command == "rolling-frequency":
+            from analyze_rolling_frequency import main
+            return main(tuple(forwarded_arguments))
         if command == "coverage-hits":
             from analyze_coverage_hit_statistics import main
             return main(tuple(forwarded_arguments))
-
+        if command == "twins":
+            from analyze_twin_numbers import main
+            return main(tuple(forwarded_arguments))
         if command == "return-times":
             from analyze_digit_return_times import main
             return main(tuple(forwarded_arguments))
-
-        if command == "digit-coverage":
-            from analyze_digit_coverage import main
+        if command == "cycles":
+            from analyze_historical_cycle_distribution import main
+            return main(tuple(forwarded_arguments))
+        if command == "symmetry-history":
+            from analyze_historical_symmetry_classes import main
             return main(tuple(forwarded_arguments))
 
     raise ValueError(f"Comando diretto non registrato: {command}")
