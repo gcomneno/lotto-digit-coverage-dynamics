@@ -26,9 +26,9 @@ class Tool:
 TOOLS = (
     Tool(
         "current",
-        "analyze_current_coverage.py",
+        "analyze_current_consensus.py",
         "Uso corrente",
-        "Classifica Markov, convergenza trasversale e anomalie attive.",
+        "Classifica Markov, consensus trasversale e anomalie attive.",
         ("now",),
     ),
     Tool(
@@ -102,6 +102,16 @@ TOOLS = (
         ("hits",),
     ),
     Tool(
+        "twins",
+        "analyze_twin_numbers.py",
+        "Analisi storiche",
+        (
+            "Valuta i gemelli 11–88 contro il null 1/18 "
+            "usando soltanto stati ex ante."
+        ),
+        ("gemelli",),
+    ),
+    Tool(
         "return-times",
         "analyze_digit_return_times.py",
         "Analisi storiche",
@@ -166,6 +176,7 @@ def print_usage() -> None:
     print("  ./lotto.py current")
     print("  ./lotto.py current --to-num 119")
     print("  ./lotto.py update")
+    print("  ./lotto.py twins")
     print(
         "  ./lotto.py db update "
         "--from-year 2021 --to-year 2026"

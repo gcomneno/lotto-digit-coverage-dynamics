@@ -69,7 +69,7 @@ class LottoCliTests(unittest.TestCase):
             command[1],
             str(
                 lotto.ROOT
-                / "analyze_current_coverage.py"
+                / "analyze_current_consensus.py"
             ),
         )
         self.assertEqual(
@@ -236,7 +236,7 @@ class LottoCliTests(unittest.TestCase):
             run.call_args.args[0][1],
             str(
                 lotto.ROOT
-                / "analyze_current_coverage.py"
+                / "analyze_current_consensus.py"
             ),
         )
 
