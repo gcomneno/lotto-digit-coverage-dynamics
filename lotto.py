@@ -16,7 +16,15 @@ from typing import Sequence
 
 
 ROOT = Path(__file__).resolve().parent
-DIRECT_COMMANDS = frozenset({"current", "db"})
+DIRECT_COMMANDS = frozenset(
+    {
+        "current",
+        "db",
+        "completion",
+        "residuals",
+        "validation",
+    }
+)
 
 
 @dataclass(frozen=True)
@@ -153,6 +161,18 @@ def run_direct_command(command: str, forwarded_arguments: Sequence[str]) -> int:
         if command == "db":
             from lotto_digit_coverage.interfaces.cli.database_command import main
             return _page_database_output(main, forwarded_arguments)
+
+        if command == "completion":
+            from analyze_coverage_completion import main
+            return main(tuple(forwarded_arguments))
+
+        if command == "residuals":
+            from analyze_coverage_markov_residuals import main
+            return main(tuple(forwarded_arguments))
+
+        if command == "validation":
+            from analyze_coverage_markov_validation import main
+            return main(tuple(forwarded_arguments))
 
     raise ValueError(f"Comando diretto non registrato: {command}")
 

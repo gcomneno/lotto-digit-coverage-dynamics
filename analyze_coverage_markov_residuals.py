@@ -5,17 +5,19 @@
 from __future__ import annotations
 
 import argparse
-import math
-import statistics
 import sys
-from collections import defaultdict
 from pathlib import Path
-from typing import Hashable, Sequence
+from typing import Sequence
 
-from strategies.coverage_markov_residuals import (
-    MarkovResidualObservation,
-    collect_residual_observations,
+from lotto_digit_coverage.application.historical_markov import (
+    MarkovResidualReport,
+    ResidualGroup,
+    build_markov_residual_report,
+    expectation_band,
+    expectation_band_sort_key,
+    summarize_residual,
 )
+from strategies.coverage_markov_residuals import MarkovResidualObservation
 from strategies.lotto_repository import LottoRepository
 
 
@@ -29,80 +31,35 @@ def format_digits(digits: frozenset[int]) -> str:
     ) + "}"
 
 
-def expectation_band(value: float) -> str:
-    if value < 1.75:
-        return "<1.75"
-    if value < 2.25:
-        return "1.75–2.25"
-    if value < 2.75:
-        return "2.25–2.75"
-    if value < 3.25:
-        return "2.75–3.25"
-
-    return "3.25+"
-
-
 def band_sort_key(label: str) -> int:
-    order = {
-        "<1.75": 0,
-        "1.75–2.25": 1,
-        "2.25–2.75": 2,
-        "2.75–3.25": 3,
-        "3.25+": 4,
-    }
-
-    return order[label]
+    return expectation_band_sort_key(label)
 
 
 def summarize(
     observations: Sequence[MarkovResidualObservation],
 ) -> tuple[int, float, float, float, float, float]:
-    total = len(observations)
+    """Compatibility tuple for callers that predate the application report."""
 
-    if not observations:
-        return 0, 0.0, 0.0, 0.0, 0.0, 0.0
-
-    actual_mean = statistics.mean(
-        observation.actual_remaining
-        for observation in observations
-    )
-
-    predicted_mean = statistics.mean(
-        observation.predicted_remaining
-        for observation in observations
-    )
-
-    errors = tuple(
-        observation.actual_remaining
-        - observation.predicted_remaining
-        for observation in observations
-    )
-
-    bias = statistics.mean(errors)
-    mae = statistics.mean(abs(error) for error in errors)
-    rmse = math.sqrt(
-        statistics.mean(error * error for error in errors)
-    )
-
+    summary = summarize_residual(observations)
     return (
-        total,
-        actual_mean,
-        predicted_mean,
-        bias,
-        mae,
-        rmse,
+        summary.states,
+        summary.actual_mean,
+        summary.predicted_mean,
+        summary.bias,
+        summary.mean_absolute_error,
+        summary.root_mean_square_error,
     )
+
+
+def _format_group_key(key: object) -> str:
+    if isinstance(key, frozenset):
+        return format_digits(key)
+    return str(key)
 
 
 def print_group_table(
     title: str,
-    groups: dict[
-        Hashable,
-        list[MarkovResidualObservation],
-    ],
-    *,
-    key_formatter=str,
-    sort_key=None,
+    groups: Sequence[ResidualGroup],
 ) -> None:
     print(f"\n===== {title} =====")
     print()
@@ -115,61 +72,23 @@ def print_group_table(
         "--------  -------  -------"
     )
 
-    keys = sorted(
-        groups,
-        key=sort_key,
-    )
-
-    for key in keys:
-        (
-            total,
-            actual,
-            predicted,
-            bias,
-            mae,
-            rmse,
-        ) = summarize(groups[key])
-
+    for group in groups:
+        summary = group.summary
         print(
-            f"{key_formatter(key):<16}"
-            f"{total:<8}"
-            f"{actual:>6.3f}  "
-            f"{predicted:>7.3f}  "
-            f"{bias:>+7.3f}  "
-            f"{mae:>7.3f}  "
-            f"{rmse:>7.3f}"
+            f"{_format_group_key(group.key):<16}"
+            f"{summary.states:<8}"
+            f"{summary.actual_mean:>6.3f}  "
+            f"{summary.predicted_mean:>7.3f}  "
+            f"{summary.bias:>+7.3f}  "
+            f"{summary.mean_absolute_error:>7.3f}  "
+            f"{summary.root_mean_square_error:>7.3f}"
         )
 
 
-def print_exact_states(
-    observations: Sequence[MarkovResidualObservation],
-    minimum_cases: int,
-) -> None:
-    groups: dict[
-        frozenset[int],
-        list[MarkovResidualObservation],
-    ] = defaultdict(list)
-
-    for observation in observations:
-        groups[observation.missing_digits].append(observation)
-
-    eligible = {
-        state: items
-        for state, items in groups.items()
-        if len(items) >= minimum_cases
-    }
-
-    ordered_states = sorted(
-        eligible,
-        key=lambda state: (
-            len(state),
-            -len(eligible[state]),
-            tuple(sorted(state)),
-        ),
-    )
-
+def print_exact_states(report: MarkovResidualReport) -> None:
     print(
-        f"\n===== STATI ESATTI CON ALMENO {minimum_cases} CASI ====="
+        f"\n===== STATI ESATTI CON ALMENO "
+        f"{report.minimum_state_cases} CASI ====="
     )
     print()
     print(
@@ -181,23 +100,15 @@ def print_exact_states(
         "--------  -------"
     )
 
-    for state in ordered_states:
-        (
-            total,
-            actual,
-            predicted,
-            bias,
-            mae,
-            _,
-        ) = summarize(eligible[state])
-
+    for group in report.exact_states:
+        summary = group.summary
         print(
-            f"{format_digits(state):<16}"
-            f"{total:<8}"
-            f"{actual:>6.3f}  "
-            f"{predicted:>7.3f}  "
-            f"{bias:>+7.3f}  "
-            f"{mae:>7.3f}"
+            f"{_format_group_key(group.key):<16}"
+            f"{summary.states:<8}"
+            f"{summary.actual_mean:>6.3f}  "
+            f"{summary.predicted_mean:>7.3f}  "
+            f"{summary.bias:>+7.3f}  "
+            f"{summary.mean_absolute_error:>7.3f}"
         )
 
 
@@ -208,32 +119,27 @@ def build_parser() -> argparse.ArgumentParser:
             "con la durata residua osservata."
         )
     )
-
     parser.add_argument(
         "--database",
         type=Path,
         default=DEFAULT_DATABASE,
     )
-
     parser.add_argument(
         "--minimum-state-cases",
         type=int,
         default=20,
     )
-
     return parser
 
 
-def main() -> int:
-    args = build_parser().parse_args()
+def main(argv: Sequence[str] | None = None) -> int:
+    args = build_parser().parse_args(argv)
 
     try:
         with LottoRepository(args.database) as repository:
-            observations = collect_residual_observations(repository)
-
-        if not observations:
-            raise RuntimeError(
-                "Nessuna osservazione residua disponibile."
+            report = build_markov_residual_report(
+                repository,
+                minimum_state_cases=args.minimum_state_cases,
             )
 
         print("===== VALIDAZIONE ATTESA RESIDUA MARKOV =====")
@@ -246,67 +152,30 @@ def main() -> int:
             "Le osservazioni dello stesso ciclo sono dipendenti: "
             "il confronto è descrittivo."
         )
-        print(f"Stati osservati: {len(observations)}")
+        print(f"Stati osservati: {len(report.observations)}")
 
-        (
-            total,
-            actual,
-            predicted,
-            bias,
-            mae,
-            rmse,
-        ) = summarize(observations)
-
+        overall = report.overall
         print("\n===== RISULTATO COMPLESSIVO =====")
-        print(f"Stati:                  {total}")
-        print(f"Durata residua reale:   {actual:.3f}")
-        print(f"Durata prevista Markov: {predicted:.3f}")
-        print(f"Bias reale - prevista:  {bias:+.3f}")
-        print(f"Errore assoluto medio:  {mae:.3f}")
-        print(f"RMSE:                    {rmse:.3f}")
-
-        by_missing_count: dict[
-            int,
-            list[MarkovResidualObservation],
-        ] = defaultdict(list)
-
-        by_expectation_band: dict[
-            str,
-            list[MarkovResidualObservation],
-        ] = defaultdict(list)
-
-        for observation in observations:
-            by_missing_count[
-                len(observation.missing_digits)
-            ].append(observation)
-
-            by_expectation_band[
-                expectation_band(
-                    observation.predicted_remaining
-                )
-            ].append(observation)
+        print(f"Stati:                  {overall.states}")
+        print(f"Durata residua reale:   {overall.actual_mean:.3f}")
+        print(f"Durata prevista Markov: {overall.predicted_mean:.3f}")
+        print(f"Bias reale - prevista:  {overall.bias:+.3f}")
+        print(
+            "Errore assoluto medio:  "
+            f"{overall.mean_absolute_error:.3f}"
+        )
+        print(f"RMSE:                    {overall.root_mean_square_error:.3f}")
 
         print_group_table(
             "PER NUMERO DI CIFRE MANCANTI",
-            by_missing_count,
+            report.by_missing_count,
         )
-
         print_group_table(
             "PER FASCIA DI ATTESA PREVISTA",
-            by_expectation_band,
-            sort_key=band_sort_key,
+            report.by_expectation_band,
         )
-
-        print_exact_states(
-            observations,
-            minimum_cases=args.minimum_state_cases,
-        )
-
-    except (
-        FileNotFoundError,
-        RuntimeError,
-        ValueError,
-    ) as error:
+        print_exact_states(report)
+    except (FileNotFoundError, RuntimeError, ValueError) as error:
         print(f"ERRORE: {error}", file=sys.stderr)
         return 1
 
