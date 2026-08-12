@@ -3,14 +3,15 @@
   import { Button, Surface } from 'giadaware-ui-components/studio';
   import CurrentDashboard from './components/CurrentDashboard.svelte';
   import OccurrenceExplorer from './components/OccurrenceExplorer.svelte';
+  import ResearchReports from './components/ResearchReports.svelte';
   import { desktopBridge, type LottoBridge } from './lib/bridge';
 
-  type View = 'dashboard' | 'occurrences';
+  type View = 'dashboard' | 'occurrences' | 'research';
 
-  let bridge: LottoBridge | null = null;
-  let activeView: View = 'dashboard';
-  let connecting = true;
-  let errorMessage = '';
+  let bridge = $state<LottoBridge | null>(null);
+  let activeView = $state<View>('dashboard');
+  let connecting = $state(true);
+  let errorMessage = $state('');
 
   async function connect(): Promise<void> {
     try {
@@ -44,6 +45,13 @@
       >
         Occorrenze
       </Button>
+      <Button
+        variant={activeView === 'research' ? 'primary' : 'secondary'}
+        onclick={() => (activeView = 'research')}
+        aria-current={activeView === 'research' ? 'page' : undefined}
+      >
+        Ricerca
+      </Button>
     </nav>
 
     {#if errorMessage}
@@ -53,8 +61,10 @@
     {:else if bridge}
       {#if activeView === 'dashboard'}
         <CurrentDashboard {bridge} />
-      {:else}
+      {:else if activeView === 'occurrences'}
         <OccurrenceExplorer {bridge} />
+      {:else}
+        <ResearchReports {bridge} />
       {/if}
     {/if}
   </Surface>

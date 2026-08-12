@@ -10,12 +10,12 @@
 
   let { bridge }: { bridge: LottoBridge } = $props();
 
-  let catalog: ResearchCatalogItem[] = [];
-  let report: ResearchReport | null = null;
-  let selectedId = '';
-  let loadingCatalog = true;
-  let loadingReport = false;
-  let errorMessage = '';
+  let catalog = $state<ResearchCatalogItem[]>([]);
+  let report = $state<ResearchReport | null>(null);
+  let selectedId = $state('');
+  let loadingCatalog = $state(true);
+  let loadingReport = $state(false);
+  let errorMessage = $state('');
 
   async function loadCatalog(): Promise<void> {
     loadingCatalog = true;

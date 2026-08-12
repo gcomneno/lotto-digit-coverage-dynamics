@@ -21,12 +21,12 @@
 
   let { bridge }: { bridge: LottoBridge } = $props();
 
-  let report: OccurrenceContract | null = null;
-  let loading = true;
-  let errorMessage = '';
-  let groupSize = 10;
-  let requestedDraw: number | undefined = undefined;
-  let selectedWheel = '';
+  let report = $state<OccurrenceContract | null>(null);
+  let loading = $state(true);
+  let errorMessage = $state('');
+  let groupSize = $state(10);
+  let requestedDraw = $state<number | undefined>(undefined);
+  let selectedWheel = $state('');
 
   async function load(): Promise<void> {
     if (!Number.isInteger(groupSize) || groupSize <= 0) {

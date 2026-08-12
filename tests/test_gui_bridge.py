@@ -13,12 +13,18 @@ from lotto_digit_coverage.interfaces.gui.bridge import (
 
 class GuiBridgeTests(unittest.TestCase):
     def test_capabilities_expose_versioned_application_contracts(self) -> None:
-        api = LottoGuiApi(Path("/tmp/project"))
+        catalog_loader = Mock(
+            return_value=[
+                {"id": "completion", "title": "Completion"},
+                {"id": "twins", "title": "Twins"},
+            ]
+        )
+        api = LottoGuiApi(Path("/tmp/project"), catalog_loader=catalog_loader)
 
         response = api.get_capabilities()
 
         self.assertTrue(response["ok"])
-        self.assertEqual(response["data"]["bridge_version"], 1)
+        self.assertEqual(response["data"]["bridge_version"], 2)
         self.assertEqual(
             response["data"]["contracts"],
             [
@@ -26,6 +32,11 @@ class GuiBridgeTests(unittest.TestCase):
                 {"schema": "lotto.occurrence-groups", "version": 1},
             ],
         )
+        self.assertEqual(
+            response["data"]["research_reports"],
+            ["completion", "twins"],
+        )
+        catalog_loader.assert_called_once_with()
 
     def test_current_forwards_structured_arguments_and_wraps_payload(self) -> None:
         loader = Mock(

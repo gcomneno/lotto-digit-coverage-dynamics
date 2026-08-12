@@ -6,9 +6,9 @@
 
   let { bridge }: { bridge: LottoBridge } = $props();
 
-  let current: CurrentContract | null = null;
-  let loading = true;
-  let errorMessage = '';
+  let current = $state<CurrentContract | null>(null);
+  let loading = $state(true);
+  let errorMessage = $state('');
 
   function digitSet(values: number[]): string {
     return values.length ? `{${values.join(',')}}` : '—';
