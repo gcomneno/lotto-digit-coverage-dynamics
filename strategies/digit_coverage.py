@@ -5,9 +5,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Sequence
 
-from strategies.lotto_repository import (
+from lotto_digit_coverage.application.repositories import DrawRepository
+from lotto_digit_coverage.domain.draws import (
     DrawSnapshot,
-    LottoRepository,
     split_digits,
 )
 
@@ -129,95 +129,15 @@ def build_coverage_windows(
 
 
 def load_draws_by_wheel(
-    repository: LottoRepository,
+    repository: DrawRepository,
 ) -> dict[str, tuple[DrawSnapshot, ...]]:
-    """Carica tutte le estrazioni ordinate per ruota e data."""
+    """Carica estrazioni strutturate tramite il contratto applicativo."""
 
-    rows = repository.connection.execute(
-        """
-        SELECT
-            draw_number,
-            draw_date,
-            wheel,
-            wheel_order,
-            position,
-            value
-        FROM v_draw_numbers
-        ORDER BY
-            wheel_order,
-            draw_date,
-            draw_number,
-            position
-        """
-    ).fetchall()
-
-    grouped: dict[
-        tuple[str, int, int, str],
-        list[int],
-    ] = {}
-
-    wheel_ordering: dict[str, int] = {}
-
-    for row in rows:
-        wheel = str(row["wheel"])
-        wheel_order = int(row["wheel_order"])
-
-        wheel_ordering[wheel] = wheel_order
-
-        key = (
-            wheel,
-            wheel_order,
-            int(row["draw_number"]),
-            str(row["draw_date"]),
-        )
-
-        grouped.setdefault(key, []).append(
-            int(row["value"])
-        )
-
-    by_wheel: dict[str, list[DrawSnapshot]] = {}
-
-    for (
-        wheel,
-        wheel_order,
-        draw_number,
-        draw_date,
-    ), numbers in grouped.items():
-        if len(numbers) != 5:
-            raise RuntimeError(
-                f"Estrazione {draw_number}, ruota {wheel}: "
-                f"attesi 5 numeri, trovati {len(numbers)}."
-            )
-
-        by_wheel.setdefault(wheel, []).append(
-            DrawSnapshot(
-                draw_number=draw_number,
-                draw_date=draw_date,
-                wheel=wheel,
-                wheel_order=wheel_order,
-                numbers=tuple(numbers),
-            )
-        )
-
-    return {
-        wheel: tuple(
-            sorted(
-                draws,
-                key=lambda draw: (
-                    draw.draw_date,
-                    draw.draw_number,
-                ),
-            )
-        )
-        for wheel, draws in sorted(
-            by_wheel.items(),
-            key=lambda item: wheel_ordering[item[0]],
-        )
-    }
+    return repository.draws_by_wheel()
 
 
 def analyze_digit_coverage(
-    repository: LottoRepository,
+    repository: DrawRepository,
     max_window_size: int = 3,
 ) -> dict[int, tuple[DigitCoverageWindow, ...]]:
     """Analizza tutte le ruote per finestre da 1 a N."""
