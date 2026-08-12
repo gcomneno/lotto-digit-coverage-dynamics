@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-"""Porta di ingresso unica ai CLI del laboratorio Lotto."""
+"""Porta di ingresso unica alle interfacce e ai tool del laboratorio Lotto."""
 
 from __future__ import annotations
 
@@ -20,6 +20,7 @@ DIRECT_COMMANDS = frozenset(
     {
         "current",
         "db",
+        "gui",
         "anomalies",
         "completion",
         "residuals",
@@ -48,6 +49,7 @@ TOOLS = (
     Tool("current", "analyze_current_consensus.py", "Uso corrente", "Classifica Markov, consensus trasversale e anomalie attive.", ("now",)),
     Tool("update", "update_lotto_database.py", "Uso corrente", "Aggiorna e verifica il database annuale corrente."),
     Tool("db", "view_lotto_database.sh", "Uso corrente", "Mostra il contenuto del database Lotto.", ("view",)),
+    Tool("gui", "lotto_digit_coverage/interfaces/gui/launcher.py", "Interfacce", "Avvia la GUI locale/offline basata su GIADA UI."),
     Tool("db-update", "update_lotto_databases.py", "Gestione dati", "Aggiorna uno o più database annuali."),
     Tool("anomalies", "analyze_coverage_anomalies.py", "Analisi storiche", "Rileva e riepiloga le anomalie A1–A4."),
     Tool("completion", "analyze_coverage_completion.py", "Analisi storiche", "Analizza le chiusure dei cicli di copertura."),
@@ -83,6 +85,7 @@ def print_usage() -> None:
     print("Esempi:")
     print("  ./lotto.py current")
     print("  ./lotto.py current --to-num 119")
+    print("  ./lotto.py gui")
     print("  ./lotto.py update")
     print("  ./lotto.py twins")
     print("  ./lotto.py db update --from-year 2021 --to-year 2026")
@@ -159,7 +162,7 @@ def _page_database_output(handler, forwarded_arguments: Sequence[str]) -> int:
 
 
 def run_direct_command(command: str, forwarded_arguments: Sequence[str]) -> int:
-    """Invoke migrated CLI adapters in-process over application services."""
+    """Invoke migrated interface adapters in-process over application services."""
 
     with _project_working_directory():
         if command == "current":
@@ -168,6 +171,9 @@ def run_direct_command(command: str, forwarded_arguments: Sequence[str]) -> int:
         if command == "db":
             from lotto_digit_coverage.interfaces.cli.database_command import main
             return _page_database_output(main, forwarded_arguments)
+        if command == "gui":
+            from lotto_digit_coverage.interfaces.gui.launcher import main
+            return main(tuple(forwarded_arguments))
         if command == "anomalies":
             from analyze_coverage_anomalies import main
             return main(tuple(forwarded_arguments))

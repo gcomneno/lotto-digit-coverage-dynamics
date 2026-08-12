@@ -4,14 +4,12 @@ __pycache__/
 .pytest_cache/
 .coverage
 
-SQLite runtime files
-
+# SQLite runtime files
 *.sqlite3-journal
 *.sqlite3-wal
 *.sqlite3-shm
 
-Local Python environments
-
+# Local Python environments
 .venv/
 venv/
 
@@ -20,3 +18,7 @@ reports/*.csv
 
 # Mutable current-year Lotto database
 data/lotto-current.sqlite3
+
+# Generated GUI dependencies and build output
+gui/node_modules/
+gui/dist/

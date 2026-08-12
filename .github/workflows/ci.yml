@@ -25,3 +25,24 @@ jobs:
 
       - name: Run test suite
         run: python3 -m unittest discover -v
+
+  gui:
+    name: Svelte GUI
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install GUI dependencies
+        working-directory: gui
+        run: npm install --no-audit --no-fund
+
+      - name: Validate GUI
+        working-directory: gui
+        run: npm run validate
