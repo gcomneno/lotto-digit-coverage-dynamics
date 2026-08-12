@@ -97,7 +97,7 @@
 
     <label class="field-stack">
       <FieldLabel
-        label="Cutoff opzionale"
+        label="Cutoff"
         hint="Concorso da usare come primo riferimento; vuoto = ultimo completo."
         optional={true}
         optionalLabel="opzionale"

@@ -31,10 +31,21 @@ input,
 select {
   width: 100%;
   padding: 0.55rem 0.65rem;
-  border: 1px solid #a0a0a0;
+  border: 1px solid #8a8a8a;
   border-radius: 0.35rem;
   background: inherit;
   color: inherit;
+}
+
+input[type='number'] {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
+  margin: 0;
+  appearance: none;
 }
 
 .app-shell {
@@ -82,14 +93,14 @@ select {
 
 .wheel-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
   gap: 0.75rem;
 }
 
 .wheel-card {
   min-width: 0;
   padding: 0.85rem;
-  border: 1px solid #b8b8b8;
+  border: 1px solid #a8a8a8;
   border-radius: 0.4rem;
 }
 
@@ -107,20 +118,22 @@ select {
 
 .metric-list div,
 .compact-list div {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
+  display: grid;
+  grid-template-columns: minmax(5.5rem, auto) minmax(0, 1fr);
+  gap: 0.75rem;
   padding: 0.25rem 0;
 }
 
 .metric-list dt,
 .compact-list dt {
-  color: #555;
+  color: #454545;
 }
 
 .metric-list dd,
 .compact-list dd {
+  min-width: 0;
   margin: 0;
+  overflow-wrap: anywhere;
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
@@ -131,15 +144,24 @@ select {
   font-weight: 700;
 }
 
-.muted {
-  color: #555;
+.muted,
+.source-line {
+  color: #4a4a4a;
+}
+
+.source-line code {
+  color: inherit;
+  font-weight: 600;
 }
 
 .error {
+  margin-block: 0.75rem;
   padding: 0.85rem;
-  border: 2px solid #9d1c1c;
+  border: 2px solid #a51f1f;
   border-radius: 0.4rem;
-  background: #fff4f4;
+  background: #fff0f0;
+  color: #681010;
+  font-weight: 650;
 }
 
 .plain-list {
@@ -164,7 +186,8 @@ select {
   font-variant-numeric: tabular-nums;
 }
 
-.control-grid {
+.control-grid,
+.research-filters {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
   align-items: end;
@@ -176,9 +199,25 @@ select {
   gap: 0.4rem;
 }
 
+.field-label {
+  font-weight: 700;
+}
+
 .control-actions {
   display: flex;
   align-items: flex-end;
+}
+
+.checkbox-field {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-height: 2.65rem;
+  font-weight: 650;
+}
+
+.checkbox-field input {
+  width: auto;
 }
 
 .group-meta {
@@ -187,7 +226,7 @@ select {
   justify-content: space-between;
   gap: 0.5rem 1rem;
   margin-bottom: 0.75rem;
-  color: #555;
+  color: #4a4a4a;
 }
 
 .reference-strip {
@@ -216,25 +255,11 @@ select {
   font-size: 0.78rem;
 }
 
-.position-0 {
-  background: var(--occurrence-position-0);
-}
-
-.position-1 {
-  background: var(--occurrence-position-1);
-}
-
-.position-2 {
-  background: var(--occurrence-position-2);
-}
-
-.position-3 {
-  background: var(--occurrence-position-3);
-}
-
-.position-4 {
-  background: var(--occurrence-position-4);
-}
+.position-0 { background: var(--occurrence-position-0); }
+.position-1 { background: var(--occurrence-position-1); }
+.position-2 { background: var(--occurrence-position-2); }
+.position-3 { background: var(--occurrence-position-3); }
+.position-4 { background: var(--occurrence-position-4); }
 
 .occurrence-hit {
   display: inline-block;
@@ -260,7 +285,7 @@ table {
 th,
 td {
   padding: 0.55rem 0.65rem;
-  border-bottom: 1px solid #d0d0d0;
+  border-bottom: 1px solid #c6c6c6;
   text-align: right;
   white-space: nowrap;
 }
@@ -275,6 +300,131 @@ td:nth-child(2) {
 .occurrence-table td:nth-child(n + 3),
 .occurrence-table th:nth-child(n + 3) {
   text-align: center;
+}
+
+.research-layout {
+  display: grid;
+  grid-template-columns: minmax(15rem, 19rem) minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.research-sidebar {
+  position: sticky;
+  top: 0.75rem;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.research-sidebar h2 {
+  margin: 0;
+}
+
+.research-catalog {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.research-card {
+  display: grid;
+  gap: 0.7rem;
+  padding: 0.8rem;
+  border: 1px solid #b8b8b8;
+  border-radius: 0.45rem;
+  background: rgba(255, 255, 255, 0.45);
+}
+
+.research-card h3,
+.research-card p {
+  margin: 0;
+}
+
+.research-card p + p {
+  margin-top: 0.4rem;
+}
+
+.research-card.selected-research {
+  border-color: #4a4a4a;
+  box-shadow: inset 3px 0 0 #303030;
+}
+
+.research-kind {
+  font-size: 0.85rem;
+}
+
+.research-workspace {
+  min-width: 0;
+  display: grid;
+  gap: 1rem;
+}
+
+.research-placeholder {
+  display: grid;
+  gap: 0.35rem;
+  min-height: 12rem;
+  place-content: center;
+  padding: 2rem;
+  border: 1px dashed #9a9a9a;
+  border-radius: 0.5rem;
+  text-align: center;
+  color: #444;
+}
+
+.research-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: 0.65rem;
+}
+
+.research-metric {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.7rem;
+  border: 1px solid #c6c6c6;
+  border-radius: 0.4rem;
+}
+
+.research-metric span {
+  color: #4a4a4a;
+}
+
+.research-filters {
+  margin-bottom: 0.85rem;
+  padding: 0.8rem;
+  border: 1px solid #c6c6c6;
+  border-radius: 0.45rem;
+}
+
+.filter-count {
+  margin: 0;
+  color: #4a4a4a;
+  text-align: right;
+}
+
+.empty-state {
+  margin-bottom: 0;
+  padding: 0.75rem;
+  border-radius: 0.35rem;
+  background: rgba(127, 127, 127, 0.1);
+  color: #444;
+}
+
+.candidate-cell {
+  font-weight: 800;
+}
+
+@media (max-width: 900px) {
+  .research-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .research-sidebar {
+    position: static;
+  }
+
+  .research-catalog {
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  }
 }
 
 @media (max-width: 620px) {
@@ -297,24 +447,42 @@ td:nth-child(2) {
   .primary-nav,
   .wheel-card,
   input,
-  select {
-    border-color: #606060;
+  select,
+  .research-card,
+  .research-metric,
+  .research-filters {
+    border-color: #656565;
   }
 
   .metric-list dt,
   .compact-list dt,
   .muted,
-  .group-meta {
-    color: #c5c5c5;
+  .source-line,
+  .group-meta,
+  .research-metric span,
+  .filter-count,
+  .research-placeholder,
+  .empty-state {
+    color: #d0d0d0;
   }
 
   .error {
     border-color: #ff8585;
     background: #3a1616;
+    color: #ffdada;
+  }
+
+  .research-card {
+    background: rgba(255, 255, 255, 0.035);
+  }
+
+  .research-card.selected-research {
+    border-color: #d0d0d0;
+    box-shadow: inset 3px 0 0 #f1f1f1;
   }
 
   th,
   td {
-    border-bottom-color: #555;
+    border-bottom-color: #5a5a5a;
   }
 }
