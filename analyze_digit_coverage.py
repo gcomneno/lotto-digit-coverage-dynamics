@@ -3,15 +3,13 @@
 from __future__ import annotations
 
 import argparse
-import statistics
 import sys
-from collections import Counter, defaultdict
+from collections.abc import Iterable, Sequence
 from pathlib import Path
-from typing import Iterable
 
-from strategies.digit_coverage import (
-    DigitCoverageWindow,
-    analyze_digit_coverage,
+from lotto_digit_coverage.application.historical_signals import (
+    DigitCoverageReport,
+    build_digit_coverage_report,
 )
 from strategies.lotto_repository import LottoRepository
 
@@ -28,9 +26,7 @@ def format_digits(digits: Iterable[int]) -> str:
     return " ".join(str(digit) for digit in values) if values else "—"
 
 
-def print_global_summary(
-    analysis: dict[int, tuple[DigitCoverageWindow, ...]],
-) -> None:
+def print_global_summary(report: DigitCoverageReport) -> None:
     print("===== SINTESI GENERALE DELLA COPERTURA 0–9 =====")
     print()
     print(
@@ -42,68 +38,28 @@ def print_global_summary(
         "-------------  -------------  -----  -------"
     )
 
-    for window_size, windows in analysis.items():
-        total = len(windows)
-        missing_distribution = Counter(
-            window.missing_count
-            for window in windows
-        )
-
-        complete = missing_distribution[0]
-        one_missing = missing_distribution[1]
-        two_missing = missing_distribution[2]
-        three_or_more = sum(
-            count
-            for missing_count, count
-            in missing_distribution.items()
-            if missing_count >= 3
-        )
-
-        missing_counts = [
-            window.missing_count
-            for window in windows
-        ]
-
-        average = statistics.mean(missing_counts)
-        median = statistics.median(missing_counts)
-
+    for row in report.global_summary:
         print(
-            f"{window_size:<5}"
-            f"{total:<9}"
-            f"{complete:>4} ({percentage(complete, total):>6.2f}%)  "
-            f"{one_missing:>4} ({percentage(one_missing, total):>6.2f}%)  "
-            f"{two_missing:>4} ({percentage(two_missing, total):>6.2f}%)  "
-            f"{three_or_more:>4} ({percentage(three_or_more, total):>6.2f}%)  "
-            f"{average:>5.2f}  "
-            f"{median:>7.2f}"
+            f"{row.window_size:<5}"
+            f"{row.windows:<9}"
+            f"{row.complete:>4} ({percentage(row.complete, row.windows):>6.2f}%)  "
+            f"{row.one_missing:>4} ({percentage(row.one_missing, row.windows):>6.2f}%)  "
+            f"{row.two_missing:>4} ({percentage(row.two_missing, row.windows):>6.2f}%)  "
+            f"{row.three_or_more_missing:>4} "
+            f"({percentage(row.three_or_more_missing, row.windows):>6.2f}%)  "
+            f"{row.average_missing:>5.2f}  "
+            f"{row.median_missing:>7.2f}"
         )
 
 
-def print_missing_digit_frequency(
-    analysis: dict[int, tuple[DigitCoverageWindow, ...]],
-) -> None:
+def print_missing_digit_frequency(report: DigitCoverageReport) -> None:
     print("\n===== FREQUENZA DI ASSENZA PER CIFRA =====")
     print(
         "La percentuale indica in quante finestre la cifra "
         "risulta completamente assente."
     )
 
-    for window_size, windows in analysis.items():
-        total = len(windows)
-        absence_counts = Counter(
-            digit
-            for window in windows
-            for digit in window.missing_digits
-        )
-
-        ranking = sorted(
-            range(10),
-            key=lambda digit: (
-                -absence_counts[digit],
-                digit,
-            ),
-        )
-
+    for window_size, _windows in report.windows_by_size:
         print(
             f"\nFinestra di {window_size} "
             f"{'estrazione' if window_size == 1 else 'estrazioni'}"
@@ -112,32 +68,20 @@ def print_missing_digit_frequency(
         print("Cifra  Finestre assente  Percentuale")
         print("-----  ---------------  -----------")
 
-        for digit in ranking:
-            count = absence_counts[digit]
-
+        for row in report.digit_absence:
+            if row.window_size != window_size:
+                continue
             print(
-                f"{digit:<6}"
-                f"{count:<17}"
-                f"{percentage(count, total):>10.2f}%"
+                f"{row.digit:<6}"
+                f"{row.absent_windows:<17}"
+                f"{percentage(row.absent_windows, row.total_windows):>10.2f}%"
             )
 
 
-def print_summary_by_wheel(
-    analysis: dict[int, tuple[DigitCoverageWindow, ...]],
-) -> None:
+def print_summary_by_wheel(report: DigitCoverageReport) -> None:
     print("\n===== COPERTURA PER RUOTA =====")
 
-    for window_size, windows in analysis.items():
-        grouped: dict[str, list[DigitCoverageWindow]] = defaultdict(list)
-
-        for window in windows:
-            grouped[window.wheel].append(window)
-
-        wheel_order = {
-            window.wheel: window.wheel_order
-            for window in windows
-        }
-
+    for window_size, _windows in report.windows_by_size:
         print(
             f"\nFinestra di {window_size} "
             f"{'estrazione' if window_size == 1 else 'estrazioni'}"
@@ -152,66 +96,22 @@ def print_summary_by_wheel(
             "--------------"
         )
 
-        for wheel in sorted(
-            grouped,
-            key=lambda name: wheel_order[name],
-        ):
-            wheel_windows = grouped[wheel]
-            total = len(wheel_windows)
-
-            complete = sum(
-                window.missing_count == 0
-                for window in wheel_windows
-            )
-
-            at_most_one_missing = sum(
-                window.missing_count <= 1
-                for window in wheel_windows
-            )
-
-            average_missing = statistics.mean(
-                window.missing_count
-                for window in wheel_windows
-            )
-
+        for row in report.wheel_summary:
+            if row.window_size != window_size:
+                continue
             print(
-                f"{wheel:<12}"
-                f"{total:<9}"
-                f"{percentage(complete, total):>7.2f}%  "
-                f"{percentage(at_most_one_missing, total):>12.2f}%  "
-                f"{average_missing:>14.2f}"
+                f"{row.wheel:<12}"
+                f"{row.windows:<9}"
+                f"{percentage(row.complete_windows, row.windows):>7.2f}%  "
+                f"{percentage(row.at_most_one_missing_windows, row.windows):>12.2f}%  "
+                f"{row.average_missing:>14.2f}"
             )
 
 
-def print_latest_windows(
-    analysis: dict[int, tuple[DigitCoverageWindow, ...]],
-) -> None:
+def print_latest_windows(report: DigitCoverageReport) -> None:
     print("\n===== ULTIMA FINESTRA DISPONIBILE PER RUOTA =====")
 
-    for window_size, windows in analysis.items():
-        latest_by_wheel: dict[str, DigitCoverageWindow] = {}
-
-        for window in windows:
-            current = latest_by_wheel.get(window.wheel)
-
-            window_key = (
-                window.end_date,
-                window.draw_numbers[-1],
-            )
-
-            current_key = (
-                current.end_date,
-                current.draw_numbers[-1],
-            ) if current is not None else ("", -1)
-
-            if current is None or window_key > current_key:
-                latest_by_wheel[window.wheel] = window
-
-        wheel_order = {
-            window.wheel: window.wheel_order
-            for window in windows
-        }
-
+    for window_size, _windows in report.windows_by_size:
         print(
             f"\nFinestra di {window_size} "
             f"{'estrazione' if window_size == 1 else 'estrazioni'}"
@@ -226,18 +126,13 @@ def print_latest_windows(
             "-------  --"
         )
 
-        for wheel in sorted(
-            latest_by_wheel,
-            key=lambda name: wheel_order[name],
-        ):
-            window = latest_by_wheel[wheel]
-            draws = ",".join(
-                str(draw_number)
-                for draw_number in window.draw_numbers
-            )
-
+        for row in report.latest_windows:
+            if row.window_size != window_size:
+                continue
+            window = row.window
+            draws = ",".join(str(number) for number in window.draw_numbers)
             print(
-                f"{wheel:<12}"
+                f"{row.wheel:<12}"
                 f"{draws:<18}"
                 f"{format_digits(window.present_digits):<22}"
                 f"{format_digits(window.missing_digits):<9}"
@@ -252,24 +147,21 @@ def build_parser() -> argparse.ArgumentParser:
             "nelle estrazioni del Lotto."
         )
     )
-
     parser.add_argument(
         "--database",
         type=Path,
         default=DEFAULT_DATABASE,
     )
-
     parser.add_argument(
         "--max-window-size",
         type=int,
         default=3,
     )
-
     return parser
 
 
-def main() -> int:
-    args = build_parser().parse_args()
+def main(argv: Sequence[str] | None = None) -> int:
+    args = build_parser().parse_args(argv)
 
     if args.max_window_size <= 0:
         print(
@@ -280,21 +172,16 @@ def main() -> int:
 
     try:
         with LottoRepository(args.database) as repository:
-            analysis = analyze_digit_coverage(
+            report = build_digit_coverage_report(
                 repository,
                 max_window_size=args.max_window_size,
             )
 
-        print_global_summary(analysis)
-        print_missing_digit_frequency(analysis)
-        print_summary_by_wheel(analysis)
-        print_latest_windows(analysis)
-
-    except (
-        FileNotFoundError,
-        RuntimeError,
-        ValueError,
-    ) as error:
+        print_global_summary(report)
+        print_missing_digit_frequency(report)
+        print_summary_by_wheel(report)
+        print_latest_windows(report)
+    except (FileNotFoundError, RuntimeError, ValueError) as error:
         print(f"ERRORE: {error}", file=sys.stderr)
         return 1
 

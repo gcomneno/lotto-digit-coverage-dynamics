@@ -23,6 +23,9 @@ DIRECT_COMMANDS = frozenset(
         "completion",
         "residuals",
         "validation",
+        "coverage-hits",
+        "return-times",
+        "digit-coverage",
     }
 )
 
@@ -172,6 +175,18 @@ def run_direct_command(command: str, forwarded_arguments: Sequence[str]) -> int:
 
         if command == "validation":
             from analyze_coverage_markov_validation import main
+            return main(tuple(forwarded_arguments))
+
+        if command == "coverage-hits":
+            from analyze_coverage_hit_statistics import main
+            return main(tuple(forwarded_arguments))
+
+        if command == "return-times":
+            from analyze_digit_return_times import main
+            return main(tuple(forwarded_arguments))
+
+        if command == "digit-coverage":
+            from analyze_digit_coverage import main
             return main(tuple(forwarded_arguments))
 
     raise ValueError(f"Comando diretto non registrato: {command}")

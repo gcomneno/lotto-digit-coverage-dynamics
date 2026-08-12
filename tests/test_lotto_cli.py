@@ -41,9 +41,7 @@ class LottoCliTests(unittest.TestCase):
             "lotto.run_direct_command",
             return_value=7,
         ) as direct:
-            result = lotto.main(
-                ("current", "--to-num", "119")
-            )
+            result = lotto.main(("current", "--to-num", "119"))
 
         self.assertEqual(result, 7)
         direct.assert_called_once_with(
@@ -103,13 +101,11 @@ class LottoCliTests(unittest.TestCase):
             ],
         )
 
-    def test_forwards_coverage_hits_tool(self) -> None:
-        completed = SimpleNamespace(returncode=0)
-
+    def test_coverage_hits_uses_direct_adapter(self) -> None:
         with patch(
-            "lotto.subprocess.run",
-            return_value=completed,
-        ) as run:
+            "lotto.run_direct_command",
+            return_value=0,
+        ) as direct, patch("lotto.subprocess.run") as subprocess_run:
             result = lotto.main(
                 (
                     "coverage-hits",
@@ -120,31 +116,21 @@ class LottoCliTests(unittest.TestCase):
             )
 
         self.assertEqual(result, 0)
-        self.assertEqual(
-            run.call_args.args[0],
-            [
-                sys.executable,
-                str(lotto.ROOT / "analyze_coverage_hit_statistics.py"),
-                "--last",
-                "10",
-                "--details",
-            ],
+        direct.assert_called_once_with(
+            "coverage-hits",
+            ["--last", "10", "--details"],
         )
+        subprocess_run.assert_not_called()
 
-    def test_coverage_hits_alias_selects_legacy_tool(self) -> None:
-        completed = SimpleNamespace(returncode=0)
-
+    def test_coverage_hits_alias_selects_direct_tool(self) -> None:
         with patch(
-            "lotto.subprocess.run",
-            return_value=completed,
-        ) as run:
+            "lotto.run_direct_command",
+            return_value=0,
+        ) as direct:
             result = lotto.main(("hits", "--help"))
 
         self.assertEqual(result, 0)
-        self.assertEqual(
-            run.call_args.args[0][1],
-            str(lotto.ROOT / "analyze_coverage_hit_statistics.py"),
-        )
+        direct.assert_called_once_with("coverage-hits", ["--help"])
 
     def test_current_alias_selects_direct_adapter(self) -> None:
         with patch(
