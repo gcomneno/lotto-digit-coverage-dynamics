@@ -5,7 +5,7 @@ ROOT="$(
     pwd
 )"
 
-PYTHON_SCRIPT="$ROOT/view_lotto_database.py"
+PYTHON_SCRIPT="$ROOT/view_lotto_database_app.py"
 
 if ! command -v python3 >/dev/null 2>&1; then
     echo "ERRORE: comando python3 non disponibile." >&2
