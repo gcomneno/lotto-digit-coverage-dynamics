@@ -178,9 +178,49 @@ export type OccurrenceContract = {
   groups: OccurrenceGroup[];
 };
 
+export type ResearchCatalogItem = {
+  id: string;
+  title: string;
+  summary: string;
+  interpretation: string;
+};
+
+export type ResearchMetric = {
+  label: string;
+  value: string | number | boolean | null;
+  format: string;
+};
+
+export type ResearchColumn = {
+  key: string;
+  label: string;
+  format: string;
+};
+
+export type ResearchTable = {
+  title: string;
+  columns: ResearchColumn[];
+  rows: Array<Record<string, string | number | boolean | null>>;
+};
+
+export type ResearchReport = {
+  id: string;
+  title: string;
+  interpretation: string;
+  source: string;
+  metrics: ResearchMetric[];
+  tables: ResearchTable[];
+  notes: string[];
+};
+
+export type ResearchCatalog = {
+  reports: ResearchCatalogItem[];
+};
+
 export type Capabilities = {
   bridge_version: number;
   contracts: Array<{ schema: string; version: number }>;
+  research_reports: string[];
   scientific_mode: string;
 };
 
@@ -197,6 +237,8 @@ export type PywebviewApi = {
     group_size?: number,
     requested_draw_number?: number | null
   ): Promise<Envelope<OccurrenceContract>>;
+  get_research_catalog(): Promise<Envelope<ResearchCatalog>>;
+  get_research_report(report_id: string): Promise<Envelope<ResearchReport>>;
 };
 
 export type LottoBridge = {
@@ -206,6 +248,8 @@ export type LottoBridge = {
     groupSize: number,
     requestedDrawNumber?: number | null
   ): Promise<Envelope<OccurrenceContract>>;
+  researchCatalog(): Promise<Envelope<ResearchCatalog>>;
+  researchReport(reportId: string): Promise<Envelope<ResearchReport>>;
 };
 
 export function createBridge(api: PywebviewApi): LottoBridge {
@@ -213,7 +257,9 @@ export function createBridge(api: PywebviewApi): LottoBridge {
     capabilities: () => api.get_capabilities(),
     current: () => api.get_current(),
     occurrenceGroups: (groupSize, requestedDrawNumber = null) =>
-      api.get_occurrence_groups(undefined, groupSize, requestedDrawNumber)
+      api.get_occurrence_groups(undefined, groupSize, requestedDrawNumber),
+    researchCatalog: () => api.get_research_catalog(),
+    researchReport: (reportId) => api.get_research_report(reportId)
   };
 }
 

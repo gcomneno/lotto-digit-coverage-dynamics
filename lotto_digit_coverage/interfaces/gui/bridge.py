@@ -11,7 +11,6 @@ from analyze_current_coverage import checkpoint_for_current_archive
 from lotto_digit_coverage.application.current import build_current_coverage_report
 from lotto_digit_coverage.application.occurrence_groups import (
     DrawKey,
-    WheelNumbers,
     build_occurrence_group_report,
 )
 from lotto_digit_coverage.application.reporting import (
@@ -22,6 +21,10 @@ from lotto_digit_coverage.domain.draws import DrawSnapshot
 from lotto_digit_coverage.infrastructure.sqlite_lotto_repository import (
     SQLiteLottoRepository,
 )
+from lotto_digit_coverage.interfaces.gui.research import (
+    load_research_payload,
+    research_catalog,
+)
 from strategies.current_coverage_signal import (
     DEFAULT_HISTORICAL_SUMMARY,
     load_historical_coverage_classes,
@@ -31,6 +34,8 @@ from strategies.current_coverage_signal import (
 DEFAULT_DATABASE = Path("data/lotto-current.sqlite3")
 
 PayloadLoader = Callable[..., dict[str, Any]]
+ResearchLoader = Callable[[Path, str], dict[str, Any]]
+CatalogLoader = Callable[[], list[dict[str, str]]]
 
 
 def _resolve_path(root: Path, value: str | Path) -> Path:
@@ -149,13 +154,17 @@ class LottoGuiApi:
         *,
         current_loader: PayloadLoader = load_current_payload,
         occurrence_loader: PayloadLoader = load_occurrence_payload,
+        research_loader: ResearchLoader = load_research_payload,
+        catalog_loader: CatalogLoader = research_catalog,
     ) -> None:
         self._root = root
         self._current_loader = current_loader
         self._occurrence_loader = occurrence_loader
+        self._research_loader = research_loader
+        self._catalog_loader = catalog_loader
 
     @staticmethod
-    def _success(data: dict[str, Any]) -> dict[str, Any]:
+    def _success(data: Any) -> dict[str, Any]:
         return {"ok": True, "data": data, "error": None}
 
     @staticmethod
@@ -170,18 +179,19 @@ class LottoGuiApi:
         }
 
     def get_capabilities(self) -> dict[str, Any]:
-        return {
-            "ok": True,
-            "data": {
-                "bridge_version": 1,
+        return self._success(
+            {
+                "bridge_version": 2,
                 "contracts": [
                     {"schema": "lotto.current", "version": 1},
                     {"schema": "lotto.occurrence-groups", "version": 1},
                 ],
+                "research_reports": [
+                    item["id"] for item in self._catalog_loader()
+                ],
                 "scientific_mode": "descriptive-research",
-            },
-            "error": None,
-        }
+            }
+        )
 
     def get_current(
         self,
@@ -217,4 +227,17 @@ class LottoGuiApi:
             )
             return self._success(payload)
         except Exception as error:  # pywebview boundary: convert to stable envelope
+            return self._failure(error)
+
+    def get_research_catalog(self) -> dict[str, Any]:
+        try:
+            return self._success({"reports": self._catalog_loader()})
+        except Exception as error:
+            return self._failure(error)
+
+    def get_research_report(self, report_id: str) -> dict[str, Any]:
+        try:
+            payload = self._research_loader(self._root, report_id)
+            return self._success(payload)
+        except Exception as error:  # expensive reports are explicitly on demand
             return self._failure(error)
