@@ -83,6 +83,7 @@ def _reference_highlights(group: OccurrenceGroup) -> dict[str, dict[int, str]]:
 def _render_draw_line(
     draw: OccurrenceDrawRow,
     *,
+    usage: str,
     expected_wheels: Sequence[str],
     highlights: dict[str, dict[int, str]],
     draw_width: int,
@@ -90,6 +91,7 @@ def _render_draw_line(
     wheel_width: int,
 ) -> str:
     prefix = (
+        f"{usage:<5}  "
         f"{draw.draw_number:>{draw_width}}  "
         f"{draw.draw_date[5:]:<5}  "
     )
@@ -139,13 +141,15 @@ def render_occurrence_group_report(
     )
     print(
         "Gruppi:       "
-        f"{report.group_size} estrazioni; "
-        "ogni gruppo usa la propria estrazione più recente.",
+        f"{report.group_size} estrazioni analizzate per gruppo; "
+        "ogni gruppo ha inoltre una propria estrazione di riferimento, "
+        "esclusa dai conteggi.",
         file=stream,
     )
     print(file=stream)
 
     header = (
+        f"{'Uso':<5}  "
         f"{'Estr':>{draw_width}}  "
         f"{'Data':<5}  "
         + "  ".join(
@@ -154,6 +158,7 @@ def render_occurrence_group_report(
         )
     )
     separator = (
+        f"{'-' * 5}  "
         f"{'-' * draw_width}  "
         f"{'-' * 5}  "
         + "  ".join(
@@ -167,18 +172,31 @@ def render_occurrence_group_report(
     for group in report.groups:
         print(file=stream)
         print(
-            f"Gruppo {group.newest_draw_number}–{group.oldest_draw_number} "
-            f"({group.size} estrazioni) — "
-            f"riferimento {group.reference_draw_number} "
-            f"del {group.reference_draw_date}",
+            f"Gruppo: riferimento {group.reference_draw_number} "
+            f"del {group.reference_draw_date}; "
+            f"analisi {group.newest_draw_number}–{group.oldest_draw_number} "
+            f"({group.size} estrazioni conteggiate)",
             file=stream,
         )
 
         highlights = _reference_highlights(group)
+        print(
+            _render_draw_line(
+                group.reference_draw,
+                usage="Rif.",
+                expected_wheels=expected_wheels,
+                highlights=highlights,
+                draw_width=draw_width,
+                token_width=token_width,
+                wheel_width=wheel_width,
+            ),
+            file=stream,
+        )
         for draw in group.draws:
             print(
                 _render_draw_line(
                     draw,
+                    usage="Conta",
                     expected_wheels=expected_wheels,
                     highlights=highlights,
                     draw_width=draw_width,
@@ -189,7 +207,7 @@ def render_occurrence_group_report(
             )
 
         summaries = {row.wheel: row for row in group.wheels}
-        total_prefix = f"{'Tot':>{draw_width}}  {'':<5}  "
+        total_prefix = f"{'Tot':<5}  {'':>{draw_width}}  {'':<5}  "
         total_cells = [
             _format_total_cell(
                 summaries[wheel].occurrence_counts,
