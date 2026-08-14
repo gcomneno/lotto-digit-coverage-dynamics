@@ -183,7 +183,7 @@
     </section>
   </Panel>
 
-  <div class="dashboard-grid">
+  <div class="dashboard-grid dashboard-grid--stacked">
     <Panel title="Consensus trasversale">
       <PageIntro>
         Descrittivo: per ogni cifra conta in quante ruote con ciclo attivo è ancora
