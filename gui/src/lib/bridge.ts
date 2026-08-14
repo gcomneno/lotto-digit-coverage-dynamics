@@ -141,10 +141,7 @@ export type OccurrenceWheelSummary = {
 };
 
 export type OccurrenceGroup = {
-  reference: {
-    draw_number: number;
-    draw_date: string;
-  };
+  reference: OccurrenceDraw;
   range: {
     newest: {
       draw_number: number;
