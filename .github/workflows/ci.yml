@@ -41,7 +41,7 @@ jobs:
 
       - name: Install GUI dependencies
         working-directory: gui
-        run: npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
 
       - name: Validate GUI
         working-directory: gui
