@@ -101,6 +101,11 @@ class CoverageConsensusTests(unittest.TestCase):
         )
 
         self.assertIn("CONSENSUS TRASVERSALE", rendered)
+        self.assertIn("Ruote in deficit", rendered)
+        self.assertIn("Ruote in predominanza", rendered)
+        self.assertIn("Dove in deficit", rendered)
+        self.assertIn("Dove predominante", rendered)
+        self.assertIn("in quante ruote con ciclo attivo", rendered)
         self.assertIn("Milano,Roma", rendered)
         self.assertIn("non combina cifre in numeri", rendered.casefold())
         self.assertNotIn("Numeri=", rendered)

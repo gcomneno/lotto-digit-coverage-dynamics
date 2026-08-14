@@ -100,8 +100,8 @@ def render_digit_consensus(
     lines = [
         "===== CONSENSUS TRASVERSALE DELLE CIFRE =====",
         (
-            "Descrittivo: conta dove ogni cifra è ancora Mancante "
-            "e dove è TOP nelle sole ruote con ciclo attivo."
+            "Descrittivo: per ogni cifra conta in quante ruote con ciclo attivo "
+            "è ancora assente e in quante è tra le più presenti nel ciclo corrente."
         ),
         (
             "Non combina cifre in numeri e non rappresenta "
@@ -110,17 +110,17 @@ def render_digit_consensus(
         "",
         (
             f"{'Cifra':<7}"
-            f"{'Mancante':>10}  "
-            f"{'TOP':>5}  "
-            f"{'Ruote mancanti':<38}"
-            "Ruote TOP"
+            f"{'Ruote in deficit':>17}  "
+            f"{'Ruote in predominanza':>22}  "
+            f"{'Dove in deficit':<38}"
+            "Dove predominante"
         ),
         (
             f"{'-----':<7}"
-            f"{'--------':>10}  "
-            f"{'---':>5}  "
+            f"{'----------------':>17}  "
+            f"{'---------------------':>22}  "
             f"{'---------------':<38}"
-            "---------"
+            "-----------------"
         ),
     ]
 
@@ -131,8 +131,8 @@ def render_digit_consensus(
     for row in rows:
         lines.append(
             f"{row.digit:<7}"
-            f"{row.missing_count:>10}  "
-            f"{row.top_count:>5}  "
+            f"{row.missing_count:>17}  "
+            f"{row.top_count:>22}  "
             f"{_wheels(row.missing_wheels):<38}"
             f"{_wheels(row.top_wheels)}"
         )
