@@ -30,6 +30,12 @@ class OccurrenceWheelSummary:
     reference_numbers: tuple[int, ...]
     occurrence_counts: tuple[int, ...]
 
+    @property
+    def total_occurrences(self) -> int:
+        """Sum of the five aligned occurrence counts for this wheel."""
+
+        return sum(self.occurrence_counts)
+
 
 @dataclass(frozen=True)
 class OccurrenceGroup:
@@ -51,6 +57,12 @@ class OccurrenceGroup:
 
         return len(self.draws)
 
+    @property
+    def total_occurrences(self) -> int:
+        """Sum of all wheel occurrence totals in this group."""
+
+        return sum(wheel.total_occurrences for wheel in self.wheels)
+
 
 @dataclass(frozen=True)
 class OccurrenceGroupReport:
@@ -60,7 +72,15 @@ class OccurrenceGroupReport:
     reference_draw_date: str
     reference_kind: str
     group_size: int
+    occurrence_limit: int | None
+    examined_draw_count: int
     groups: tuple[OccurrenceGroup, ...]
+
+    @property
+    def grand_total_occurrences(self) -> int:
+        """Sum of all wheel totals across every rendered group."""
+
+        return sum(group.total_occurrences for group in self.groups)
 
 
 def chronological_key(draw_key: DrawKey) -> tuple[str, int]:
@@ -221,13 +241,15 @@ def build_occurrence_group_report(
     expected_wheels: Sequence[str],
     group_size: int,
     requested_draw_number: int | None = None,
+    occurrence_limit: int | None = None,
 ) -> OccurrenceGroupReport:
     """Build blocks of one reference plus ``group_size`` analysis draws.
 
     The reference draw identifies the five numbers under observation and is never
     included in occurrence counts. Each block therefore consumes up to
     ``group_size + 1`` consecutive draws: one reference followed by historical
-    draws used for counting.
+    draws used for counting. ``occurrence_limit`` caps the total number of
+    consecutive draws examined globally, including reference rows.
     """
 
     if (
@@ -236,6 +258,13 @@ def build_occurrence_group_report(
         or group_size <= 0
     ):
         raise ValueError("group_size deve essere un intero positivo.")
+
+    if occurrence_limit is not None and (
+        not isinstance(occurrence_limit, int)
+        or isinstance(occurrence_limit, bool)
+        or occurrence_limit <= 0
+    ):
+        raise ValueError("occurrence_limit deve essere un intero positivo.")
 
     if not draws:
         raise ValueError("nessuna estrazione disponibile.")
@@ -258,6 +287,9 @@ def build_occurrence_group_report(
             reverse=True,
         )
     )
+
+    if occurrence_limit is not None:
+        eligible_draws = eligible_draws[:occurrence_limit]
 
     groups: list[OccurrenceGroup] = []
     block_size = group_size + 1
@@ -313,5 +345,7 @@ def build_occurrence_group_report(
         reference_draw_date=reference_key[1],
         reference_kind=reference_kind,
         group_size=group_size,
+        occurrence_limit=occurrence_limit,
+        examined_draw_count=len(eligible_draws),
         groups=tuple(groups),
     )
