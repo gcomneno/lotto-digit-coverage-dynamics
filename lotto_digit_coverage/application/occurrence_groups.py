@@ -12,7 +12,7 @@ WheelNumbers = Mapping[str, Sequence[int]]
 
 @dataclass(frozen=True)
 class OccurrenceDrawRow:
-    """One draw included in an occurrence group."""
+    """One draw rendered in an occurrence group."""
 
     draw_number: int
     draw_date: str
@@ -33,10 +33,11 @@ class OccurrenceWheelSummary:
 
 @dataclass(frozen=True)
 class OccurrenceGroup:
-    """One consecutive descending-chronology group."""
+    """One reference draw followed by retrospective analysis draws."""
 
     reference_draw_number: int
     reference_draw_date: str
+    reference_draw: OccurrenceDrawRow
     newest_draw_number: int
     newest_draw_date: str
     oldest_draw_number: int
@@ -46,6 +47,8 @@ class OccurrenceGroup:
 
     @property
     def size(self) -> int:
+        """Number of historical draws actually included in the counts."""
+
         return len(self.draws)
 
 
@@ -192,14 +195,14 @@ def _wheel_summary(
     *,
     wheel: str,
     reference_numbers: Sequence[int],
-    group: Sequence[tuple[DrawKey, WheelNumbers]],
+    analysis_draws: Sequence[tuple[DrawKey, WheelNumbers]],
 ) -> OccurrenceWheelSummary:
     reference = _normalized_numbers(reference_numbers)
     counts: list[int] = []
 
     for number in reference:
         occurrences = 0
-        for _key, wheel_results in group:
+        for _key, wheel_results in analysis_draws:
             observed = wheel_results.get(wheel)
             if observed is not None and number in observed:
                 occurrences += 1
@@ -219,7 +222,13 @@ def build_occurrence_group_report(
     group_size: int,
     requested_draw_number: int | None = None,
 ) -> OccurrenceGroupReport:
-    """Build consecutive grouped occurrences using each group's newest draw."""
+    """Build blocks of one reference plus ``group_size`` analysis draws.
+
+    The reference draw identifies the five numbers under observation and is never
+    included in occurrence counts. Each block therefore consumes up to
+    ``group_size + 1`` consecutive draws: one reference followed by historical
+    draws used for counting.
+    """
 
     if (
         not isinstance(group_size, int)
@@ -237,7 +246,7 @@ def build_occurrence_group_report(
         expected_wheels=expected_wheels,
     )
 
-    rendered_draws = tuple(
+    eligible_draws = tuple(
         sorted(
             (
                 (key, wheel_results)
@@ -251,41 +260,49 @@ def build_occurrence_group_report(
     )
 
     groups: list[OccurrenceGroup] = []
+    block_size = group_size + 1
 
-    for start in range(0, len(rendered_draws), group_size):
-        group = rendered_draws[start:start + group_size]
-        if not group:
+    for start in range(0, len(eligible_draws), block_size):
+        block = eligible_draws[start:start + block_size]
+        if len(block) < 2:
             continue
 
-        group_reference_key, group_reference_results = group[0]
+        group_reference_key, group_reference_results = block[0]
+        analysis_draws = block[1:]
         _validate_reference(
             group_reference_key,
             group_reference_results,
             expected_wheels,
         )
-        newest_number, newest_date = group_reference_key
-        oldest_number, oldest_date = group[-1][0]
+
+        newest_number, newest_date = analysis_draws[0][0]
+        oldest_number, oldest_date = analysis_draws[-1][0]
 
         summaries = tuple(
             _wheel_summary(
                 wheel=wheel,
                 reference_numbers=group_reference_results[wheel],
-                group=group,
+                analysis_draws=analysis_draws,
             )
             for wheel in expected_wheels
         )
 
         groups.append(
             OccurrenceGroup(
-                reference_draw_number=newest_number,
-                reference_draw_date=newest_date,
+                reference_draw_number=group_reference_key[0],
+                reference_draw_date=group_reference_key[1],
+                reference_draw=_draw_row(
+                    group_reference_key,
+                    group_reference_results,
+                    expected_wheels,
+                ),
                 newest_draw_number=newest_number,
                 newest_draw_date=newest_date,
                 oldest_draw_number=oldest_number,
                 oldest_draw_date=oldest_date,
                 draws=tuple(
                     _draw_row(key, wheel_results, expected_wheels)
-                    for key, wheel_results in group
+                    for key, wheel_results in analysis_draws
                 ),
                 wheels=summaries,
             )
