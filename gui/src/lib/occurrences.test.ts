@@ -22,6 +22,7 @@ const group: OccurrenceGroup = {
     oldest: { draw_number: 126, draw_date: '2026-08-06' }
   },
   actual_size: 2,
+  total_occurrences: 10,
   draws: [
     {
       draw_number: 127,
@@ -44,19 +45,21 @@ const group: OccurrenceGroup = {
     {
       wheel: 'Bari',
       reference_numbers: [1, 22, 33, 44, 55],
-      occurrence_counts: [2, 2, 1, 0, 0]
+      occurrence_counts: [2, 2, 1, 0, 0],
+      total_occurrences: 5
     },
     {
       wheel: 'Roma',
       reference_numbers: [1, 2, 3, 4, 5],
-      occurrence_counts: [1, 1, 1, 1, 1]
+      occurrence_counts: [1, 1, 1, 1, 1],
+      total_occurrences: 5
     }
   ]
 };
 
 const report: OccurrenceContract = {
   schema: 'lotto.occurrence-groups',
-  schema_version: 2,
+  schema_version: 3,
   number_representation: {
     type: 'integer',
     minimum: 1,
@@ -69,6 +72,9 @@ const report: OccurrenceContract = {
     kind: 'automatico'
   },
   group_size: 2,
+  occurrence_limit: 3,
+  examined_draw_count: 3,
+  grand_total_occurrences: 10,
   groups: [group]
 };
 
@@ -84,6 +90,7 @@ describe('occurrence presentation helpers', () => {
     expect(drawNumbersForWheel(group.draws[0], 'Bari')).toEqual([1, 22, 33, 66, 77]);
     expect(drawNumbersForWheel(group.draws[0], 'Roma')).toEqual([1, 6, 7, 8, 9]);
     expect(wheelSummary(group, 'Bari')?.occurrence_counts).toEqual([2, 2, 1, 0, 0]);
+    expect(wheelSummary(group, 'Bari')?.total_occurrences).toBe(5);
   });
 
   it('maps a hit to the exact reference position', () => {

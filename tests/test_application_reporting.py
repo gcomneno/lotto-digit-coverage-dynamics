@@ -112,7 +112,10 @@ class ApplicationReportingTests(unittest.TestCase):
         payload = occurrence_group_report_to_dict(self.occurrence_report())
 
         self.assertEqual(payload["schema"], "lotto.occurrence-groups")
-        self.assertEqual(payload["schema_version"], 2)
+        self.assertEqual(payload["schema_version"], 3)
+        self.assertIsNone(payload["occurrence_limit"])
+        self.assertEqual(payload["examined_draw_count"], 3)
+        self.assertEqual(payload["grand_total_occurrences"], 12)
         group = payload["groups"][0]
         self.assertEqual(group["reference"]["draw_number"], 122)
         self.assertEqual(
@@ -120,9 +123,11 @@ class ApplicationReportingTests(unittest.TestCase):
             [121, 120],
         )
         self.assertEqual(group["actual_size"], 2)
+        self.assertEqual(group["total_occurrences"], 12)
         bari = group["wheels"][0]
         self.assertEqual(bari["reference_numbers"], [1, 12, 23, 34, 9])
         self.assertEqual(bari["occurrence_counts"], [2, 2, 2, 1, 0])
+        self.assertEqual(bari["total_occurrences"], 7)
         self.assertEqual(payload["number_representation"]["display_width"], 2)
 
     def test_json_is_deterministic_and_contains_no_terminal_sequences(self) -> None:
@@ -140,7 +145,7 @@ class ApplicationReportingTests(unittest.TestCase):
         self.assertNotIn("\x1b[", current_first)
         self.assertNotIn("\x1b[", occurrence_first)
         self.assertEqual(json.loads(current_first)["schema_version"], 1)
-        self.assertEqual(json.loads(occurrence_first)["schema_version"], 2)
+        self.assertEqual(json.loads(occurrence_first)["schema_version"], 3)
 
     def test_digit_sets_are_sorted_json_arrays_not_display_strings(self) -> None:
         payload = current_report_to_dict(self.current_report())

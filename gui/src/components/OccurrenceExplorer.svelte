@@ -25,12 +25,20 @@
   let loading = $state(true);
   let errorMessage = $state('');
   let groupSize = $state(10);
+  let occurrenceLimit = $state<number | undefined>(undefined);
   let requestedDraw = $state<number | undefined>(undefined);
   let selectedWheel = $state('');
 
   async function load(): Promise<void> {
     if (!Number.isInteger(groupSize) || groupSize <= 0) {
       errorMessage = 'La dimensione del gruppo deve essere un intero positivo.';
+      return;
+    }
+    if (
+      occurrenceLimit !== undefined &&
+      (!Number.isInteger(occurrenceLimit) || occurrenceLimit <= 0)
+    ) {
+      errorMessage = 'Il limite globale deve essere un intero positivo.';
       return;
     }
     if (
@@ -45,7 +53,8 @@
     errorMessage = '';
     const response = await bridge.occurrenceGroups(
       groupSize,
-      requestedDraw ?? null
+      requestedDraw ?? null,
+      occurrenceLimit ?? null
     );
 
     if (!response.ok || !response.data) {
@@ -82,8 +91,9 @@
   Esplorazione retrospettiva per gruppi. Ogni gruppo ha una propria estrazione
   di riferimento che identifica i cinque numeri sotto osservazione ma è esclusa
   dai conteggi. Le estrazioni successive nel pannello sono quelle storiche
-  effettivamente analizzate sulla stessa ruota. I colori identificano le cinque
-  posizioni del riferimento e non rappresentano intensità o probabilità.
+  effettivamente analizzate sulla stessa ruota. Il limite globale comprende anche
+  le righe di riferimento. I colori identificano le cinque posizioni del
+  riferimento e non rappresentano intensità o probabilità.
 </PageIntro>
 
 <Panel title="Controlli">
@@ -94,6 +104,16 @@
         hint="Numero di estrazioni storiche conteggiate; il riferimento è aggiuntivo ed escluso."
       />
       <input type="number" min="1" step="1" bind:value={groupSize} />
+    </label>
+
+    <label class="field-stack">
+      <FieldLabel
+        label="Limite globale"
+        hint="Numero massimo di concorsi consecutivi esaminati, incluse le righe di riferimento."
+        optional={true}
+        optionalLabel="opzionale"
+      />
+      <input type="number" min="1" step="1" bind:value={occurrenceLimit} />
     </label>
 
     <label class="field-stack">
@@ -145,6 +165,8 @@
     <Panel title="Configurazione">
       <dl class="metric-list">
         <div><dt>Estratti conteggiati</dt><dd>{report.group_size}</dd></div>
+        <div><dt>Limite globale</dt><dd>{report.occurrence_limit ?? '—'}</dd></div>
+        <div><dt>Concorsi esaminati</dt><dd>{report.examined_draw_count}</dd></div>
         <div><dt>Gruppi</dt><dd>{report.groups.length}</dd></div>
         <div><dt>Ruota visibile</dt><dd>{selectedWheel || '—'}</dd></div>
       </dl>
@@ -185,6 +207,7 @@
                   <th scope="col">Concorso</th>
                   <th scope="col">Data</th>
                   <th scope="col" colspan="5">{selectedWheel}</th>
+                  <th scope="col">Σ</th>
                 </tr>
               </thead>
               <tbody>
@@ -211,6 +234,7 @@
                   {:else}
                     <td colspan="5">—</td>
                   {/if}
+                  <td>—</td>
                 </tr>
                 {#each group.draws as draw (`${draw.draw_date}-${draw.draw_number}`)}
                   {@const numbers = drawNumbersForWheel(draw, selectedWheel)}
@@ -237,9 +261,19 @@
                     {:else}
                       <td colspan="5">—</td>
                     {/if}
+                    <td></td>
                   </tr>
                 {/each}
               </tbody>
+              <tfoot>
+                <tr>
+                  <th scope="row" colspan="3">Tot</th>
+                  {#each summary.occurrence_counts as count}
+                    <td><strong>{count}</strong></td>
+                  {/each}
+                  <td><strong>{summary.total_occurrences}</strong></td>
+                </tr>
+              </tfoot>
             </table>
           </section>
         {:else}
@@ -248,4 +282,13 @@
       </Panel>
     {/each}
   {/if}
+
+  <Panel title="Totale globale">
+    <dl class="metric-list">
+      <div>
+        <dt>Somma delle somme</dt>
+        <dd>{report.grand_total_occurrences}</dd>
+      </div>
+    </dl>
+  </Panel>
 {/if}

@@ -25,11 +25,44 @@ def _structured_draws(draws):
     }
 
 
+def _extract_occurrence_limit(
+    arguments: Sequence[str],
+) -> tuple[list[str], int | None]:
+    cleaned: list[str] = []
+    occurrence_limit: int | None = None
+    index = 0
+
+    while index < len(arguments):
+        argument = arguments[index]
+        if argument != "--occurrence-limit":
+            cleaned.append(argument)
+            index += 1
+            continue
+
+        if index + 1 >= len(arguments):
+            raise legacy.CliError(
+                "--occurrence-limit richiede un numero di estrazioni."
+            )
+        if occurrence_limit is not None:
+            raise legacy.CliError(
+                "--occurrence-limit può essere specificato una sola volta."
+            )
+
+        occurrence_limit = legacy._positive_integer(
+            arguments[index + 1],
+            "--occurrence-limit",
+        )
+        index += 2
+
+    return cleaned, occurrence_limit
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     arguments = sys.argv[1:] if argv is None else list(argv)
 
     try:
-        options = legacy.parse_options(arguments)
+        parsed_arguments, occurrence_limit = _extract_occurrence_limit(arguments)
+        options = legacy.parse_options(parsed_arguments)
     except legacy.CliError as error:
         print(f"ERRORE: {error}", file=sys.stderr)
         if error.show_usage:
@@ -38,7 +71,20 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 2
 
     if options is None:
+        if "--help" in arguments or "-h" in arguments:
+            print(
+                "\nEstensione occurrence groups:\n"
+                "  --occurrence-limit N  Limita il range globale a N concorsi "
+                "consecutivi, incluse le righe di riferimento."
+            )
         return 0
+
+    if occurrence_limit is not None and options.occurrence_groups is None:
+        print(
+            "ERRORE: --occurrence-limit richiede --occurrence-groups.",
+            file=sys.stderr,
+        )
+        return 2
 
     if options.occurrence_groups is None:
         try:
@@ -73,6 +119,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 if options.latest_occurrences_draw
                 else None
             ),
+            occurrence_limit=occurrence_limit,
         )
         render_occurrence_group_report(
             report,

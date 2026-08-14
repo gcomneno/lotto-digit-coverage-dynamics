@@ -10,7 +10,7 @@ from lotto_digit_coverage.application.occurrence_groups import OccurrenceGroupRe
 
 
 CURRENT_SCHEMA_VERSION = 1
-OCCURRENCE_SCHEMA_VERSION = 2
+OCCURRENCE_SCHEMA_VERSION = 3
 NUMBER_REPRESENTATION = {
     "type": "integer",
     "minimum": 1,
@@ -188,6 +188,9 @@ def occurrence_group_report_to_dict(
             "kind": report.reference_kind,
         },
         "group_size": report.group_size,
+        "occurrence_limit": report.occurrence_limit,
+        "examined_draw_count": report.examined_draw_count,
+        "grand_total_occurrences": report.grand_total_occurrences,
         "groups": [
             {
                 "reference": _occurrence_draw(group.reference_draw),
@@ -202,6 +205,7 @@ def occurrence_group_report_to_dict(
                     },
                 },
                 "actual_size": group.size,
+                "total_occurrences": group.total_occurrences,
                 "draws": [
                     _occurrence_draw(draw)
                     for draw in group.draws
@@ -211,6 +215,7 @@ def occurrence_group_report_to_dict(
                         "wheel": wheel.wheel,
                         "reference_numbers": list(wheel.reference_numbers),
                         "occurrence_counts": list(wheel.occurrence_counts),
+                        "total_occurrences": wheel.total_occurrences,
                     }
                     for wheel in group.wheels
                 ],
