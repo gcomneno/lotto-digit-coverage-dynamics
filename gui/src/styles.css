@@ -143,6 +143,15 @@ input[type='number']::-webkit-outer-spin-button {
   font-variant-numeric: tabular-nums;
 }
 
+.compact-list dd.digit-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.3rem;
+  text-align: left;
+}
+
 .metric-value {
   margin: 0;
   font-size: 2.5rem;
