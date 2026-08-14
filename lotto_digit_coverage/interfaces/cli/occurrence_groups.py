@@ -51,7 +51,9 @@ def _format_numbers_cell(
 def _format_total_cell(
     counts: Sequence[int],
     *,
+    total: int,
     token_width: int,
+    sum_width: int,
     wheel_width: int,
 ) -> str:
     rendered = [
@@ -62,8 +64,14 @@ def _format_total_cell(
             strict=True,
         )
     ]
-    visible_width = len(counts) * token_width + max(0, len(counts) - 1)
-    return " ".join(rendered) + " " * max(0, wheel_width - visible_width)
+    base = " ".join(rendered)
+    suffix = f" | Σ{total:0{sum_width}d}"
+    visible_width = (
+        len(counts) * token_width
+        + max(0, len(counts) - 1)
+        + len(suffix)
+    )
+    return base + suffix + " " * max(0, wheel_width - visible_width)
 
 
 def _reference_highlights(group: OccurrenceGroup) -> dict[str, dict[int, str]]:
@@ -127,7 +135,9 @@ def render_occurrence_group_report(
         len(str(last_draw)),
     )
     token_width = max(2, len(str(report.group_size)))
-    wheel_width = max(14, 5 * token_width + 4)
+    sum_width = max(2, len(str(report.group_size * 5)))
+    base_wheel_width = 5 * token_width + 4
+    wheel_width = max(14, base_wheel_width + len(f" | Σ{'0' * sum_width}"))
 
     print(f"Database:      {database}", file=stream)
     print(f"Estrazioni:    {draw_count}", file=stream)
@@ -144,6 +154,16 @@ def render_occurrence_group_report(
         f"{report.group_size} estrazioni analizzate per gruppo; "
         "ogni gruppo ha inoltre una propria estrazione di riferimento, "
         "esclusa dai conteggi.",
+        file=stream,
+    )
+    print(
+        "Limite:       "
+        + (
+            f"{report.occurrence_limit} concorsi globali; "
+            if report.occurrence_limit is not None
+            else "nessun limite globale; "
+        )
+        + f"{report.examined_draw_count} concorsi esaminati.",
         file=stream,
     )
     print(file=stream)
@@ -211,9 +231,17 @@ def render_occurrence_group_report(
         total_cells = [
             _format_total_cell(
                 summaries[wheel].occurrence_counts,
+                total=summaries[wheel].total_occurrences,
                 token_width=token_width,
+                sum_width=sum_width,
                 wheel_width=wheel_width,
             )
             for wheel in expected_wheels
         ]
         print(total_prefix + "  ".join(total_cells), file=stream)
+
+    print(file=stream)
+    print(
+        f"Somma globale delle occorrenze: {report.grand_total_occurrences}",
+        file=stream,
+    )
