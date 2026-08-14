@@ -9,7 +9,8 @@ from lotto_digit_coverage.application.current import CurrentCoverageReport
 from lotto_digit_coverage.application.occurrence_groups import OccurrenceGroupReport
 
 
-SCHEMA_VERSION = 1
+CURRENT_SCHEMA_VERSION = 1
+OCCURRENCE_SCHEMA_VERSION = 2
 NUMBER_REPRESENTATION = {
     "type": "integer",
     "minimum": 1,
@@ -29,6 +30,20 @@ def _draw(draw) -> dict[str, Any]:
         "wheel": draw.wheel,
         "wheel_order": draw.wheel_order,
         "numbers": list(draw.numbers),
+    }
+
+
+def _occurrence_draw(draw) -> dict[str, Any]:
+    return {
+        "draw_number": draw.draw_number,
+        "draw_date": draw.draw_date,
+        "wheels": [
+            {
+                "wheel": wheel,
+                "numbers": list(numbers),
+            }
+            for wheel, numbers in draw.wheel_numbers
+        ],
     }
 
 
@@ -118,7 +133,7 @@ def current_report_to_dict(report: CurrentCoverageReport) -> dict[str, Any]:
 
     return {
         "schema": "lotto.current",
-        "schema_version": SCHEMA_VERSION,
+        "schema_version": CURRENT_SCHEMA_VERSION,
         "number_representation": dict(NUMBER_REPRESENTATION),
         "target": {
             "draw_number": report.latest_draw,
@@ -165,7 +180,7 @@ def occurrence_group_report_to_dict(
 
     return {
         "schema": "lotto.occurrence-groups",
-        "schema_version": SCHEMA_VERSION,
+        "schema_version": OCCURRENCE_SCHEMA_VERSION,
         "number_representation": dict(NUMBER_REPRESENTATION),
         "reference": {
             "draw_number": report.reference_draw_number,
@@ -175,10 +190,7 @@ def occurrence_group_report_to_dict(
         "group_size": report.group_size,
         "groups": [
             {
-                "reference": {
-                    "draw_number": group.reference_draw_number,
-                    "draw_date": group.reference_draw_date,
-                },
+                "reference": _occurrence_draw(group.reference_draw),
                 "range": {
                     "newest": {
                         "draw_number": group.newest_draw_number,
@@ -191,17 +203,7 @@ def occurrence_group_report_to_dict(
                 },
                 "actual_size": group.size,
                 "draws": [
-                    {
-                        "draw_number": draw.draw_number,
-                        "draw_date": draw.draw_date,
-                        "wheels": [
-                            {
-                                "wheel": wheel,
-                                "numbers": list(numbers),
-                            }
-                            for wheel, numbers in draw.wheel_numbers
-                        ],
-                    }
+                    _occurrence_draw(draw)
                     for draw in group.draws
                 ],
                 "wheels": [

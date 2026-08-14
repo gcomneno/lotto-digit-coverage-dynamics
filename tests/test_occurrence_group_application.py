@@ -33,7 +33,7 @@ class OccurrenceGroupApplicationTests(unittest.TestCase):
             },
         }
 
-    def test_groups_rebase_reference_and_align_counts(self) -> None:
+    def test_reference_is_separate_and_counts_use_only_analysis_draws(self) -> None:
         report = build_occurrence_group_report(
             draws=self.draws(),
             expected_wheels=WHEELS,
@@ -44,17 +44,20 @@ class OccurrenceGroupApplicationTests(unittest.TestCase):
             (report.reference_draw_number, report.reference_draw_date),
             (122, "2026-08-04"),
         )
-        self.assertEqual(tuple(group.size for group in report.groups), (2, 1))
+        self.assertEqual(tuple(group.size for group in report.groups), (2,))
 
-        first_bari = report.groups[0].wheels[0]
-        self.assertEqual(first_bari.reference_numbers, (1, 12, 23, 34, 9))
-        self.assertEqual(first_bari.occurrence_counts, (2, 2, 2, 1, 1))
+        group = report.groups[0]
+        self.assertEqual(group.reference_draw.draw_number, 122)
+        self.assertEqual(
+            tuple(draw.draw_number for draw in group.draws),
+            (121, 120),
+        )
 
-        second_bari = report.groups[1].wheels[0]
-        self.assertEqual(second_bari.reference_numbers, (1, 12, 23, 34, 46))
-        self.assertEqual(second_bari.occurrence_counts, (1, 1, 1, 1, 1))
+        bari = group.wheels[0]
+        self.assertEqual(bari.reference_numbers, (1, 12, 23, 34, 9))
+        self.assertEqual(bari.occurrence_counts, (2, 2, 2, 1, 0))
 
-    def test_explicit_cutoff_is_inclusive_and_first_reference(self) -> None:
+    def test_explicit_cutoff_is_reference_and_not_counted(self) -> None:
         report = build_occurrence_group_report(
             draws=self.draws(),
             expected_wheels=WHEELS,
@@ -70,7 +73,11 @@ class OccurrenceGroupApplicationTests(unittest.TestCase):
         )
         self.assertEqual(
             tuple(draw.draw_number for draw in report.groups[0].draws),
-            (121, 120),
+            (120,),
+        )
+        self.assertEqual(
+            report.groups[0].wheels[0].occurrence_counts,
+            (1, 1, 1, 0, 0),
         )
 
     def test_same_number_on_other_wheel_does_not_count(self) -> None:
@@ -85,7 +92,7 @@ class OccurrenceGroupApplicationTests(unittest.TestCase):
         )
 
         bari = report.groups[0].wheels[0]
-        self.assertEqual(bari.occurrence_counts, (1, 1, 1, 1, 1))
+        self.assertEqual(bari.occurrence_counts, (1, 1, 1, 1, 0))
 
     def test_ambiguous_draw_number_is_rejected(self) -> None:
         draws = self.draws()
@@ -99,7 +106,7 @@ class OccurrenceGroupApplicationTests(unittest.TestCase):
                 requested_draw_number=122,
             )
 
-    def test_renderer_pads_leading_zero_without_putting_it_in_application_data(self) -> None:
+    def test_renderer_marks_reference_and_counted_draws(self) -> None:
         report = build_occurrence_group_report(
             draws=self.draws(),
             expected_wheels=WHEELS,
@@ -117,9 +124,13 @@ class OccurrenceGroupApplicationTests(unittest.TestCase):
             stream=stream,
         )
 
+        output = stream.getvalue()
         self.assertEqual(report.groups[0].wheels[0].reference_numbers[0], 1)
-        self.assertIn("01", stream.getvalue())
-        self.assertIn("Gruppo 122–121 (2 estrazioni)", stream.getvalue())
+        self.assertIn("01", output)
+        self.assertIn("analisi 121–120 (2 estrazioni conteggiate)", output)
+        self.assertIn("Rif.", output)
+        self.assertIn("Conta", output)
+        self.assertIn("esclusa dai conteggi", output)
 
 
 if __name__ == "__main__":

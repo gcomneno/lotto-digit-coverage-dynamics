@@ -29,7 +29,7 @@ class GuiBridgeTests(unittest.TestCase):
             response["data"]["contracts"],
             [
                 {"schema": "lotto.current", "version": 1},
-                {"schema": "lotto.occurrence-groups", "version": 1},
+                {"schema": "lotto.occurrence-groups", "version": 2},
             ],
         )
         self.assertEqual(
@@ -69,7 +69,7 @@ class GuiBridgeTests(unittest.TestCase):
         loader = Mock(
             return_value={
                 "schema": "lotto.occurrence-groups",
-                "schema_version": 1,
+                "schema_version": 2,
             }
         )
         root = Path("/tmp/project")
@@ -79,6 +79,7 @@ class GuiBridgeTests(unittest.TestCase):
 
         self.assertTrue(response["ok"])
         self.assertEqual(response["data"]["schema"], "lotto.occurrence-groups")
+        self.assertEqual(response["data"]["schema_version"], 2)
         loader.assert_called_once_with(
             root=root,
             database="data/lotto-current.sqlite3",

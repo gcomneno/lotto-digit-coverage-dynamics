@@ -63,7 +63,7 @@
   }
 
   function groupTitle(group: OccurrenceGroup): string {
-    return `Gruppo ${group.range.newest.draw_number}–${group.range.oldest.draw_number}`;
+    return `Rif. ${group.reference.draw_number} · analisi ${group.range.newest.draw_number}–${group.range.oldest.draw_number}`;
   }
 
   onMount(() => {
@@ -79,10 +79,11 @@
 </div>
 
 <PageIntro>
-  Esplorazione retrospettiva per gruppi. Ogni gruppo usa la propria estrazione
-  più recente come riferimento; un numero conta soltanto quando ricompare sulla
-  stessa ruota. I colori identificano le cinque posizioni del riferimento e non
-  rappresentano intensità o probabilità.
+  Esplorazione retrospettiva per gruppi. Ogni gruppo ha una propria estrazione
+  di riferimento che identifica i cinque numeri sotto osservazione ma è esclusa
+  dai conteggi. Le estrazioni successive nel pannello sono quelle storiche
+  effettivamente analizzate sulla stessa ruota. I colori identificano le cinque
+  posizioni del riferimento e non rappresentano intensità o probabilità.
 </PageIntro>
 
 <Panel title="Controlli">
@@ -90,7 +91,7 @@
     <label class="field-stack">
       <FieldLabel
         label="Dimensione gruppo"
-        hint="Numero di estrazioni consecutive per gruppo."
+        hint="Numero di estrazioni storiche conteggiate; il riferimento è aggiuntivo ed escluso."
       />
       <input type="number" min="1" step="1" bind:value={groupSize} />
     </label>
@@ -143,7 +144,7 @@
 
     <Panel title="Configurazione">
       <dl class="metric-list">
-        <div><dt>Gruppo</dt><dd>{report.group_size}</dd></div>
+        <div><dt>Estratti conteggiati</dt><dd>{report.group_size}</dd></div>
         <div><dt>Gruppi</dt><dd>{report.groups.length}</dd></div>
         <div><dt>Ruota visibile</dt><dd>{selectedWheel || '—'}</dd></div>
       </dl>
@@ -153,13 +154,14 @@
   {#if selectedWheel}
     {#each report.groups as group (`${group.reference.draw_date}-${group.reference.draw_number}`)}
       {@const summary = wheelSummary(group, selectedWheel)}
+      {@const referenceNumbers = drawNumbersForWheel(group.reference, selectedWheel)}
       <Panel title={groupTitle(group)}>
         <div class="group-meta">
           <span>
             riferimento <strong>{group.reference.draw_number}</strong>
-            del {group.reference.draw_date}
+            del {group.reference.draw_date} — escluso dai conteggi
           </span>
-          <span>{group.actual_size} estrazioni</span>
+          <span>{group.actual_size} estrazioni conteggiate</span>
         </div>
 
         {#if summary}
@@ -179,15 +181,41 @@
             <table class="occurrence-table">
               <thead>
                 <tr>
+                  <th scope="col">Uso</th>
                   <th scope="col">Concorso</th>
                   <th scope="col">Data</th>
                   <th scope="col" colspan="5">{selectedWheel}</th>
                 </tr>
               </thead>
               <tbody>
+                <tr>
+                  <td><strong>Rif.</strong></td>
+                  <th scope="row">{group.reference.draw_number}</th>
+                  <td>{group.reference.draw_date}</td>
+                  {#if referenceNumbers}
+                    {#each referenceNumbers as number}
+                      {@const position = referencePosition(number, summary.reference_numbers)}
+                      <td>
+                        <span
+                          class:occurrence-hit={position !== null}
+                          class:position-0={position === 0}
+                          class:position-1={position === 1}
+                          class:position-2={position === 2}
+                          class:position-3={position === 3}
+                          class:position-4={position === 4}
+                        >
+                          {formatLottoNumber(number)}
+                        </span>
+                      </td>
+                    {/each}
+                  {:else}
+                    <td colspan="5">—</td>
+                  {/if}
+                </tr>
                 {#each group.draws as draw (`${draw.draw_date}-${draw.draw_number}`)}
                   {@const numbers = drawNumbersForWheel(draw, selectedWheel)}
                   <tr>
+                    <td>Conta</td>
                     <th scope="row">{draw.draw_number}</th>
                     <td>{draw.draw_date}</td>
                     {#if numbers}
