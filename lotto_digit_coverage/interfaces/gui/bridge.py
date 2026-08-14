@@ -128,6 +128,7 @@ def load_occurrence_payload(
     database: str | Path = DEFAULT_DATABASE,
     group_size: int = 10,
     requested_draw_number: int | None = None,
+    occurrence_limit: int | None = None,
 ) -> dict[str, Any]:
     """Build the stable grouped-occurrence contract without CLI parsing."""
 
@@ -141,6 +142,7 @@ def load_occurrence_payload(
         expected_wheels=expected_wheels,
         group_size=group_size,
         requested_draw_number=requested_draw_number,
+        occurrence_limit=occurrence_limit,
     )
     return occurrence_group_report_to_dict(report)
 
@@ -184,7 +186,7 @@ class LottoGuiApi:
                 "bridge_version": 2,
                 "contracts": [
                     {"schema": "lotto.current", "version": 1},
-                    {"schema": "lotto.occurrence-groups", "version": 2},
+                    {"schema": "lotto.occurrence-groups", "version": 3},
                 ],
                 "research_reports": [
                     item["id"] for item in self._catalog_loader()
@@ -217,6 +219,7 @@ class LottoGuiApi:
         database: str | None = str(DEFAULT_DATABASE),
         group_size: int = 10,
         requested_draw_number: int | None = None,
+        occurrence_limit: int | None = None,
     ) -> dict[str, Any]:
         try:
             payload = self._occurrence_loader(
@@ -224,6 +227,7 @@ class LottoGuiApi:
                 database=database or str(DEFAULT_DATABASE),
                 group_size=group_size,
                 requested_draw_number=requested_draw_number,
+                occurrence_limit=occurrence_limit,
             )
             return self._success(payload)
         except Exception as error:  # pywebview boundary: convert to stable envelope
