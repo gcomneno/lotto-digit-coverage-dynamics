@@ -11,6 +11,7 @@ from analyze_coverage_anomalies import ALL_CATEGORIES, AnomalyEvent
 from strategies.current_coverage_signal import CurrentCoverageSignal
 
 from lotto_digit_coverage.application.current import CurrentCoverageReport
+from lotto_digit_coverage.interfaces.cli.consensus import render_digit_consensus
 
 
 ANSI_RESET = "\033[0m"
@@ -20,10 +21,6 @@ ANSI_MISSING = "\033[1;30;43m"
 
 def _digits(digits: frozenset[int]) -> str:
     return "{" + ",".join(str(digit) for digit in sorted(digits)) + "}"
-
-
-def _wheels(wheels: tuple[str, ...]) -> str:
-    return ",".join(wheels) if wheels else "-"
 
 
 def _print_markov(report: CurrentCoverageReport, stream: TextIO) -> None:
@@ -69,38 +66,7 @@ def _print_markov(report: CurrentCoverageReport, stream: TextIO) -> None:
 
 def _print_consensus(report: CurrentCoverageReport, stream: TextIO) -> None:
     print(file=stream)
-    print("===== CONSENSUS TRASVERSALE DELLE CIFRE =====", file=stream)
-    print(
-        "Descrittivo: conta dove ogni cifra è ancora Mancante e dove è TOP "
-        "nelle sole ruote con ciclo attivo.",
-        file=stream,
-    )
-    print(
-        "Non combina cifre in numeri e non rappresenta un vantaggio sul gioco.",
-        file=stream,
-    )
-    print(file=stream)
-    print(
-        f"{'Cifra':<7}{'Mancante':>10}  {'TOP':>5}  "
-        f"{'Ruote mancanti':<38}Ruote TOP",
-        file=stream,
-    )
-    print(
-        f"{'-----':<7}{'--------':>10}  {'---':>5}  "
-        f"{'---------------':<38}---------",
-        file=stream,
-    )
-
-    if not report.consensus:
-        print("Nessuna ruota con ciclo attivo.", file=stream)
-        return
-
-    for row in report.consensus:
-        print(
-            f"{row.digit:<7}{row.missing_count:>10}  {row.top_count:>5}  "
-            f"{_wheels(row.missing_wheels):<38}{_wheels(row.top_wheels)}",
-            file=stream,
-        )
+    print(render_digit_consensus(report.consensus), file=stream)
 
 
 def _print_coverage_hits(
