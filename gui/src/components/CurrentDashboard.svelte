@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { Button, PageIntro, Panel } from 'giadaware-ui-components/studio';
   import type { CurrentContract, LottoBridge } from '../lib/bridge';
+  import { consensusPresentation } from '../lib/consensus';
   import { formatLottoNumber } from '../lib/occurrences';
 
   let { bridge }: { bridge: LottoBridge } = $props();
@@ -184,24 +185,31 @@
 
   <div class="dashboard-grid">
     <Panel title="Consensus trasversale">
-      <p class="muted">Descrittivo: nessun numero candidato viene generato.</p>
+      <PageIntro>
+        Descrittivo: per ogni cifra conta in quante ruote con ciclo attivo è ancora
+        assente e in quante è tra le più presenti nel ciclo corrente. Non combina
+        cifre in numeri e non rappresenta un vantaggio sul gioco.
+      </PageIntro>
       <section class="responsive-table" aria-label="Consensus trasversale">
         <table>
           <thead>
             <tr>
               <th scope="col">Cifra</th>
-              <th scope="col">Mancante</th>
-              <th scope="col">TOP</th>
-              <th scope="col">Ruote coinvolte</th>
+              <th scope="col">Ruote in deficit</th>
+              <th scope="col">Ruote in predominanza</th>
+              <th scope="col">Dove in deficit</th>
+              <th scope="col">Dove predominante</th>
             </tr>
           </thead>
           <tbody>
             {#each current.consensus as row (row.digit)}
+              {@const presentation = consensusPresentation(row)}
               <tr>
                 <th scope="row">{row.digit}</th>
                 <td>{row.missing_count}</td>
                 <td>{row.top_count}</td>
-                <td>{row.involved_wheels.join(', ') || '—'}</td>
+                <td>{presentation.missingWheels}</td>
+                <td>{presentation.topWheels}</td>
               </tr>
             {/each}
           </tbody>
