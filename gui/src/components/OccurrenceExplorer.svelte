@@ -154,6 +154,7 @@
   {#if selectedWheel}
     {#each report.groups as group (`${group.reference.draw_date}-${group.reference.draw_number}`)}
       {@const summary = wheelSummary(group, selectedWheel)}
+      {@const referenceNumbers = drawNumbersForWheel(group.reference, selectedWheel)}
       <Panel title={groupTitle(group)}>
         <div class="group-meta">
           <span>
@@ -187,7 +188,6 @@
                 </tr>
               </thead>
               <tbody>
-                {@const referenceNumbers = drawNumbersForWheel(group.reference, selectedWheel)}
                 <tr>
                   <td><strong>Rif.</strong></td>
                   <th scope="row">{group.reference.draw_number}</th>
