@@ -138,6 +138,7 @@ export type OccurrenceWheelSummary = {
   wheel: string;
   reference_numbers: number[];
   occurrence_counts: number[];
+  total_occurrences: number;
 };
 
 export type OccurrenceGroup = {
@@ -153,6 +154,7 @@ export type OccurrenceGroup = {
     };
   };
   actual_size: number;
+  total_occurrences: number;
   draws: OccurrenceDraw[];
   wheels: OccurrenceWheelSummary[];
 };
@@ -172,6 +174,9 @@ export type OccurrenceContract = {
     kind: string;
   };
   group_size: number;
+  occurrence_limit: number | null;
+  examined_draw_count: number;
+  grand_total_occurrences: number;
   groups: OccurrenceGroup[];
 };
 
@@ -232,7 +237,8 @@ export type PywebviewApi = {
   get_occurrence_groups(
     database?: string,
     group_size?: number,
-    requested_draw_number?: number | null
+    requested_draw_number?: number | null,
+    occurrence_limit?: number | null
   ): Promise<Envelope<OccurrenceContract>>;
   get_research_catalog(): Promise<Envelope<ResearchCatalog>>;
   get_research_report(report_id: string): Promise<Envelope<ResearchReport>>;
@@ -243,7 +249,8 @@ export type LottoBridge = {
   current(): Promise<Envelope<CurrentContract>>;
   occurrenceGroups(
     groupSize: number,
-    requestedDrawNumber?: number | null
+    requestedDrawNumber?: number | null,
+    occurrenceLimit?: number | null
   ): Promise<Envelope<OccurrenceContract>>;
   researchCatalog(): Promise<Envelope<ResearchCatalog>>;
   researchReport(reportId: string): Promise<Envelope<ResearchReport>>;
@@ -288,9 +295,14 @@ export function createBridge(api: PywebviewApi): LottoBridge {
   return {
     capabilities: () => withTimeout(api.get_capabilities(), 10_000, 'Handshake GUI'),
     current: () => withTimeout(api.get_current(), 15_000, 'Report corrente'),
-    occurrenceGroups: (groupSize, requestedDrawNumber = null) =>
+    occurrenceGroups: (groupSize, requestedDrawNumber = null, occurrenceLimit = null) =>
       withTimeout(
-        api.get_occurrence_groups(undefined, groupSize, requestedDrawNumber),
+        api.get_occurrence_groups(
+          undefined,
+          groupSize,
+          requestedDrawNumber,
+          occurrenceLimit
+        ),
         15_000,
         'Occorrenze'
       ),
