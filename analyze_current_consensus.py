@@ -8,8 +8,9 @@ import io
 from contextlib import redirect_stdout
 
 import analyze_current_coverage as legacy
+from lotto_digit_coverage.interfaces.cli.consensus import render_digit_consensus
 from lotto_digit_coverage.interfaces.cli.current_command import main
-from strategies.coverage_consensus import render_digit_consensus
+from strategies.coverage_consensus import build_digit_consensus
 
 
 # Compatibility surface for callers/tests that still import the PR #7 wrapper
@@ -36,7 +37,7 @@ def print_markov_summary_with_consensus(states) -> None:
 
     print("\n".join(retained))
     print()
-    print(render_digit_consensus(states))
+    print(render_digit_consensus(build_digit_consensus(states)))
 
 
 if __name__ == "__main__":
