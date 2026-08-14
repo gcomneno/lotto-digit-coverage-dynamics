@@ -29,7 +29,7 @@ class GuiBridgeTests(unittest.TestCase):
             response["data"]["contracts"],
             [
                 {"schema": "lotto.current", "version": 1},
-                {"schema": "lotto.occurrence-groups", "version": 2},
+                {"schema": "lotto.occurrence-groups", "version": 3},
             ],
         )
         self.assertEqual(
@@ -65,26 +65,27 @@ class GuiBridgeTests(unittest.TestCase):
             use_checkpoint=False,
         )
 
-    def test_occurrence_bridge_uses_default_database_when_js_passes_none(self) -> None:
+    def test_occurrence_bridge_forwards_limit_and_default_database(self) -> None:
         loader = Mock(
             return_value={
                 "schema": "lotto.occurrence-groups",
-                "schema_version": 2,
+                "schema_version": 3,
             }
         )
         root = Path("/tmp/project")
         api = LottoGuiApi(root, occurrence_loader=loader)
 
-        response = api.get_occurrence_groups(None, 6, 128)
+        response = api.get_occurrence_groups(None, 6, 128, 35)
 
         self.assertTrue(response["ok"])
         self.assertEqual(response["data"]["schema"], "lotto.occurrence-groups")
-        self.assertEqual(response["data"]["schema_version"], 2)
+        self.assertEqual(response["data"]["schema_version"], 3)
         loader.assert_called_once_with(
             root=root,
             database="data/lotto-current.sqlite3",
             group_size=6,
             requested_draw_number=128,
+            occurrence_limit=35,
         )
 
     def test_bridge_normalizes_errors_without_terminal_output(self) -> None:
