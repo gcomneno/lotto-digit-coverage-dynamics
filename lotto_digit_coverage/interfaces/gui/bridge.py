@@ -184,7 +184,7 @@ class LottoGuiApi:
                 "bridge_version": 2,
                 "contracts": [
                     {"schema": "lotto.current", "version": 1},
-                    {"schema": "lotto.occurrence-groups", "version": 1},
+                    {"schema": "lotto.occurrence-groups", "version": 2},
                 ],
                 "research_reports": [
                     item["id"] for item in self._catalog_loader()
