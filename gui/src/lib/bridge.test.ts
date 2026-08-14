@@ -68,7 +68,7 @@ describe('createBridge', () => {
       ok: true,
       data: {
         schema: 'lotto.occurrence-groups',
-        schema_version: 1,
+        schema_version: 3,
         number_representation: numberRepresentation,
         reference: {
           draw_number: 128,
@@ -76,6 +76,9 @@ describe('createBridge', () => {
           kind: 'automatico'
         },
         group_size: 10,
+        occurrence_limit: 35,
+        examined_draw_count: 35,
+        grand_total_occurrences: 0,
         groups: []
       },
       error: null
@@ -117,7 +120,7 @@ describe('createBridge', () => {
 
     const bridge = createBridge(api);
     const current = await bridge.current();
-    const occurrences = await bridge.occurrenceGroups(10, 120);
+    const occurrences = await bridge.occurrenceGroups(10, 120, 35);
     const catalog = await bridge.researchCatalog();
     const research = await bridge.researchReport('completion');
 
@@ -126,7 +129,7 @@ describe('createBridge', () => {
     expect(catalog.data?.reports[0]?.id).toBe('completion');
     expect(research.data?.id).toBe('completion');
     expect(api.get_current).toHaveBeenCalledOnce();
-    expect(api.get_occurrence_groups).toHaveBeenCalledWith(undefined, 10, 120);
+    expect(api.get_occurrence_groups).toHaveBeenCalledWith(undefined, 10, 120, 35);
     expect(api.get_research_catalog).toHaveBeenCalledOnce();
     expect(api.get_research_report).toHaveBeenCalledWith('completion');
   });
