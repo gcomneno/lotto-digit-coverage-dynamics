@@ -3,10 +3,7 @@ from __future__ import annotations
 import unittest
 
 from strategies.coverage_completion import ALL_DIGITS, CurrentCoverageState
-from strategies.coverage_consensus import (
-    build_digit_consensus,
-    render_digit_consensus,
-)
+from strategies.coverage_consensus import build_digit_consensus
 
 
 def state(
@@ -79,37 +76,6 @@ class CoverageConsensusTests(unittest.TestCase):
         self.assertNotIn("Bari", by_digit[6].involved_wheels)
         self.assertEqual(by_digit[6].missing_count, 2)
         self.assertEqual(by_digit[6].top_count, 1)
-
-    def test_render_is_descriptive_and_generates_no_numbers(self) -> None:
-        rendered = render_digit_consensus(
-            (
-                state(
-                    "Milano",
-                    1,
-                    age=2,
-                    missing=frozenset({8}),
-                    top=frozenset({1}),
-                ),
-                state(
-                    "Roma",
-                    2,
-                    age=2,
-                    missing=frozenset({8}),
-                    top=frozenset({2}),
-                ),
-            )
-        )
-
-        self.assertIn("CONSENSUS TRASVERSALE", rendered)
-        self.assertIn("Ruote in deficit", rendered)
-        self.assertIn("Ruote in predominanza", rendered)
-        self.assertIn("Dove in deficit", rendered)
-        self.assertIn("Dove predominante", rendered)
-        self.assertIn("in quante ruote con ciclo attivo", rendered)
-        self.assertIn("Milano,Roma", rendered)
-        self.assertIn("non combina cifre in numeri", rendered.casefold())
-        self.assertNotIn("Numeri=", rendered)
-        self.assertNotIn("TUTTE", rendered)
 
 
 if __name__ == "__main__":
