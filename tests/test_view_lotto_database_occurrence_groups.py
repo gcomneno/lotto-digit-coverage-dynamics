@@ -191,7 +191,7 @@ class OccurrenceGroupViewerTests(unittest.TestCase):
                     result.stderr,
                 )
 
-    def test_groups_rebase_reference_and_count_by_reference_position(self) -> None:
+    def test_groups_separate_reference_from_counted_history(self) -> None:
         result = self.run_script(
             "--latest-occurrences",
             "--occurrence-groups",
@@ -200,38 +200,27 @@ class OccurrenceGroupViewerTests(unittest.TestCase):
 
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn(
-            "Gruppo 122–121 (2 estrazioni) — riferimento 122 del 2026-08-04",
+            "Gruppo: riferimento 122 del 2026-08-04; "
+            "analisi 121–120 (2 estrazioni conteggiate)",
             result.stdout,
         )
-        self.assertIn(
-            "Gruppo 120–120 (1 estrazioni) — riferimento 120 del 2026-07-31",
-            result.stdout,
-        )
+        self.assertNotIn("Gruppo: riferimento 120", result.stdout)
 
-        sections = result.stdout.split("Gruppo ")
-        first_group = sections[1]
-        second_group = sections[2]
+        group = result.stdout.split("Gruppo: riferimento ", 1)[1]
+        plain_group = ANSI_PATTERN.sub("", group)
+        self.assertIn("Rif.    122", plain_group)
+        self.assertIn("Conta   121", plain_group)
+        self.assertIn("Conta   120", plain_group)
 
         for color, count in zip(
             OCCURRENCE_HIGHLIGHTS,
-            (2, 2, 2, 1, 1),
+            (2, 2, 2, 1, 0),
             strict=True,
         ):
             self.assertIn(
                 f"{color}{count:02d}{RESET}",
-                first_group,
+                group,
             )
-
-        self.assertIn(
-            f"{OCCURRENCE_HIGHLIGHTS[4]}46{RESET}",
-            second_group,
-        )
-
-        plain_second = ANSI_PATTERN.sub("", second_group)
-        self.assertIn(
-            "01 01 01 01 01",
-            plain_second,
-        )
 
     def test_explicit_cutoff_becomes_first_group_reference(self) -> None:
         result = self.run_script(
@@ -247,10 +236,13 @@ class OccurrenceGroupViewerTests(unittest.TestCase):
             result.stdout,
         )
         self.assertIn(
-            "Gruppo 121–120 (2 estrazioni) — riferimento 121 del 2026-08-02",
+            "Gruppo: riferimento 121 del 2026-08-02; "
+            "analisi 120–120 (1 estrazioni conteggiate)",
             result.stdout,
         )
-        self.assertNotIn("Gruppo 122", result.stdout)
+        self.assertIn("Rif.    121", ANSI_PATTERN.sub("", result.stdout))
+        self.assertIn("Conta   120", ANSI_PATTERN.sub("", result.stdout))
+        self.assertNotIn("Rif.    122", ANSI_PATTERN.sub("", result.stdout))
 
 
 if __name__ == "__main__":
