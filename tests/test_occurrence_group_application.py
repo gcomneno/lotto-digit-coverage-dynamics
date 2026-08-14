@@ -56,6 +56,31 @@ class OccurrenceGroupApplicationTests(unittest.TestCase):
         bari = group.wheels[0]
         self.assertEqual(bari.reference_numbers, (1, 12, 23, 34, 9))
         self.assertEqual(bari.occurrence_counts, (2, 2, 2, 1, 0))
+        self.assertEqual(bari.total_occurrences, 7)
+        self.assertEqual(group.total_occurrences, 12)
+        self.assertEqual(report.grand_total_occurrences, 12)
+
+    def test_global_limit_caps_draws_before_grouping(self) -> None:
+        report = build_occurrence_group_report(
+            draws=self.draws(),
+            expected_wheels=WHEELS,
+            group_size=2,
+            occurrence_limit=2,
+        )
+
+        self.assertEqual(report.occurrence_limit, 2)
+        self.assertEqual(report.examined_draw_count, 2)
+        self.assertEqual(len(report.groups), 1)
+        group = report.groups[0]
+        self.assertEqual(group.reference_draw_number, 122)
+        self.assertEqual(
+            tuple(draw.draw_number for draw in group.draws),
+            (121,),
+        )
+        self.assertEqual(group.wheels[0].occurrence_counts, (1, 1, 1, 0, 0))
+        self.assertEqual(group.wheels[0].total_occurrences, 3)
+        self.assertEqual(group.total_occurrences, 8)
+        self.assertEqual(report.grand_total_occurrences, 8)
 
     def test_explicit_cutoff_is_reference_and_not_counted(self) -> None:
         report = build_occurrence_group_report(
@@ -106,7 +131,7 @@ class OccurrenceGroupApplicationTests(unittest.TestCase):
                 requested_draw_number=122,
             )
 
-    def test_renderer_marks_reference_and_counted_draws(self) -> None:
+    def test_renderer_marks_reference_counted_draws_and_totals(self) -> None:
         report = build_occurrence_group_report(
             draws=self.draws(),
             expected_wheels=WHEELS,
@@ -131,6 +156,9 @@ class OccurrenceGroupApplicationTests(unittest.TestCase):
         self.assertIn("Rif.", output)
         self.assertIn("Conta", output)
         self.assertIn("esclusa dai conteggi", output)
+        self.assertIn("Σ07", output)
+        self.assertIn("Σ05", output)
+        self.assertIn("Somma globale delle occorrenze: 12", output)
 
 
 if __name__ == "__main__":
