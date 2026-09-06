@@ -38,6 +38,10 @@ OCCURRENCE_PRESENTATION_CATALOG = PresentationCatalog(
             "  --occurrence-limit N  Limit the global range to N consecutive draws, "
             "including reference rows."
         ),
+        "language_help": "Presentation language.",
+        "language_missing": "--language requires en or it.",
+        "language_duplicate": "--language may be specified only once.",
+        "language_invalid": "--language accepts only en or it.",
         "occurrence_limit_missing": "--occurrence-limit requires a draw count.",
         "occurrence_limit_duplicate": "--occurrence-limit may be specified only once.",
         "occurrence_limit_requires_groups": "--occurrence-limit requires --occurrence-groups.",
@@ -76,6 +80,10 @@ OCCURRENCE_PRESENTATION_CATALOG = PresentationCatalog(
                 "  --occurrence-limit N  Limita il range globale a N concorsi consecutivi, "
                 "incluse le righe di riferimento."
             ),
+            "language_help": "Lingua di presentazione.",
+            "language_missing": "--language richiede en oppure it.",
+            "language_duplicate": "--language può essere specificato una sola volta.",
+            "language_invalid": "--language accetta soltanto en oppure it.",
             "occurrence_limit_missing": "--occurrence-limit richiede un numero di estrazioni.",
             "occurrence_limit_duplicate": "--occurrence-limit può essere specificato una sola volta.",
             "occurrence_limit_requires_groups": "--occurrence-limit richiede --occurrence-groups.",
