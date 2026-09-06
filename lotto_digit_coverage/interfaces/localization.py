@@ -75,6 +75,47 @@ _ENGLISH_CATALOG: Mapping[str, str] = {
     "cli.current.within3": "Within 3",
     "cli.current.within5": "Within 5",
     "cli.current.expected": "Expected",
+    "cli.current.coverage_hits_title": "===== COVERAGE-HITS OPERATIONAL SIGNAL =====",
+    "cli.current.historical_source": "Historical source",
+    "cli.current.coverage_hits_event": (
+        "Event: at least max(1, N-1) of the N missing digits on the next draw."
+    ),
+    "cli.current.coverage_hits_estimate": (
+        "Estimate95-: current probability corrected with the Wilson lower bound "
+        "of the historical excess."
+    ),
+    "cli.current.coverage_hits_age_note": "Age is descriptive and does not increase probability.",
+    "cli.current.coverage_hits_empty": "No current class is present in the historical summary.",
+    "cli.current.class": "Class",
+    "cli.current.cases": "Cases",
+    "cli.current.historical": "Historical",
+    "cli.current.event_probability": "P event",
+    "cli.current.estimate95": "Estimate95-",
+    "cli.current.first_signal": "First signal",
+    "cli.current.at_least": "at least",
+    "cli.current.among": "among",
+    "cli.current.coverage_hits_note": (
+        "Note: a negative lift does not indicate a historical advantage; the ranking "
+        "describes the most robust operational signal available."
+    ),
+    "cli.current.next_draw_title": "===== NEXT DRAW IN DATABASE =====",
+    "cli.current.next_draw_note": "Not used in the historical-framework calculations.",
+    "cli.current.draw": "Draw",
+    "cli.current.digit_legend": "Digit legend",
+    "cli.current.top": "TOP",
+    "cli.current.numbers": "Numbers",
+    "cli.current.anomaly_history_title": "===== A1-A4 ANOMALIES IN DATABASE =====",
+    "cli.current.valid_transitions": "Valid transitions",
+    "cli.current.observed_events": "Observed events",
+    "cli.current.categories": "Categories",
+    "cli.current.no_historical_anomalies": "No historical anomaly detected.",
+    "cli.current.date": "Date",
+    "cli.current.event_probability_header": "P(event)",
+    "cli.current.level": "Level",
+    "cli.current.signature": "Signature",
+    "cli.current.active_anomalies_title": "===== ACTIVE ANOMALIES AT {draw} ({date}) =====",
+    "cli.current.no_active_anomalies": "No A1-A4 anomaly is active.",
+    "cli.current.active_since": "Active/observed since",
     "cli.consensus.title": "===== CROSS-WHEEL DIGIT CONSENSUS =====",
     "cli.consensus.description": (
         "Descriptive: for each digit, count how many active-cycle wheels still miss it "
@@ -149,6 +190,47 @@ _ITALIAN_CATALOG: Mapping[str, str] = {
     "cli.current.within3": "Entro 3",
     "cli.current.within5": "Entro 5",
     "cli.current.expected": "Attesa",
+    "cli.current.coverage_hits_title": "===== SEGNALE OPERATIVO COVERAGE-HITS =====",
+    "cli.current.historical_source": "Fonte storica",
+    "cli.current.coverage_hits_event": (
+        "Evento: almeno max(1, N-1) delle N cifre mancanti alla prossima estrazione."
+    ),
+    "cli.current.coverage_hits_estimate": (
+        "Stima95-: probabilità corrente corretta con il limite inferiore Wilson "
+        "dello scarto storico."
+    ),
+    "cli.current.coverage_hits_age_note": "Età è descrittiva e non incrementa la probabilità.",
+    "cli.current.coverage_hits_empty": "Nessuna classe corrente presente nel riepilogo storico.",
+    "cli.current.class": "Classe",
+    "cli.current.cases": "Casi",
+    "cli.current.historical": "Storico",
+    "cli.current.event_probability": "P evento",
+    "cli.current.estimate95": "Stima95-",
+    "cli.current.first_signal": "Primo segnale",
+    "cli.current.at_least": "almeno",
+    "cli.current.among": "tra",
+    "cli.current.coverage_hits_note": (
+        "Nota: un lift negativo non indica un vantaggio storico; la classifica "
+        "descrive il segnale operativo più robusto disponibile."
+    ),
+    "cli.current.next_draw_title": "===== ESTRAZIONE SUCCESSIVA NEL DATABASE =====",
+    "cli.current.next_draw_note": "Non utilizzata nei calcoli del quadro storico.",
+    "cli.current.draw": "Estrazione",
+    "cli.current.digit_legend": "Legenda cifre",
+    "cli.current.top": "TOP",
+    "cli.current.numbers": "Numeri",
+    "cli.current.anomaly_history_title": "===== ANOMALIE A1-A4 NEL DATABASE =====",
+    "cli.current.valid_transitions": "Transizioni valide",
+    "cli.current.observed_events": "Eventi osservati",
+    "cli.current.categories": "Categorie",
+    "cli.current.no_historical_anomalies": "Nessuna anomalia storica rilevata.",
+    "cli.current.date": "Data",
+    "cli.current.event_probability_header": "P(evento)",
+    "cli.current.level": "Livello",
+    "cli.current.signature": "Firma",
+    "cli.current.active_anomalies_title": "===== ANOMALIE ATTIVE ALLA {draw} ({date}) =====",
+    "cli.current.no_active_anomalies": "Nessuna anomalia A1-A4 attiva.",
+    "cli.current.active_since": "Attiva/osservata da",
     "cli.consensus.title": "===== CONSENSUS TRASVERSALE DELLE CIFRE =====",
     "cli.consensus.description": (
         "Descrittivo: per ogni cifra conta in quante ruote con ciclo attivo è ancora assente "
