@@ -60,6 +60,13 @@ def _extract_occurrence_limit(
 def main(argv: Sequence[str] | None = None) -> int:
     arguments = sys.argv[1:] if argv is None else list(argv)
 
+    if arguments and arguments[0] == "ask":
+        from lotto_digit_coverage.interfaces.cli.natural_query_command import (
+            main as natural_query_main,
+        )
+
+        return natural_query_main(arguments[1:])
+
     try:
         parsed_arguments, occurrence_limit = _extract_occurrence_limit(arguments)
         options = legacy.parse_options(parsed_arguments)
