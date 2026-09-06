@@ -20,7 +20,10 @@ from lotto_digit_coverage.infrastructure.giadaware_ai_query import (
 from lotto_digit_coverage.infrastructure.sqlite_draw_history import (
     SqliteDrawHistoryRepository,
 )
-from lotto_digit_coverage.interfaces.cli.natural_query_command import main
+from lotto_digit_coverage.interfaces.cli.natural_query_command import (
+    build_parser,
+    main,
+)
 
 
 VALID_INTENT = {
@@ -128,26 +131,34 @@ class SqliteDrawHistoryRepositoryTests(unittest.TestCase):
 
 
 class NaturalQueryCliIntegrationTests(unittest.TestCase):
+    def _database(self, directory: str) -> Path:
+        database = Path(directory) / "lotto.sqlite3"
+        with sqlite3.connect(database) as connection:
+            connection.execute(
+                "CREATE TABLE v_draw_numbers ("
+                "draw_number INTEGER, draw_date TEXT, wheel TEXT, "
+                "position INTEGER, value INTEGER)"
+            )
+            draws = {
+                142: (81, 55, 23, 57, 88),
+                143: (73, 6, 80, 45, 18),
+            }
+            for draw, values in draws.items():
+                for position, value in enumerate(values, 1):
+                    connection.execute(
+                        "INSERT INTO v_draw_numbers VALUES (?, ?, ?, ?, ?)",
+                        (draw, f"2026-09-{draw - 138:02d}", "Napoli", position, value),
+                    )
+        return database
+
+    def test_cli_defaults_to_canonical_english(self):
+        args = build_parser().parse_args(["hello"])
+        self.assertEqual(args.language, "en")
+        self.assertIn("Natural-language request", build_parser().format_help())
+
     def test_napoli_18_81_request_renders_newest_first(self):
         with tempfile.TemporaryDirectory() as directory:
-            database = Path(directory) / "lotto.sqlite3"
-            with sqlite3.connect(database) as connection:
-                connection.execute(
-                    "CREATE TABLE v_draw_numbers ("
-                    "draw_number INTEGER, draw_date TEXT, wheel TEXT, "
-                    "position INTEGER, value INTEGER)"
-                )
-                draws = {
-                    142: (81, 55, 23, 57, 88),
-                    143: (73, 6, 80, 45, 18),
-                }
-                for draw, values in draws.items():
-                    for position, value in enumerate(values, 1):
-                        connection.execute(
-                            "INSERT INTO v_draw_numbers VALUES (?, ?, ?, ?, ?)",
-                            (draw, f"2026-09-{draw - 138:02d}", "Napoli", position, value),
-                        )
-
+            database = self._database(directory)
             output = io.StringIO()
             with redirect_stdout(output):
                 status = main(
@@ -161,9 +172,41 @@ class NaturalQueryCliIntegrationTests(unittest.TestCase):
 
             rendered = output.getvalue()
             self.assertEqual(status, 0)
+            self.assertIn("Wheel: Napoli", rendered)
+            self.assertIn("Order: descending", rendered)
             self.assertLess(rendered.index(" 143  "), rendered.index(" 142  "))
             self.assertIn("\033[1;30;46m18\033[0m", rendered)
             self.assertIn("\033[1;30;46m81\033[0m", rendered)
+
+    def test_english_and_italian_change_only_presentation(self):
+        with tempfile.TemporaryDirectory() as directory:
+            database = self._database(directory)
+            outputs = {}
+            statuses = {}
+            for locale in ("en", "it"):
+                output = io.StringIO()
+                with redirect_stdout(output):
+                    statuses[locale] = main(
+                        [
+                            "--database",
+                            str(database),
+                            "--language",
+                            locale,
+                            "accendi 18 e 81 solo su Napoli, dalla più recente alla più vecchia",
+                        ],
+                        backend=FakeBackend(),
+                    )
+                outputs[locale] = output.getvalue()
+
+            self.assertEqual(statuses, {"en": 0, "it": 0})
+            self.assertIn("Wheel: Napoli", outputs["en"])
+            self.assertIn("Ruota: Napoli", outputs["it"])
+            for locale in ("en", "it"):
+                rendered = outputs[locale]
+                self.assertIn("Order: descending" if locale == "en" else "Ordine: descending", rendered)
+                self.assertLess(rendered.index(" 143  "), rendered.index(" 142  "))
+                self.assertIn("\033[1;30;46m18\033[0m", rendered)
+                self.assertIn("\033[1;30;46m81\033[0m", rendered)
 
 
 if __name__ == "__main__":

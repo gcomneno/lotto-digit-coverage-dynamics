@@ -19,12 +19,38 @@ _ENGLISH_CATALOG: Mapping[str, str] = {
     "common.error_prefix": "ERROR",
     "common.loading": "Loading…",
     "common.optional": "optional",
+    "cli.ask.description": (
+        "Interpret a natural-language request through GiadaWare AI and execute "
+        "it as a deterministic, read-only Lotto query."
+    ),
+    "cli.ask.database_help": "SQLite database to query.",
+    "cli.ask.language_help": "Presentation language.",
+    "cli.ask.request_help": "Natural-language request.",
+    "cli.ask.database_label": "Database",
+    "cli.ask.wheel_label": "Wheel",
+    "cli.ask.order_label": "Order",
+    "cli.ask.draw_header": "Draw",
+    "cli.ask.date_header": "Date",
+    "cli.ask.numbers_header": "Numbers",
 }
 
 _ITALIAN_CATALOG: Mapping[str, str] = {
     "common.error_prefix": "ERRORE",
     "common.loading": "Caricamento…",
     "common.optional": "opzionale",
+    "cli.ask.description": (
+        "Interpreta una richiesta naturale tramite GiadaWare AI e la esegue "
+        "come query Lotto deterministica e read-only."
+    ),
+    "cli.ask.database_help": "Database SQLite da consultare.",
+    "cli.ask.language_help": "Lingua di presentazione.",
+    "cli.ask.request_help": "Richiesta in linguaggio naturale.",
+    "cli.ask.database_label": "Database",
+    "cli.ask.wheel_label": "Ruota",
+    "cli.ask.order_label": "Ordine",
+    "cli.ask.draw_header": "Estr",
+    "cli.ask.date_header": "Data",
+    "cli.ask.numbers_header": "Numeri",
 }
 
 
