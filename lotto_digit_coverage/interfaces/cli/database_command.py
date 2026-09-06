@@ -34,6 +34,7 @@ def _structured_draws(draws):
 def _extract_language(arguments: Sequence[str]) -> tuple[list[str], str]:
     cleaned: list[str] = []
     locale = CANONICAL_LOCALE
+    language_seen = False
     index = 0
     while index < len(arguments):
         argument = arguments[index]
@@ -42,12 +43,14 @@ def _extract_language(arguments: Sequence[str]) -> tuple[list[str], str]:
             index += 1
             continue
         if index + 1 >= len(arguments):
-            raise legacy.CliError("--language requires en or it.")
-        if locale != CANONICAL_LOCALE:
-            raise legacy.CliError("--language may be specified only once.")
-        locale = arguments[index + 1]
-        if locale not in SUPPORTED_LOCALES:
-            raise legacy.CliError("--language accepts only en or it.")
+            raise legacy.CliError(occurrence_text("language_missing", locale))
+        if language_seen:
+            raise legacy.CliError(occurrence_text("language_duplicate", locale))
+        requested_locale = arguments[index + 1]
+        if requested_locale not in SUPPORTED_LOCALES:
+            raise legacy.CliError(occurrence_text("language_invalid", locale))
+        locale = requested_locale
+        language_seen = True
         index += 2
     return cleaned, locale
 
@@ -114,7 +117,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "\n" + occurrence_text("help_title", locale) + "\n"
                 + occurrence_text("help_occurrence_limit", locale)
                 + "\n  --language {en,it}  "
-                + ("Presentation language." if locale == "en" else "Lingua di presentazione.")
+                + occurrence_text("language_help", locale)
             )
         return 0
 
