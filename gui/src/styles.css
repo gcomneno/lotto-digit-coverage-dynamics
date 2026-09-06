@@ -58,10 +58,30 @@ input[type='number']::-webkit-outer-spin-button {
 .primary-nav {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  align-items: center;
+  gap: 0.75rem;
   margin-bottom: 1rem;
   padding-bottom: 0.85rem;
   border-bottom: 1px solid #c7c7c7;
+}
+
+.primary-nav nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.primary-nav label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-left: auto;
+  font-weight: 650;
+}
+
+.primary-nav label select {
+  width: auto;
+  min-width: 4.5rem;
 }
 
 .page-heading {
@@ -449,6 +469,10 @@ td:nth-child(2) {
 }
 
 @media (max-width: 620px) {
+  .primary-nav label {
+    margin-left: 0;
+  }
+
   .reference-strip {
     grid-template-columns: repeat(5, minmax(3.5rem, 1fr));
     gap: 0.25rem;
