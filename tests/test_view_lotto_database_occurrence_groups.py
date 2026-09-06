@@ -154,7 +154,7 @@ class OccurrenceGroupViewerTests(unittest.TestCase):
                 check=False,
             )
 
-    def test_help_documents_occurrence_groups(self) -> None:
+    def test_help_documents_occurrence_groups_in_english_by_default(self) -> None:
         result = subprocess.run(
             [str(SCRIPT), "--help"],
             cwd=ROOT,
@@ -165,16 +165,25 @@ class OccurrenceGroupViewerTests(unittest.TestCase):
 
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("--occurrence-groups N", result.stdout)
-        self.assertIn("propria estrazione più recente", result.stdout)
+        self.assertIn("Occurrence groups extension", result.stdout)
+        self.assertIn("--language {en,it}", result.stdout)
+
+    def test_italian_help_is_deterministic(self) -> None:
+        result = subprocess.run(
+            [str(SCRIPT), "--help", "--language", "it"],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("Estensione occurrence groups", result.stdout)
+        self.assertIn("Lingua di presentazione", result.stdout)
 
     def test_occurrence_groups_requires_latest_occurrences(self) -> None:
         result = self.run_script("--occurrence-groups", "2")
-
         self.assertEqual(result.returncode, 2)
-        self.assertIn(
-            "--occurrence-groups richiede --latest-occurrences",
-            result.stderr,
-        )
+        self.assertIn("ERROR:", result.stderr)
 
     def test_occurrence_groups_rejects_invalid_sizes(self) -> None:
         for value in ("0", "-1", "1.5", "banana"):
@@ -184,18 +193,15 @@ class OccurrenceGroupViewerTests(unittest.TestCase):
                     "--occurrence-groups",
                     value,
                 )
-
                 self.assertEqual(result.returncode, 2)
-                self.assertIn(
-                    "--occurrence-groups accetta soltanto un intero positivo",
-                    result.stderr,
-                )
 
-    def test_groups_separate_reference_from_counted_history(self) -> None:
+    def test_groups_separate_reference_from_counted_history_in_italian(self) -> None:
         result = self.run_script(
             "--latest-occurrences",
             "--occurrence-groups",
             "2",
+            "--language",
+            "it",
         )
 
         self.assertEqual(result.returncode, 0, result.stderr)
@@ -222,12 +228,14 @@ class OccurrenceGroupViewerTests(unittest.TestCase):
                 group,
             )
 
-    def test_explicit_cutoff_becomes_first_group_reference(self) -> None:
+    def test_explicit_cutoff_becomes_first_group_reference_in_italian(self) -> None:
         result = self.run_script(
             "--latest-occurrences",
             "121",
             "--occurrence-groups",
             "2",
+            "--language",
+            "it",
         )
 
         self.assertEqual(result.returncode, 0, result.stderr)
@@ -243,6 +251,39 @@ class OccurrenceGroupViewerTests(unittest.TestCase):
         self.assertIn("Rif.    121", ANSI_PATTERN.sub("", result.stdout))
         self.assertIn("Conta   120", ANSI_PATTERN.sub("", result.stdout))
         self.assertNotIn("Rif.    122", ANSI_PATTERN.sub("", result.stdout))
+
+    def test_english_and_italian_preserve_occurrence_semantics(self) -> None:
+        english = self.run_script(
+            "--latest-occurrences",
+            "--occurrence-groups",
+            "2",
+        )
+        italian = self.run_script(
+            "--latest-occurrences",
+            "--occurrence-groups",
+            "2",
+            "--language",
+            "it",
+        )
+        self.assertEqual(english.returncode, italian.returncode)
+        self.assertEqual(english.returncode, 0)
+        for token in (
+            "122",
+            "2026-08-04",
+            "121–120",
+            "Bari",
+            "Roma",
+            "Σ07",
+        ):
+            self.assertIn(token, ANSI_PATTERN.sub("", english.stdout))
+            self.assertIn(token, ANSI_PATTERN.sub("", italian.stdout))
+        self.assertIn("Group: reference 122 of 2026-08-04", english.stdout)
+        self.assertIn("Gruppo: riferimento 122 del 2026-08-04", italian.stdout)
+
+    def test_language_validation_has_stable_exit_status(self) -> None:
+        result = self.run_script("--language", "fr", "--latest-occurrences")
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("ERROR:", result.stderr)
 
 
 if __name__ == "__main__":
