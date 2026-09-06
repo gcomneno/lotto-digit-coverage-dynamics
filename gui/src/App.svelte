@@ -78,7 +78,7 @@
       <p aria-live="polite">{text('app.connecting', locale)}</p>
     {:else if bridge}
       {#if activeView === 'dashboard'}
-        <CurrentDashboard {bridge} />
+        <CurrentDashboard {bridge} {locale} />
       {:else if activeView === 'occurrences'}
         <OccurrenceExplorer {bridge} />
       {:else}
