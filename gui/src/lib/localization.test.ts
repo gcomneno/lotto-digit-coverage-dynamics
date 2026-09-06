@@ -14,12 +14,22 @@ describe('GUI localization contract', () => {
     expect(SUPPORTED_LOCALES).toEqual(['en', 'it']);
     expect(text('app.nav.occurrences')).toBe('Occurrences');
     expect(text('app.connecting')).toBe('Connecting to the Python core…');
+    expect(text('current.eyebrow')).toBe('Current state');
+    expect(text('current.markov_panel')).toBe('Markov ranking');
   });
 
   it('resolves deterministic Italian presentation', () => {
     expect(text('app.nav.occurrences', 'it')).toBe('Occorrenze');
     expect(text('app.nav.research', 'it')).toBe('Ricerca');
     expect(text('app.connecting', 'it')).toBe('Connessione al core Python…');
+    expect(text('current.eyebrow', 'it')).toBe('Stato corrente');
+    expect(text('current.markov_panel', 'it')).toBe('Classifica Markov');
+  });
+
+  it('keeps current dashboard domain values out of the catalog', () => {
+    for (const value of ['Bari', 'Napoli', 'coverage-current-v1', 'A1']) {
+      expect(() => text(value, 'it')).toThrow('unknown canonical presentation key');
+    }
   });
 
   it('falls back to canonical English when an Italian translation is missing', () => {
