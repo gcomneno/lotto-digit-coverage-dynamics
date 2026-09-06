@@ -95,40 +95,45 @@ def _print_coverage_hits(
     *,
     summary_path: Path,
     stream: TextIO,
+    locale: str,
 ) -> None:
     signals = report.coverage_hit_ranking
     print(file=stream)
-    print("===== SEGNALE OPERATIVO COVERAGE-HITS =====", file=stream)
-    print(f"Fonte storica: {summary_path}", file=stream)
+    print(_text("cli.current.coverage_hits_title", locale), file=stream)
     print(
-        "Evento: almeno max(1, N-1) delle N cifre mancanti alla prossima estrazione.",
+        f"{_text('cli.current.historical_source', locale)}: {summary_path}",
         file=stream,
     )
-    print(
-        "Stima95-: probabilità corrente corretta con il limite inferiore Wilson "
-        "dello scarto storico.",
-        file=stream,
-    )
-    print("Età è descrittiva e non incrementa la probabilità.", file=stream)
+    print(_text("cli.current.coverage_hits_event", locale), file=stream)
+    print(_text("cli.current.coverage_hits_estimate", locale), file=stream)
+    print(_text("cli.current.coverage_hits_age_note", locale), file=stream)
 
     if not signals:
         print(file=stream)
-        print("Nessuna classe corrente presente nel riepilogo storico.", file=stream)
+        print(_text("cli.current.coverage_hits_empty", locale), file=stream)
         return
 
     print(file=stream)
     print(
-        f"{'Pos':<5}{'Ruota':<12}{'Classe':<9}{'Età':<5}"
-        f"{'Più presenti':<18}{'Mancanti':<18}{'Casi':>7}  "
-        f"{'Storico':>8}  {'P evento':>8}  {'Lift95-':>8}  "
-        f"{'Entro 1':>8}  {'Stima95-':>8}",
+        f"{_text('cli.current.pos', locale):<5}"
+        f"{_text('cli.current.wheel', locale):<12}"
+        f"{_text('cli.current.class', locale):<9}"
+        f"{_text('cli.current.age', locale):<5}"
+        f"{_text('cli.current.most_present', locale):<18}"
+        f"{_text('cli.current.missing', locale):<18}"
+        f"{_text('cli.current.cases', locale):>7}  "
+        f"{_text('cli.current.historical', locale):>10}  "
+        f"{_text('cli.current.event_probability', locale):>8}  "
+        f"{'Lift95-':>8}  "
+        f"{_text('cli.current.within1', locale):>8}  "
+        f"{_text('cli.current.estimate95', locale):>11}",
         file=stream,
     )
     print(
         f"{'---':<5}{'----------':<12}{'-------':<9}{'---':<5}"
         f"{'-------------':<18}{'-------------':<18}{'------':>7}  "
-        f"{'--------':>8}  {'--------':>8}  {'--------':>8}  "
-        f"{'--------':>8}  {'--------':>8}",
+        f"{'----------':>10}  {'--------':>8}  {'--------':>8}  "
+        f"{'--------':>8}  {'-----------':>11}",
         file=stream,
     )
 
@@ -137,28 +142,28 @@ def _print_coverage_hits(
             f"{position:<5}{signal.wheel:<12}{signal.class_label:<9}"
             f"{signal.draws_in_cycle:<5}{_digits(signal.most_present_digits):<18}"
             f"{_digits(signal.missing_digits):<18}{signal.historical.cases:>7}  "
-            f"{signal.historical.success_rate:>8.2%}  "
+            f"{signal.historical.success_rate:>10.2%}  "
             f"{signal.current_event_probability:>8.2%}  "
             f"{signal.conservative_excess:>+8.2%}  "
             f"{signal.completion_within_one:>8.2%}  "
-            f"{signal.conservative_probability:>8.2%}",
+            f"{signal.conservative_probability:>11.2%}",
             file=stream,
         )
 
     winner: CurrentCoverageSignal = signals[0]
     print(file=stream)
     print(
-        f"Primo segnale: {winner.wheel}, classe {winner.class_label}; "
-        f"almeno {winner.historical.threshold} tra {_digits(winner.missing_digits)}; "
-        f"più presenti {_digits(winner.most_present_digits)}; "
-        f"Stima95- {winner.conservative_probability:.2%}.",
+        f"{_text('cli.current.first_signal', locale)}: {winner.wheel}, "
+        f"{_text('cli.current.class', locale).lower()} {winner.class_label}; "
+        f"{_text('cli.current.at_least', locale)} {winner.historical.threshold} "
+        f"{_text('cli.current.among', locale)} {_digits(winner.missing_digits)}; "
+        f"{_text('cli.current.most_present', locale).lower()} "
+        f"{_digits(winner.most_present_digits)}; "
+        f"{_text('cli.current.estimate95', locale)} "
+        f"{winner.conservative_probability:.2%}.",
         file=stream,
     )
-    print(
-        "Nota: un lift negativo non indica un vantaggio storico; la classifica "
-        "descrive il segnale operativo più robusto disponibile.",
-        file=stream,
-    )
+    print(_text("cli.current.coverage_hits_note", locale), file=stream)
 
 
 def _format_next_number(
@@ -184,7 +189,12 @@ def _format_next_number(
     return "".join(rendered)
 
 
-def _print_next_draw(report: CurrentCoverageReport, stream: TextIO) -> None:
+def _print_next_draw(
+    report: CurrentCoverageReport,
+    stream: TextIO,
+    *,
+    locale: str,
+) -> None:
     if not report.next_draws:
         return
 
@@ -192,20 +202,29 @@ def _print_next_draw(report: CurrentCoverageReport, stream: TextIO) -> None:
     use_color = bool(getattr(stream, "isatty", lambda: False)())
     first = report.next_draws[0]
     print(file=stream)
-    print("===== ESTRAZIONE SUCCESSIVA NEL DATABASE =====", file=stream)
-    print("Non utilizzata nei calcoli del quadro storico.", file=stream)
-    print(f"Estrazione: {first.draw_number} del {first.draw_date}", file=stream)
+    print(_text("cli.current.next_draw_title", locale), file=stream)
+    print(_text("cli.current.next_draw_note", locale), file=stream)
+    print(
+        f"{_text('cli.current.draw', locale)}: {first.draw_number} "
+        f"{_text('cli.current.of', locale)} {first.draw_date}",
+        file=stream,
+    )
     print(file=stream)
 
     if use_color:
         print(
-            "Legenda cifre: "
-            f"{ANSI_TOP} TOP {ANSI_RESET}  {ANSI_MISSING} MANCANTI {ANSI_RESET}",
+            f"{_text('cli.current.digit_legend', locale)}: "
+            f"{ANSI_TOP} {_text('cli.current.top', locale)} {ANSI_RESET}  "
+            f"{ANSI_MISSING} {_text('cli.current.missing', locale).upper()} {ANSI_RESET}",
             file=stream,
         )
         print(file=stream)
 
-    print("Ruota       Numeri", file=stream)
+    print(
+        f"{_text('cli.current.wheel', locale):<12}"
+        f"{_text('cli.current.numbers', locale)}",
+        file=stream,
+    )
     print("----------  --------------", file=stream)
     for draw in report.next_draws:
         state = states[draw.wheel]
@@ -221,14 +240,25 @@ def _print_next_draw(report: CurrentCoverageReport, stream: TextIO) -> None:
         print(f"{draw.wheel:<12}{numbers}", file=stream)
 
 
-def _print_anomaly_history(report: CurrentCoverageReport, stream: TextIO) -> None:
+def _print_anomaly_history(
+    report: CurrentCoverageReport,
+    stream: TextIO,
+    *,
+    locale: str,
+) -> None:
     counts = Counter(event.category for event in report.anomaly_history)
     print(file=stream)
-    print("===== ANOMALIE A1-A4 NEL DATABASE =====", file=stream)
-    print(f"Transizioni valide: {report.transition_count}", file=stream)
-    print(f"Eventi osservati:   {len(report.anomaly_history)}", file=stream)
+    print(_text("cli.current.anomaly_history_title", locale), file=stream)
     print(
-        "Categorie:         "
+        f"{_text('cli.current.valid_transitions', locale)}: {report.transition_count}",
+        file=stream,
+    )
+    print(
+        f"{_text('cli.current.observed_events', locale)}:   {len(report.anomaly_history)}",
+        file=stream,
+    )
+    print(
+        f"{_text('cli.current.categories', locale)}:         "
         + ", ".join(
             f"{category}={counts.get(category, 0)}"
             for category in ALL_CATEGORIES
@@ -238,11 +268,19 @@ def _print_anomaly_history(report: CurrentCoverageReport, stream: TextIO) -> Non
 
     if not report.anomaly_history:
         print(file=stream)
-        print("Nessuna anomalia storica rilevata.", file=stream)
+        print(_text("cli.current.no_historical_anomalies", locale), file=stream)
         return
 
     print(file=stream)
-    print("Cat Data       Estr. Ruota       P(evento)  Livello   Firma", file=stream)
+    print(
+        f"Cat {_text('cli.current.date', locale):<10} "
+        f"{_text('cli.current.draw', locale):<5} "
+        f"{_text('cli.current.wheel', locale):<11} "
+        f"{_text('cli.current.event_probability_header', locale):>10} "
+        f"{_text('cli.current.level', locale):<8}  "
+        f"{_text('cli.current.signature', locale)}",
+        file=stream,
+    )
     print("--- ---------- ----- ----------- ---------- --------  ----------------", file=stream)
     for event in report.anomaly_history:
         print(
@@ -259,18 +297,32 @@ def _anomaly_timing(event: AnomalyEvent, report: CurrentCoverageReport) -> str:
     return f"{report.latest_draw} ({report.latest_date})"
 
 
-def _print_active_anomalies(report: CurrentCoverageReport, stream: TextIO) -> None:
+def _print_active_anomalies(
+    report: CurrentCoverageReport,
+    stream: TextIO,
+    *,
+    locale: str,
+) -> None:
     print(file=stream)
     print(
-        f"===== ANOMALIE ATTIVE ALLA {report.latest_draw} ({report.latest_date}) =====",
+        _text("cli.current.active_anomalies_title", locale).format(
+            draw=report.latest_draw,
+            date=report.latest_date,
+        ),
         file=stream,
     )
     if not report.active_anomalies:
-        print("Nessuna anomalia A1-A4 attiva.", file=stream)
+        print(_text("cli.current.no_active_anomalies", locale), file=stream)
         return
 
     print(file=stream)
-    print("Cat Ruota       P(evento)  Attiva/osservata da       Firma", file=stream)
+    print(
+        f"Cat {_text('cli.current.wheel', locale):<11} "
+        f"{_text('cli.current.event_probability_header', locale):>10} "
+        f"{_text('cli.current.active_since', locale):<25}  "
+        f"{_text('cli.current.signature', locale)}",
+        file=stream,
+    )
     print("--- ----------- ---------- -------------------------  ----------------", file=stream)
     for event in report.active_anomalies:
         print(
@@ -330,7 +382,12 @@ def render_current_report(
     print(file=stream)
     _print_markov(report, stream, locale=locale)
     _print_consensus(report, stream, locale=locale)
-    _print_coverage_hits(report, summary_path=summary_path, stream=stream)
-    _print_next_draw(report, stream)
-    _print_anomaly_history(report, stream)
-    _print_active_anomalies(report, stream)
+    _print_coverage_hits(
+        report,
+        summary_path=summary_path,
+        stream=stream,
+        locale=locale,
+    )
+    _print_next_draw(report, stream, locale=locale)
+    _print_anomaly_history(report, stream, locale=locale)
+    _print_active_anomalies(report, stream, locale=locale)
