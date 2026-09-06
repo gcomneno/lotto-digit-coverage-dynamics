@@ -31,7 +31,6 @@ def _requested_locale(arguments: Sequence[str]) -> str:
     bootstrap = argparse.ArgumentParser(add_help=False)
     bootstrap.add_argument(
         "--language",
-        choices=SUPPORTED_LOCALES,
         default=CANONICAL_LOCALE,
     )
     namespace, _ = bootstrap.parse_known_args(arguments)
