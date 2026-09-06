@@ -12,6 +12,8 @@ from lotto_digit_coverage.application.occurrence_groups import (
     OccurrenceGroup,
     OccurrenceGroupReport,
 )
+from lotto_digit_coverage.interfaces.cli.occurrence_localization import occurrence_text
+from lotto_digit_coverage.interfaces.localization import CANONICAL_LOCALE
 
 
 RESET = "\033[0m"
@@ -126,12 +128,14 @@ def render_occurrence_group_report(
     first_draw: int | None,
     last_draw: int | None,
     expected_wheels: Sequence[str],
+    locale: str = CANONICAL_LOCALE,
     stream: TextIO = sys.stdout,
 ) -> None:
     """Render the grouped report without recalculating occurrence counts."""
 
+    draw_header = occurrence_text("draw_header", locale)
     draw_width = max(
-        len("Estr"),
+        len(draw_header),
         len(str(last_draw)),
     )
     token_width = max(2, len(str(report.group_size)))
@@ -139,39 +143,42 @@ def render_occurrence_group_report(
     base_wheel_width = 5 * token_width + 4
     wheel_width = max(14, base_wheel_width + len(f" | Σ{'0' * sum_width}"))
 
-    print(f"Database:      {database}", file=stream)
-    print(f"Estrazioni:    {draw_count}", file=stream)
-    print(f"Intervallo:    {first_draw}–{last_draw}", file=stream)
+    print(f"{occurrence_text('database_label', locale)}:      {database}", file=stream)
+    print(f"{occurrence_text('draws_label', locale)}:    {draw_count}", file=stream)
+    print(f"{occurrence_text('range_label', locale)}:    {first_draw}–{last_draw}", file=stream)
     print(
-        "Riferimento:  "
+        f"{occurrence_text('reference_label', locale)}:  "
         f"{report.reference_kind} — "
-        f"estrazione {report.reference_draw_number} "
-        f"del {report.reference_draw_date}",
+        f"{occurrence_text('draw', locale)} {report.reference_draw_number} "
+        f"{occurrence_text('of', locale)} {report.reference_draw_date}",
         file=stream,
     )
     print(
-        "Gruppi:       "
-        f"{report.group_size} estrazioni analizzate per gruppo; "
-        "ogni gruppo ha inoltre una propria estrazione di riferimento, "
-        "esclusa dai conteggi.",
+        f"{occurrence_text('groups_label', locale)}:       "
+        + occurrence_text("groups_description", locale).format(
+            group_size=report.group_size
+        ),
         file=stream,
     )
+    limit_text = (
+        occurrence_text("global_limit", locale).format(limit=report.occurrence_limit)
+        if report.occurrence_limit is not None
+        else occurrence_text("no_global_limit", locale)
+    )
     print(
-        "Limite:       "
-        + (
-            f"{report.occurrence_limit} concorsi globali; "
-            if report.occurrence_limit is not None
-            else "nessun limite globale; "
-        )
-        + f"{report.examined_draw_count} concorsi esaminati.",
+        f"{occurrence_text('limit_label', locale)}:       "
+        + limit_text
+        + occurrence_text("examined_draws", locale).format(
+            count=report.examined_draw_count
+        ),
         file=stream,
     )
     print(file=stream)
 
     header = (
-        f"{'Uso':<5}  "
-        f"{'Estr':>{draw_width}}  "
-        f"{'Data':<5}  "
+        f"{occurrence_text('usage_header', locale):<5}  "
+        f"{draw_header:>{draw_width}}  "
+        f"{occurrence_text('date_header', locale):<5}  "
         + "  ".join(
             f"{wheel:<{wheel_width}}"
             for wheel in expected_wheels
@@ -192,10 +199,13 @@ def render_occurrence_group_report(
     for group in report.groups:
         print(file=stream)
         print(
-            f"Gruppo: riferimento {group.reference_draw_number} "
-            f"del {group.reference_draw_date}; "
-            f"analisi {group.newest_draw_number}–{group.oldest_draw_number} "
-            f"({group.size} estrazioni conteggiate)",
+            occurrence_text("group_summary", locale).format(
+                reference_draw=group.reference_draw_number,
+                reference_date=group.reference_draw_date,
+                newest=group.newest_draw_number,
+                oldest=group.oldest_draw_number,
+                size=group.size,
+            ),
             file=stream,
         )
 
@@ -203,7 +213,7 @@ def render_occurrence_group_report(
         print(
             _render_draw_line(
                 group.reference_draw,
-                usage="Rif.",
+                usage=occurrence_text("reference_usage", locale),
                 expected_wheels=expected_wheels,
                 highlights=highlights,
                 draw_width=draw_width,
@@ -216,7 +226,7 @@ def render_occurrence_group_report(
             print(
                 _render_draw_line(
                     draw,
-                    usage="Conta",
+                    usage=occurrence_text("count_usage", locale),
                     expected_wheels=expected_wheels,
                     highlights=highlights,
                     draw_width=draw_width,
@@ -227,7 +237,10 @@ def render_occurrence_group_report(
             )
 
         summaries = {row.wheel: row for row in group.wheels}
-        total_prefix = f"{'Tot':<5}  {'':>{draw_width}}  {'':<5}  "
+        total_prefix = (
+            f"{occurrence_text('total_usage', locale):<5}  "
+            f"{'':>{draw_width}}  {'':<5}  "
+        )
         total_cells = [
             _format_total_cell(
                 summaries[wheel].occurrence_counts,
@@ -242,6 +255,6 @@ def render_occurrence_group_report(
 
     print(file=stream)
     print(
-        f"Somma globale delle occorrenze: {report.grand_total_occurrences}",
+        f"{occurrence_text('grand_total', locale)}: {report.grand_total_occurrences}",
         file=stream,
     )
