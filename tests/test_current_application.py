@@ -134,7 +134,9 @@ class CurrentApplicationTests(unittest.TestCase):
         for rendered in outputs.values():
             self.assertIn("Bari", rendered)
             self.assertIn("Roma", rendered)
-            self.assertIn("100.00%", rendered)
+            self.assertIn("6.50%", rendered)
+            self.assertIn("3.025", rendered)
+            self.assertIn("35.28%", rendered)
             self.assertIn("2 (2026-01-03)", rendered)
 
         self.assertEqual(report.latest_draw, 2)
