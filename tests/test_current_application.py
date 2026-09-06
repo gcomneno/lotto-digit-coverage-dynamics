@@ -86,7 +86,7 @@ class CurrentApplicationTests(unittest.TestCase):
         self.assertEqual(first.coverage_hit_ranking, second.coverage_hit_ranking)
         self.assertNotEqual(first.next_draws, second.next_draws)
 
-    def test_cli_renderer_consumes_report_and_prints_consensus_not_tutte(self) -> None:
+    def test_cli_renderer_defaults_to_canonical_english(self) -> None:
         report = build_current_coverage_report(
             all_draws_by_wheel=self.draws(),
             historical_classes=self.historical_classes(),
@@ -103,10 +103,42 @@ class CurrentApplicationTests(unittest.TestCase):
         )
 
         rendered = stream.getvalue()
-        self.assertIn("CONSENSUS TRASVERSALE DELLE CIFRE", rendered)
-        self.assertIn("SEGNALE OPERATIVO COVERAGE-HITS", rendered)
-        self.assertIn("Non utilizzata nei calcoli del quadro storico.", rendered)
+        self.assertIn("COVERAGE MARKOV METER", rendered)
+        self.assertIn("CROSS-WHEEL DIGIT CONSENSUS", rendered)
+        self.assertIn("Latest draw: 2 of 2026-01-03", rendered)
         self.assertNotIn("TUTTE", rendered)
+
+    def test_english_and_italian_render_same_structured_report(self) -> None:
+        report = build_current_coverage_report(
+            all_draws_by_wheel=self.draws(),
+            historical_classes=self.historical_classes(),
+            cutoff_draw_number=2,
+        )
+        outputs = {}
+        for locale in ("en", "it"):
+            stream = io.StringIO()
+            render_current_report(
+                report,
+                database=Path("fixture.sqlite3"),
+                summary_path=Path("fixture.csv"),
+                cutoff_draw_number=2,
+                locale=locale,
+                stream=stream,
+            )
+            outputs[locale] = stream.getvalue()
+
+        self.assertIn("Wheel", outputs["en"])
+        self.assertIn("Ruota", outputs["it"])
+        self.assertIn("Latest draw: 2 of 2026-01-03", outputs["en"])
+        self.assertIn("Ultima estrazione: 2 del 2026-01-03", outputs["it"])
+        for rendered in outputs.values():
+            self.assertIn("Bari", rendered)
+            self.assertIn("Roma", rendered)
+            self.assertIn("100.00%", rendered)
+            self.assertIn("2 (2026-01-03)", rendered)
+
+        self.assertEqual(report.latest_draw, 2)
+        self.assertEqual(tuple(row.state.wheel for row in report.markov_ranking), ("Bari", "Roma"))
 
     def test_mutually_exclusive_cutoffs_are_rejected_by_application_api(self) -> None:
         with self.assertRaises(ValueError):
