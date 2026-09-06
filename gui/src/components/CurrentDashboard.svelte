@@ -3,9 +3,10 @@
   import { Button, PageIntro, Panel } from 'giadaware-ui-components/studio';
   import type { CurrentContract, LottoBridge } from '../lib/bridge';
   import { consensusPresentation } from '../lib/consensus';
+  import { text, type Locale } from '../lib/localization';
   import { formatLottoNumber } from '../lib/occurrences';
 
-  let { bridge }: { bridge: LottoBridge } = $props();
+  let { bridge, locale }: { bridge: LottoBridge; locale: Locale } = $props();
 
   let current = $state<CurrentContract | null>(null);
   let loading = $state(true);
@@ -16,7 +17,7 @@
   }
 
   function digitAria(values: number[]): string {
-    return values.length ? values.join(', ') : 'nessuna cifra';
+    return values.length ? values.join(', ') : text('current.no_digits', locale);
   }
 
   function probability(value: number | undefined): string {
@@ -30,7 +31,7 @@
 
     if (!response.ok || !response.data) {
       current = null;
-      errorMessage = response.error?.message ?? 'Errore sconosciuto dal bridge Python.';
+      errorMessage = response.error?.message ?? text('current.unknown_bridge_error', locale);
     } else {
       current = response.data;
     }
@@ -45,49 +46,47 @@
 
 <div class="page-heading">
   <div>
-    <p class="eyebrow">Stato corrente</p>
-    <h1>Research dashboard</h1>
+    <p class="eyebrow">{text('current.eyebrow', locale)}</p>
+    <h1>{text('current.title', locale)}</h1>
   </div>
   <Button onclick={() => void refresh()} disabled={loading}>
-    {loading ? 'Caricamento…' : 'Aggiorna'}
+    {loading ? text('current.loading', locale) : text('current.refresh', locale)}
   </Button>
 </div>
 
 <PageIntro>
-  Quadro descrittivo dello stato osservato. Le probabilità riportate appartengono
-  al modello dichiarato; non sono raccomandazioni di gioco. La validazione con
-  l'estrazione successiva è separata dal calcolo ex ante.
+  {text('current.intro', locale)}
 </PageIntro>
 
 {#if errorMessage}
   <div class="error" role="alert">{errorMessage}</div>
 {:else if loading}
-  <p aria-live="polite">Caricamento del report corrente dal core Python…</p>
+  <p aria-live="polite">{text('current.loading_report', locale)}</p>
 {:else if current}
   <div class="dashboard-grid">
-    <Panel title="Target di analisi">
+    <Panel title={text('current.target_panel', locale)}>
       <dl class="metric-list">
-        <div><dt>Concorso</dt><dd>{current.target.draw_number}</dd></div>
-        <div><dt>Data</dt><dd>{current.target.draw_date}</dd></div>
-        <div><dt>Contratto</dt><dd>{current.schema} v{current.schema_version}</dd></div>
+        <div><dt>{text('current.draw', locale)}</dt><dd>{current.target.draw_number}</dd></div>
+        <div><dt>{text('current.date', locale)}</dt><dd>{current.target.draw_date}</dd></div>
+        <div><dt>{text('current.contract', locale)}</dt><dd>{current.schema} v{current.schema_version}</dd></div>
       </dl>
     </Panel>
 
-    <Panel title="Anomalie attive">
+    <Panel title={text('current.active_anomalies', locale)}>
       <p class="metric-value">{current.anomalies.active.length}</p>
       <p class="muted">
-        {current.anomalies.transition_count} transizioni valide nella storia analizzata.
+        {current.anomalies.transition_count} {text('current.valid_transitions', locale)}
       </p>
     </Panel>
   </div>
 
-  <Panel title="Stato corrente per ruota">
+  <Panel title={text('current.states_panel', locale)}>
     <div class="wheel-grid">
       {#each current.states as state (state.wheel)}
         <article class="wheel-card">
           <div class="wheel-card__heading">
             <strong>{state.wheel}</strong>
-            <span>età {state.draws_in_cycle}</span>
+            <span>{text('current.age', locale)} {state.draws_in_cycle}</span>
           </div>
           <dl class="compact-list">
             <div>
@@ -103,8 +102,8 @@
               </dd>
             </div>
             <div>
-              <dt>Mancanti</dt>
-              <dd class="digit-strip digit-strip--missing" aria-label={`Mancanti: ${digitAria(state.missing_digits)}`}>
+              <dt>{text('current.missing', locale)}</dt>
+              <dd class="digit-strip digit-strip--missing" aria-label={`${text('current.missing', locale)}: ${digitAria(state.missing_digits)}`}>
                 {#if state.missing_digits.length}
                   {#each state.missing_digits as digit (digit)}
                     <span class="digit-chip">{digit}</span>
@@ -114,23 +113,23 @@
                 {/if}
               </dd>
             </div>
-            <div><dt>Cicli completi</dt><dd>{state.completed_cycles}</dd></div>
+            <div><dt>{text('current.completed_cycles', locale)}</dt><dd>{state.completed_cycles}</dd></div>
           </dl>
         </article>
       {/each}
     </div>
   </Panel>
 
-  <Panel title="Classifica Markov">
-    <section class="responsive-table" aria-label="Classifica Markov">
+  <Panel title={text('current.markov_panel', locale)}>
+    <section class="responsive-table" aria-label={text('current.markov_panel', locale)}>
       <table>
         <thead>
           <tr>
-            <th scope="col">Pos.</th>
-            <th scope="col">Ruota</th>
-            <th scope="col">Entro 1</th>
-            <th scope="col">Entro 3</th>
-            <th scope="col">Attesa residua</th>
+            <th scope="col">{text('current.position', locale)}</th>
+            <th scope="col">{text('current.wheel', locale)}</th>
+            <th scope="col">{text('current.within1', locale)}</th>
+            <th scope="col">{text('current.within3', locale)}</th>
+            <th scope="col">{text('current.expected_remaining', locale)}</th>
           </tr>
         </thead>
         <tbody>
