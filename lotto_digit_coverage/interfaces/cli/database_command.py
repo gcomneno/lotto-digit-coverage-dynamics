@@ -13,6 +13,12 @@ from lotto_digit_coverage.application.occurrence_groups import (
 from lotto_digit_coverage.interfaces.cli.occurrence_groups import (
     render_occurrence_group_report,
 )
+from lotto_digit_coverage.interfaces.cli.occurrence_localization import occurrence_text
+from lotto_digit_coverage.interfaces.localization import (
+    CANONICAL_LOCALE,
+    DEFAULT_PRESENTATION_CATALOG,
+    SUPPORTED_LOCALES,
+)
 
 
 def _structured_draws(draws):
@@ -25,8 +31,31 @@ def _structured_draws(draws):
     }
 
 
+def _extract_language(arguments: Sequence[str]) -> tuple[list[str], str]:
+    cleaned: list[str] = []
+    locale = CANONICAL_LOCALE
+    index = 0
+    while index < len(arguments):
+        argument = arguments[index]
+        if argument != "--language":
+            cleaned.append(argument)
+            index += 1
+            continue
+        if index + 1 >= len(arguments):
+            raise legacy.CliError("--language requires en or it.")
+        if locale != CANONICAL_LOCALE:
+            raise legacy.CliError("--language may be specified only once.")
+        locale = arguments[index + 1]
+        if locale not in SUPPORTED_LOCALES:
+            raise legacy.CliError("--language accepts only en or it.")
+        index += 2
+    return cleaned, locale
+
+
 def _extract_occurrence_limit(
     arguments: Sequence[str],
+    *,
+    locale: str,
 ) -> tuple[list[str], int | None]:
     cleaned: list[str] = []
     occurrence_limit: int | None = None
@@ -40,13 +69,9 @@ def _extract_occurrence_limit(
             continue
 
         if index + 1 >= len(arguments):
-            raise legacy.CliError(
-                "--occurrence-limit richiede un numero di estrazioni."
-            )
+            raise legacy.CliError(occurrence_text("occurrence_limit_missing", locale))
         if occurrence_limit is not None:
-            raise legacy.CliError(
-                "--occurrence-limit può essere specificato una sola volta."
-            )
+            raise legacy.CliError(occurrence_text("occurrence_limit_duplicate", locale))
 
         occurrence_limit = legacy._positive_integer(
             arguments[index + 1],
@@ -67,11 +92,17 @@ def main(argv: Sequence[str] | None = None) -> int:
 
         return natural_query_main(arguments[1:])
 
+    locale = CANONICAL_LOCALE
     try:
-        parsed_arguments, occurrence_limit = _extract_occurrence_limit(arguments)
+        language_cleaned, locale = _extract_language(arguments)
+        parsed_arguments, occurrence_limit = _extract_occurrence_limit(
+            language_cleaned,
+            locale=locale,
+        )
         options = legacy.parse_options(parsed_arguments)
     except legacy.CliError as error:
-        print(f"ERRORE: {error}", file=sys.stderr)
+        prefix = DEFAULT_PRESENTATION_CATALOG.resolve("common.error_prefix", locale).text
+        print(f"{prefix}: {error}", file=sys.stderr)
         if error.show_usage:
             print(file=sys.stderr)
             legacy.usage(sys.stderr)
@@ -80,15 +111,17 @@ def main(argv: Sequence[str] | None = None) -> int:
     if options is None:
         if "--help" in arguments or "-h" in arguments:
             print(
-                "\nEstensione occurrence groups:\n"
-                "  --occurrence-limit N  Limita il range globale a N concorsi "
-                "consecutivi, incluse le righe di riferimento."
+                "\n" + occurrence_text("help_title", locale) + "\n"
+                + occurrence_text("help_occurrence_limit", locale)
+                + "\n  --language {en,it}  "
+                + ("Presentation language." if locale == "en" else "Lingua di presentazione.")
             )
         return 0
 
     if occurrence_limit is not None and options.occurrence_groups is None:
+        prefix = DEFAULT_PRESENTATION_CATALOG.resolve("common.error_prefix", locale).text
         print(
-            "ERRORE: --occurrence-limit richiede --occurrence-groups.",
+            f"{prefix}: {occurrence_text('occurrence_limit_requires_groups', locale)}",
             file=sys.stderr,
         )
         return 2
@@ -97,18 +130,21 @@ def main(argv: Sequence[str] | None = None) -> int:
         try:
             output = legacy.render(options)
         except FileNotFoundError as error:
-            print(f"ERRORE: {error}", file=sys.stderr)
+            prefix = DEFAULT_PRESENTATION_CATALOG.resolve("common.error_prefix", locale).text
+            print(f"{prefix}: {error}", file=sys.stderr)
             return 1
         except (sqlite3.Error, ValueError) as error:
-            print(f"ERRORE: {error}", file=sys.stderr)
+            prefix = DEFAULT_PRESENTATION_CATALOG.resolve("common.error_prefix", locale).text
+            print(f"{prefix}: {error}", file=sys.stderr)
             return 1
 
         print(output)
         return 0
 
     if not options.database.is_file():
+        prefix = DEFAULT_PRESENTATION_CATALOG.resolve("common.error_prefix", locale).text
         print(
-            f"ERRORE: database assente: {options.database}",
+            f"{prefix}: {occurrence_text('database_missing', locale)}: {options.database}",
             file=sys.stderr,
         )
         return 1
@@ -135,9 +171,11 @@ def main(argv: Sequence[str] | None = None) -> int:
             first_draw=first_draw,
             last_draw=last_draw,
             expected_wheels=legacy.EXPECTED_WHEELS,
+            locale=locale,
         )
     except (sqlite3.Error, ValueError) as error:
-        print(f"ERRORE: {error}", file=sys.stderr)
+        prefix = DEFAULT_PRESENTATION_CATALOG.resolve("common.error_prefix", locale).text
+        print(f"{prefix}: {error}", file=sys.stderr)
         return 1
 
     return 0
