@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   CANONICAL_LOCALE,
+  PresentationCatalog,
   SUPPORTED_LOCALES,
   resolveText,
   text,
@@ -21,6 +22,19 @@ describe('GUI localization contract', () => {
     expect(text('app.connecting', 'it')).toBe('Connessione al core Python…');
   });
 
+  it('falls back to canonical English when an Italian translation is missing', () => {
+    const catalog = new PresentationCatalog(
+      { known: 'Canonical English' },
+      { it: {} },
+    );
+    const resolved = catalog.resolve('known', 'it');
+
+    expect(resolved.text).toBe('Canonical English');
+    expect(resolved.resolvedLocale).toBe('en');
+    expect(resolved.fellBack).toBe(true);
+    expect(resolved.fallbackReason).toBe('missing-translation');
+  });
+
   it('falls back to canonical English for unsupported locale identifiers', () => {
     const resolved = resolveText('app.nav.research', 'fr');
 
@@ -28,6 +42,7 @@ describe('GUI localization contract', () => {
     expect(resolved.requestedLocale).toBe('fr');
     expect(resolved.resolvedLocale).toBe('en');
     expect(resolved.fellBack).toBe(true);
+    expect(resolved.fallbackReason).toBe('unsupported-locale');
   });
 
   it('treats an unknown canonical key as a programmer error', () => {
