@@ -21,6 +21,11 @@ from lotto_digit_coverage.infrastructure.giadaware_ai_query import (
 from lotto_digit_coverage.infrastructure.sqlite_draw_history import (
     SqliteDrawHistoryRepository,
 )
+from lotto_digit_coverage.interfaces.localization import (
+    CANONICAL_LOCALE,
+    DEFAULT_PRESENTATION_CATALOG,
+    SUPPORTED_LOCALES,
+)
 
 
 DEFAULT_DATABASE = Path("data/lotto-current.sqlite3")
@@ -28,24 +33,43 @@ HIGHLIGHT = "\033[1;30;46m"
 RESET = "\033[0m"
 
 
-def build_parser() -> argparse.ArgumentParser:
+def _text(key: str, locale: str) -> str:
+    return DEFAULT_PRESENTATION_CATALOG.resolve(key, locale).text
+
+
+def _requested_locale(argv: Sequence[str] | None) -> str:
+    arguments = list(sys.argv[1:] if argv is None else argv)
+    bootstrap = argparse.ArgumentParser(add_help=False)
+    bootstrap.add_argument(
+        "--language",
+        choices=SUPPORTED_LOCALES,
+        default=CANONICAL_LOCALE,
+    )
+    namespace, _ = bootstrap.parse_known_args(arguments)
+    return namespace.language
+
+
+def build_parser(locale: str = CANONICAL_LOCALE) -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="lotto.py db ask",
-        description=(
-            "Interpreta una richiesta naturale tramite GiadaWare AI e la "
-            "esegue come query Lotto deterministica e read-only."
-        ),
+        description=_text("cli.ask.description", locale),
     )
     parser.add_argument(
         "--database",
         type=Path,
         default=DEFAULT_DATABASE,
-        help="Database SQLite da consultare.",
+        help=_text("cli.ask.database_help", locale),
+    )
+    parser.add_argument(
+        "--language",
+        choices=SUPPORTED_LOCALES,
+        default=CANONICAL_LOCALE,
+        help=_text("cli.ask.language_help", locale),
     )
     parser.add_argument(
         "request",
         nargs="+",
-        help="Richiesta in linguaggio naturale.",
+        help=_text("cli.ask.request_help", locale),
     )
     return parser
 
@@ -53,13 +77,19 @@ def build_parser() -> argparse.ArgumentParser:
 def render_draw_history(
     intent: DrawHistoryIntent,
     rows: Sequence[DrawHistoryRow],
+    *,
+    database: Path = DEFAULT_DATABASE,
+    locale: str = CANONICAL_LOCALE,
 ) -> str:
+    draw_header = _text("cli.ask.draw_header", locale)
+    date_header = _text("cli.ask.date_header", locale)
+    numbers_header = _text("cli.ask.numbers_header", locale)
     lines = [
-        f"Database: {DEFAULT_DATABASE}",
-        f"Ruota: {intent.wheel}",
-        f"Ordine: {intent.order}",
+        f"{_text('cli.ask.database_label', locale)}: {database}",
+        f"{_text('cli.ask.wheel_label', locale)}: {intent.wheel}",
+        f"{_text('cli.ask.order_label', locale)}: {intent.order}",
         "",
-        "Estr  Data        Numeri",
+        f"{draw_header:<4}  {date_header:<10}  {numbers_header}",
         "----  ----------  --------------",
     ]
     for row in rows:
@@ -91,7 +121,8 @@ def main(
     *,
     backend=None,
 ) -> int:
-    args = build_parser().parse_args(argv)
+    locale = _requested_locale(argv)
+    args = build_parser(locale).parse_args(argv)
     request = " ".join(args.request)
 
     try:
@@ -99,16 +130,17 @@ def main(
         intent = LottoNaturalQueryCapability(resolved_backend).execute(request)
         repository = SqliteDrawHistoryRepository(args.database)
         rows = execute_draw_history(intent, repository)
-        output = render_draw_history(intent, rows)
-        if args.database != DEFAULT_DATABASE:
-            output = output.replace(
-                f"Database: {DEFAULT_DATABASE}",
-                f"Database: {args.database}",
-                1,
+        print(
+            render_draw_history(
+                intent,
+                rows,
+                database=args.database,
+                locale=args.language,
             )
-        print(output)
+        )
     except (FileNotFoundError, NaturalQueryError, RuntimeError, sqlite3.Error, ValueError) as error:
-        print(f"ERRORE: {error}", file=sys.stderr)
+        prefix = _text("common.error_prefix", args.language)
+        print(f"{prefix}: {error}", file=sys.stderr)
         return 1
 
     return 0
