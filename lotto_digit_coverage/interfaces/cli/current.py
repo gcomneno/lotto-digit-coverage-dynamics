@@ -12,6 +12,10 @@ from strategies.current_coverage_signal import CurrentCoverageSignal
 
 from lotto_digit_coverage.application.current import CurrentCoverageReport
 from lotto_digit_coverage.interfaces.cli.consensus import render_digit_consensus
+from lotto_digit_coverage.interfaces.localization import (
+    CANONICAL_LOCALE,
+    DEFAULT_PRESENTATION_CATALOG,
+)
 
 
 ANSI_RESET = "\033[0m"
@@ -19,32 +23,44 @@ ANSI_TOP = "\033[1;30;46m"
 ANSI_MISSING = "\033[1;30;43m"
 
 
+def _text(key: str, locale: str) -> str:
+    return DEFAULT_PRESENTATION_CATALOG.resolve(key, locale).text
+
+
 def _digits(digits: frozenset[int]) -> str:
     return "{" + ",".join(str(digit) for digit in sorted(digits)) + "}"
 
 
-def _print_markov(report: CurrentCoverageReport, stream: TextIO) -> None:
-    print("===== MISURATORE MARKOV DELLA COPERTURA =====", file=stream)
-    print("Stato: cifre ancora mancanti nel ciclo naturale corrente.", file=stream)
-    print(
-        "Classifica: attesa residua crescente; non rappresenta un vantaggio sul gioco.",
-        file=stream,
-    )
-    print(
-        "Più presenti: cifre con il massimo numero di occorrenze nel ciclo corrente.",
-        file=stream,
-    )
+def _print_markov(
+    report: CurrentCoverageReport,
+    stream: TextIO,
+    *,
+    locale: str,
+) -> None:
+    print(_text("cli.current.markov_title", locale), file=stream)
+    print(_text("cli.current.markov_state", locale), file=stream)
+    print(_text("cli.current.markov_ranking", locale), file=stream)
+    print(_text("cli.current.markov_top", locale), file=stream)
     print(file=stream)
     print(
-        f"{'Pos':<5}{'Ruota':<12}{'Ultimo':<8}{'Cicli':<7}{'Età':<5}"
-        f"{'Più presenti':<23}{'Mancanti':<23}"
-        "Entro 1  Entro 2  Entro 3  Entro 5  Attesa",
+        f"{_text('cli.current.pos', locale):<5}"
+        f"{_text('cli.current.wheel', locale):<12}"
+        f"{_text('cli.current.last', locale):<8}"
+        f"{_text('cli.current.cycles', locale):<7}"
+        f"{_text('cli.current.age', locale):<5}"
+        f"{_text('cli.current.most_present', locale):<23}"
+        f"{_text('cli.current.missing', locale):<23}"
+        f"{_text('cli.current.within1', locale)}  "
+        f"{_text('cli.current.within2', locale)}  "
+        f"{_text('cli.current.within3', locale)}  "
+        f"{_text('cli.current.within5', locale)}  "
+        f"{_text('cli.current.expected', locale)}",
         file=stream,
     )
     print(
         f"{'---':<5}{'----------':<12}{'------':<8}{'-----':<7}{'---':<5}"
         f"{'-------------':<23}{'-------------':<23}"
-        "-------  -------  -------  -------  ------",
+        "--------  --------  --------  --------  --------",
         file=stream,
     )
 
@@ -55,18 +71,23 @@ def _print_markov(report: CurrentCoverageReport, stream: TextIO) -> None:
             f"{state.completed_cycles:<7}{state.draws_in_cycle:<5}"
             f"{_digits(state.most_present_digits):<23}"
             f"{_digits(state.missing_digits):<23}"
-            f"{row.probability_within(1):>6.2%}  "
-            f"{row.probability_within(2):>6.2%}  "
-            f"{row.probability_within(3):>6.2%}  "
-            f"{row.probability_within(5):>6.2%}  "
-            f"{row.expected_remaining_draws:>6.3f}",
+            f"{row.probability_within(1):>8.2%}  "
+            f"{row.probability_within(2):>8.2%}  "
+            f"{row.probability_within(3):>8.2%}  "
+            f"{row.probability_within(5):>8.2%}  "
+            f"{row.expected_remaining_draws:>8.3f}",
             file=stream,
         )
 
 
-def _print_consensus(report: CurrentCoverageReport, stream: TextIO) -> None:
+def _print_consensus(
+    report: CurrentCoverageReport,
+    stream: TextIO,
+    *,
+    locale: str,
+) -> None:
     print(file=stream)
-    print(render_digit_consensus(report.consensus), file=stream)
+    print(render_digit_consensus(report.consensus, locale=locale), file=stream)
 
 
 def _print_coverage_hits(
@@ -269,31 +290,46 @@ def render_current_report(
     checkpoint_date: str | None = None,
     cutoff_date: str | None = None,
     cutoff_draw_number: int | None = None,
+    locale: str = CANONICAL_LOCALE,
     stream: TextIO = sys.stdout,
 ) -> None:
     """Render a structured report while keeping presentation out of application."""
 
     print(f"Database: {database}", file=stream)
+    checkpoint_label = _text("cli.current.checkpoint_label", locale)
     if checkpoint_path is None:
-        print("Checkpoint storico: disabilitato", file=stream)
+        print(
+            f"{checkpoint_label}: {_text('cli.current.disabled', locale)}",
+            file=stream,
+        )
     else:
         print(
-            f"Checkpoint storico: {checkpoint_path} (fino al {checkpoint_date})",
+            f"{checkpoint_label}: {checkpoint_path} "
+            f"({_text('cli.current.until', locale)} {checkpoint_date})",
             file=stream,
         )
 
     if cutoff_date is not None:
-        print(f"Limite temporale: {cutoff_date} (inclusivo)", file=stream)
+        print(
+            f"{_text('cli.current.time_limit', locale)}: {cutoff_date} "
+            f"({_text('cli.current.inclusive', locale)})",
+            file=stream,
+        )
     if cutoff_draw_number is not None:
-        print(f"Limite estrazione: {cutoff_draw_number} (inclusivo)", file=stream)
+        print(
+            f"{_text('cli.current.draw_limit', locale)}: {cutoff_draw_number} "
+            f"({_text('cli.current.inclusive', locale)})",
+            file=stream,
+        )
 
     print(
-        f"Ultima estrazione: {report.latest_draw} del {report.latest_date}",
+        f"{_text('cli.current.latest_draw', locale)}: {report.latest_draw} "
+        f"{_text('cli.current.of', locale)} {report.latest_date}",
         file=stream,
     )
     print(file=stream)
-    _print_markov(report, stream)
-    _print_consensus(report, stream)
+    _print_markov(report, stream, locale=locale)
+    _print_consensus(report, stream, locale=locale)
     _print_coverage_hits(report, summary_path=summary_path, stream=stream)
     _print_next_draw(report, stream)
     _print_anomaly_history(report, stream)

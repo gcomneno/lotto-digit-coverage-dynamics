@@ -37,15 +37,34 @@ class CliConsensusTests(unittest.TestCase):
             report,
             database=Path("data/test.sqlite3"),
             summary_path=Path("artifacts/test.csv"),
+            locale="it",
             stream=stream,
         )
 
         rendered = stream.getvalue()
-        self.assertIn(render_digit_consensus(rows), rendered)
+        self.assertIn(render_digit_consensus(rows, locale="it"), rendered)
         self.assertIn("Ruote in deficit", rendered)
         self.assertIn("Ruote in predominanza", rendered)
         self.assertNotIn("Ruote mancanti", rendered)
         self.assertNotIn("Ruote TOP", rendered)
+
+    def test_consensus_defaults_to_english_and_preserves_values(self) -> None:
+        rows = (
+            DigitConsensus(
+                digit=9,
+                missing_wheels=("Firenze", "Milano", "Roma"),
+                top_wheels=("Bari",),
+            ),
+        )
+        english = render_digit_consensus(rows)
+        italian = render_digit_consensus(rows, locale="it")
+
+        self.assertIn("CROSS-WHEEL DIGIT CONSENSUS", english)
+        self.assertIn("CONSENSUS TRASVERSALE DELLE CIFRE", italian)
+        for rendered in (english, italian):
+            self.assertIn("9", rendered)
+            self.assertIn("Firenze,Milano,Roma", rendered)
+            self.assertIn("Bari", rendered)
 
 
 if __name__ == "__main__":

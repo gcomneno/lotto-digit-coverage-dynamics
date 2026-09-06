@@ -46,7 +46,7 @@ class CurrentConsensusTests(unittest.TestCase):
 
         self.assertIn("MISURATORE MARKOV", rendered)
         self.assertIn("1    Milano", rendered)
-        self.assertIn("CONSENSUS TRASVERSALE", rendered)
+        self.assertIn("CROSS-WHEEL DIGIT CONSENSUS", rendered)
         self.assertNotIn("TUTTE", rendered)
         self.assertNotIn("Numeri={88}", rendered)
 
