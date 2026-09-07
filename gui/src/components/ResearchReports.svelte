@@ -3,6 +3,7 @@
   import { Button, PageIntro, Panel } from 'giadaware-ui-components/studio';
   import type {
     LottoBridge,
+    PresentationMetadata,
     ResearchCatalogItem,
     ResearchReport,
     ResearchTable
@@ -25,17 +26,28 @@
   let conditionFilter = $state('');
   let twinFilter = $state('');
   let candidatesOnly = $state(false);
+  let catalogPresentation = $state<PresentationMetadata | null>(null);
+  let reportPresentation = $state<PresentationMetadata | null>(null);
+  let fallbackPresentation = $derived(
+    reportPresentation?.fell_back
+      ? reportPresentation
+      : catalogPresentation?.fell_back
+        ? catalogPresentation
+        : null
+  );
 
   async function loadCatalog(): Promise<void> {
     loadingCatalog = true;
     errorMessage = '';
-    const response = await bridge.researchCatalog();
+    catalogPresentation = null;
+    const response = await bridge.researchCatalog(locale);
 
     if (!response.ok || !response.data) {
       catalog = [];
       errorMessage = response.error?.message ?? text('research.catalog_unavailable', locale);
     } else {
       catalog = response.data.reports;
+      catalogPresentation = response.presentation ?? null;
     }
 
     loadingCatalog = false;
@@ -46,15 +58,17 @@
     loadingReport = true;
     errorMessage = '';
     report = null;
+    reportPresentation = null;
     conditionFilter = '';
     twinFilter = '';
     candidatesOnly = false;
 
-    const response = await bridge.researchReport(reportId);
+    const response = await bridge.researchReport(reportId, locale);
     if (!response.ok || !response.data) {
       errorMessage = response.error?.message ?? text('research.report_unavailable', locale);
     } else {
       report = response.data;
+      reportPresentation = response.presentation ?? null;
     }
 
     loadingReport = false;
@@ -100,6 +114,12 @@
 
 {#if errorMessage}
   <div class="error" role="alert">{errorMessage}</div>
+{/if}
+
+{#if fallbackPresentation}
+  <p class="muted" role="status">
+    <code>{fallbackPresentation.requested_locale} → {fallbackPresentation.resolved_locale} · {fallbackPresentation.fallback_reason}</code>
+  </p>
 {/if}
 
 {#if loadingCatalog}

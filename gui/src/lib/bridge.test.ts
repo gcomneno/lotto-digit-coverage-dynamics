@@ -37,7 +37,7 @@ describe('pywebview API readiness', () => {
 });
 
 describe('createBridge', () => {
-  it('forwards structured calls without CLI text', async () => {
+  it('forwards structured calls without CLI text and scopes locale to research presentation', async () => {
     const capabilities: Envelope<Capabilities> = {
       ok: true,
       data: {
@@ -95,7 +95,13 @@ describe('createBridge', () => {
           }
         ]
       },
-      error: null
+      error: null,
+      presentation: {
+        requested_locale: 'it',
+        resolved_locale: 'it',
+        fell_back: false,
+        fallback_reason: null
+      }
     };
     const researchPayload: Envelope<ResearchReport> = {
       ok: true,
@@ -108,7 +114,13 @@ describe('createBridge', () => {
         tables: [],
         notes: []
       },
-      error: null
+      error: null,
+      presentation: {
+        requested_locale: 'it',
+        resolved_locale: 'it',
+        fell_back: false,
+        fallback_reason: null
+      }
     };
     const api: PywebviewApi = {
       get_capabilities: vi.fn(async () => capabilities),
@@ -121,16 +133,53 @@ describe('createBridge', () => {
     const bridge = createBridge(api);
     const current = await bridge.current();
     const occurrences = await bridge.occurrenceGroups(10, 120, 35);
-    const catalog = await bridge.researchCatalog();
-    const research = await bridge.researchReport('completion');
+    const catalog = await bridge.researchCatalog('it');
+    const research = await bridge.researchReport('completion', 'it');
 
     expect(current.data?.schema).toBe('lotto.current');
     expect(occurrences.data?.schema).toBe('lotto.occurrence-groups');
     expect(catalog.data?.reports[0]?.id).toBe('completion');
+    expect(catalog.presentation?.resolved_locale).toBe('it');
     expect(research.data?.id).toBe('completion');
+    expect(research.presentation?.resolved_locale).toBe('it');
     expect(api.get_current).toHaveBeenCalledOnce();
     expect(api.get_occurrence_groups).toHaveBeenCalledWith(undefined, 10, 120, 35);
-    expect(api.get_research_catalog).toHaveBeenCalledOnce();
-    expect(api.get_research_report).toHaveBeenCalledWith('completion');
+    expect(api.get_research_catalog).toHaveBeenCalledWith('it');
+    expect(api.get_research_report).toHaveBeenCalledWith('completion', 'it');
+  });
+
+  it('keeps canonical English defaults for callers that omit presentation locale', async () => {
+    const catalogPayload: Envelope<ResearchCatalog> = {
+      ok: true,
+      data: { reports: [] },
+      error: null
+    };
+    const reportPayload: Envelope<ResearchReport> = {
+      ok: true,
+      data: {
+        id: 'completion',
+        title: 'Completion',
+        interpretation: 'Descriptive',
+        source: 'historical archive',
+        metrics: [],
+        tables: [],
+        notes: []
+      },
+      error: null
+    };
+    const api = {
+      get_capabilities: vi.fn(),
+      get_current: vi.fn(),
+      get_occurrence_groups: vi.fn(),
+      get_research_catalog: vi.fn(async () => catalogPayload),
+      get_research_report: vi.fn(async () => reportPayload)
+    } as unknown as PywebviewApi;
+
+    const bridge = createBridge(api);
+    await bridge.researchCatalog();
+    await bridge.researchReport('completion');
+
+    expect(api.get_research_catalog).toHaveBeenCalledWith('en');
+    expect(api.get_research_report).toHaveBeenCalledWith('completion', 'en');
   });
 });

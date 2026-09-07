@@ -6,12 +6,23 @@ const source = readFileSync(
   'utf8',
 );
 
+const appSource = readFileSync(
+  new URL('../App.svelte', import.meta.url),
+  'utf8',
+);
+
 describe('ResearchReports localization boundary', () => {
-  it('keeps locale out of researchCatalog and researchReport requests', () => {
-    expect(source).toContain('const response = await bridge.researchCatalog();');
-    expect(source).toContain('const response = await bridge.researchReport(reportId);');
-    expect(source).not.toContain('bridge.researchCatalog(locale');
-    expect(source).not.toContain('bridge.researchReport(reportId, locale');
+  it('passes locale only to presentation bridge methods', () => {
+    expect(source).toContain('const response = await bridge.researchCatalog(locale);');
+    expect(source).toContain('const response = await bridge.researchReport(reportId, locale);');
+    expect(source).not.toContain('filterResearchRows(table.rows, locale');
+    expect(source).not.toContain('uniqueResearchValues(table.rows, locale');
+    expect(source).not.toContain('formatResearchValue(value, valueFormat, locale');
+  });
+
+  it('reloads the research presentation when the selector locale changes', () => {
+    expect(appSource).toContain('{#key locale}');
+    expect(appSource).toContain('<ResearchReports {bridge} {locale} />');
   });
 
   it('preserves twins filtering semantics and report id checks', () => {
@@ -22,7 +33,7 @@ describe('ResearchReports localization boundary', () => {
     expect(source).toContain("{#if report.id === 'twins'}");
   });
 
-  it('renders dynamic research prose and structured labels directly from the report', () => {
+  it('renders dynamic research prose and structured labels directly from the localized report', () => {
     for (const expression of [
       'item.id',
       'item.title',
@@ -44,6 +55,13 @@ describe('ResearchReports localization boundary', () => {
     ]) {
       expect(source).toContain(expression);
     }
+  });
+
+  it('shows fallback metadata without mutating the report payload', () => {
+    expect(source).toContain('response.presentation ?? null');
+    expect(source).toContain('fallbackPresentation.requested_locale');
+    expect(source).toContain('fallbackPresentation.resolved_locale');
+    expect(source).toContain('fallbackPresentation.fallback_reason');
   });
 
   it('localizes only the static candidate marker while preserving candidate truth semantics', () => {
