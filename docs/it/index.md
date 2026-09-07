@@ -2,6 +2,8 @@
 
 [English](../index.md) | **Italiano**
 
+> Questa documentazione italiana è una rappresentazione derivata. La documentazione inglese è l’unica fonte autoritativa e prevale in caso di divergenza. Vedere la [policy di localizzazione della documentazione](../documentation-localization-policy.md).
+
 ## Per iniziare
 
 - [Panoramica del progetto](../../README.it.md)
