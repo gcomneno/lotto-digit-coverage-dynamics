@@ -24,6 +24,10 @@ describe('GUI localization contract', () => {
     expect(text('occurrence.group_size')).toBe('Group size');
     expect(text('occurrence.global_reference')).toBe('Global reference');
     expect(text('occurrence.global_total')).toBe('Global total');
+    expect(text('research.eyebrow')).toBe('Historical analyses');
+    expect(text('research.catalog')).toBe('Catalog');
+    expect(text('research.condition')).toBe('Condition');
+    expect(text('research.candidate')).toBe('CANDIDATE');
   });
 
   it('resolves deterministic Italian presentation', () => {
@@ -40,9 +44,13 @@ describe('GUI localization contract', () => {
     expect(text('occurrence.group_size', 'it')).toBe('Dimensione gruppo');
     expect(text('occurrence.global_reference', 'it')).toBe('Riferimento globale');
     expect(text('occurrence.global_total', 'it')).toBe('Totale globale');
+    expect(text('research.eyebrow', 'it')).toBe('Analisi storiche');
+    expect(text('research.catalog', 'it')).toBe('Catalogo');
+    expect(text('research.condition', 'it')).toBe('Condizione');
+    expect(text('research.candidate', 'it')).toBe('CANDIDATO');
   });
 
-  it('keeps structured and domain values out of the presentation catalog', () => {
+  it('keeps structured, domain, and dynamic research values out of the presentation catalog', () => {
     for (const value of [
       'Bari',
       'Napoli',
@@ -56,6 +64,17 @@ describe('GUI localization contract', () => {
       'severe',
       '128',
       '2026-08-11',
+      'twins',
+      'baseline',
+      'missing',
+      'dynamic-report-title',
+      'dynamic-report-summary',
+      'dynamic-report-interpretation',
+      'dynamic-metric-label',
+      'dynamic-table-title',
+      'dynamic-column-label',
+      'dynamic-note',
+      'dynamic-source',
     ]) {
       expect(() => text(value, 'it')).toThrow('unknown canonical presentation key');
     }
