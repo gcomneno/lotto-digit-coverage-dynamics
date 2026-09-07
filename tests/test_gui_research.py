@@ -29,8 +29,8 @@ class GuiResearchTests(unittest.TestCase):
         research_loader = Mock(
             return_value={
                 "id": "validation",
-                "title": "Calibrazione Markov",
-                "interpretation": "descrittivo",
+                "title": "Markov calibration",
+                "interpretation": "descriptive",
                 "source": "data/lotto-2025.sqlite3",
                 "metrics": [],
                 "tables": [],
@@ -41,8 +41,8 @@ class GuiResearchTests(unittest.TestCase):
             return_value=[
                 {
                     "id": "validation",
-                    "title": "Calibrazione Markov",
-                    "summary": "Confronto descrittivo.",
+                    "title": "Markov calibration",
+                    "summary": "Descriptive comparison.",
                     "interpretation": "descriptive-calibration",
                 }
             ]
@@ -67,13 +67,13 @@ class GuiResearchTests(unittest.TestCase):
         research_loader.assert_called_once_with(root, "validation")
 
     def test_unknown_report_is_rejected_before_any_cli_boundary(self) -> None:
-        with self.assertRaisesRegex(ValueError, "sconosciuto"):
+        with self.assertRaisesRegex(ValueError, "Unknown research report"):
             load_research_payload(Path("/tmp/project"), "banana-radioattiva")
 
     def test_research_error_uses_same_stable_bridge_envelope(self) -> None:
         api = LottoGuiApi(
             Path("/tmp/project"),
-            research_loader=Mock(side_effect=FileNotFoundError("archivio assente")),
+            research_loader=Mock(side_effect=FileNotFoundError("archive missing")),
         )
 
         response = api.get_research_report("twins")
@@ -81,7 +81,7 @@ class GuiResearchTests(unittest.TestCase):
         self.assertFalse(response["ok"])
         self.assertIsNone(response["data"])
         self.assertEqual(response["error"]["type"], "FileNotFoundError")
-        self.assertEqual(response["error"]["message"], "archivio assente")
+        self.assertEqual(response["error"]["message"], "archive missing")
 
 
 if __name__ == "__main__":
