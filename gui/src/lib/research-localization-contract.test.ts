@@ -16,10 +16,10 @@ describe('ResearchReports localization boundary', () => {
 
   it('preserves twins filtering semantics and report id checks', () => {
     expect(source).toContain("if (report?.id !== 'twins') return table.rows;");
-    expect(source).toContain("condition: conditionFilter || undefined");
-    expect(source).toContain("twin: twinFilter ? Number(twinFilter) : null");
+    expect(source).toContain('condition: conditionFilter || undefined');
+    expect(source).toContain('twin: twinFilter ? Number(twinFilter) : null');
     expect(source).toContain('candidatesOnly');
-    expect(source).toContain("if (report.id === 'twins')");
+    expect(source).toContain("{#if report.id === 'twins'}");
   });
 
   it('renders dynamic research prose and structured labels directly from the report', () => {
