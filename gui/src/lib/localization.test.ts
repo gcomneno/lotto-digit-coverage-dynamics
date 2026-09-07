@@ -20,6 +20,10 @@ describe('GUI localization contract', () => {
     expect(text('current.consensus_panel')).toBe('Cross-wheel consensus');
     expect(text('current.anomaly_detail_panel')).toBe('Active anomaly details');
     expect(text('current.next_draw_panel')).toBe('Next-draw validation — outside calculation');
+    expect(text('occurrence.controls')).toBe('Controls');
+    expect(text('occurrence.group_size')).toBe('Group size');
+    expect(text('occurrence.global_reference')).toBe('Global reference');
+    expect(text('occurrence.global_total')).toBe('Global total');
   });
 
   it('resolves deterministic Italian presentation', () => {
@@ -32,17 +36,26 @@ describe('GUI localization contract', () => {
     expect(text('current.consensus_panel', 'it')).toBe('Consensus trasversale');
     expect(text('current.anomaly_detail_panel', 'it')).toBe('Dettaglio anomalie attive');
     expect(text('current.next_draw_panel', 'it')).toBe('Validazione successiva — fuori dal calcolo');
+    expect(text('occurrence.controls', 'it')).toBe('Controlli');
+    expect(text('occurrence.group_size', 'it')).toBe('Dimensione gruppo');
+    expect(text('occurrence.global_reference', 'it')).toBe('Riferimento globale');
+    expect(text('occurrence.global_total', 'it')).toBe('Totale globale');
   });
 
-  it('keeps current dashboard domain values out of the catalog', () => {
+  it('keeps structured and domain values out of the presentation catalog', () => {
     for (const value of [
       'Bari',
       'Napoli',
+      'Roma',
       'coverage-current-v1',
+      'lotto.occurrence-groups',
+      'automatico',
       'A1',
       '0,1,2,3,4',
       '0.375',
       'severe',
+      '128',
+      '2026-08-11',
     ]) {
       expect(() => text(value, 'it')).toThrow('unknown canonical presentation key');
     }
