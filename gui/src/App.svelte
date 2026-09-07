@@ -80,7 +80,7 @@
       {#if activeView === 'dashboard'}
         <CurrentDashboard {bridge} {locale} />
       {:else if activeView === 'occurrences'}
-        <OccurrenceExplorer {bridge} />
+        <OccurrenceExplorer {bridge} {locale} />
       {:else}
         <ResearchReports {bridge} />
       {/if}
