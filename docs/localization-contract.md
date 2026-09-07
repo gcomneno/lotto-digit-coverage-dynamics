@@ -63,21 +63,35 @@ changing application behavior.
 
 ## Dynamic human-readable presentation
 
-Some GUI payloads currently contain presentation prose produced by the Python
-GUI adapter, notably research report titles, summaries, interpretations, metric
-labels, table titles, column labels and notes.
+GUI research payloads contain presentation prose produced by the Python GUI
+adapter, including report titles, summaries, interpretations, metric labels,
+table titles, column labels and notes.
 
 These fields are not domain results, but they are also not ordinary static
-Svelte strings. They belong behind a distinct provider-independent translation
-boundary.
+Svelte strings. They are canonicalized in English and pass through the
+provider-independent `DynamicPresentationTranslator` boundary.
 
-The interface contract is represented by `DynamicPresentationTranslator`.
-Concrete GiadaWare AI integration is intentionally deferred to a later issue.
-The static catalog path must never invoke that translator.
+The concrete product adapter uses the GiadaWare AI semantic translation
+capability. Provider details remain outside domain/application semantics and the
+static catalog path never invokes the dynamic translator.
 
 A dynamic translator may translate eligible canonical English prose only. It
 must not summarize, enrich, correct, infer or alter the underlying domain data.
-On translation failure, presentation must remain canonical English.
+On translation failure, presentation remains canonical English and exposes
+fallback metadata.
+
+## Documentation localization
+
+Repository documentation follows the separate
+[`documentation-localization-policy.md`](documentation-localization-policy.md).
+
+English documentation is authoritative. `README.it.md` and `docs/it/` are
+retained as derived Italian presentation and may temporarily lag. If a
+translated document conflicts with its English counterpart, English controls.
+
+The September 2026 audit selected **KEEP** for the existing Italian tree:
+bulk regeneration and consolidation were rejected because neither provides a
+demonstrated semantic or maintenance advantage for this migration.
 
 ## Never translate
 
@@ -94,36 +108,33 @@ The following remain language-neutral authoritative or structured data:
 Human-readable labels describing those values may be localized; the values
 and identifiers themselves may not.
 
-## Current repository audit
+## Completed repository audit
 
-At the start of the migration:
+The migration established that:
 
-- `README.md` and English documents under `docs/` already establish an
-  English-first documentation shape;
-- `README.it.md` and `docs/it/` are existing Italian counterparts and remain in
-  place until a later documentation-policy verification;
-- Svelte GUI surfaces contain extensive hard-coded Italian presentation and
-  several mixed Italian/English headings;
-- CLI renderers contain extensive hard-coded Italian presentation;
-- application/domain computation is already substantially separated from
-  renderers, which is the architectural boundary this migration preserves;
-- GUI research view models currently emit dynamic human-readable Italian
-  presentation fields and require a later dedicated migration.
+- `README.md` and English documents under `docs/` are the authoritative
+  documentation source;
+- `README.it.md` and `docs/it/` are derived Italian presentation governed by the
+  documentation localization policy;
+- static Svelte GUI and CLI presentation use deterministic EN/IT catalogs;
+- dynamic research human-readable fields are canonical English and use the
+  provider-independent GiadaWare AI translation boundary;
+- application/domain computation remains locale-independent;
+- CLI/GUI language selection is presentation-only and preserves structured
+  results, validation and exit semantics.
 
 ## Migration sequence
 
 1. **Foundation** — canonical locale contract, deterministic catalogs, fallback,
-   semantic-isolation tests and this document.
-2. **CLI migration** — add equivalent language selection and migrate renderer,
-   help and error presentation incrementally.
-3. **GUI static migration** — add a language selector and deterministic
-   catalog-backed Svelte presentation.
-4. **Dynamic presentation** — canonicalize eligible research presentation prose
-   in English and add provider-independent GiadaWare AI translation only where
-   justified.
-5. **Documentation policy** — verify how derived documentation translations are
-   maintained before deleting, regenerating or otherwise consolidating existing
-   Italian counterparts.
+   semantic-isolation tests and this document. **Completed.**
+2. **CLI migration** — equivalent language selection and localized renderer,
+   help and error presentation. **Completed.**
+3. **GUI static migration** — language selector and deterministic catalog-backed
+   Svelte presentation. **Completed.**
+4. **Dynamic presentation** — canonical English research prose and
+   provider-independent GiadaWare AI translation. **Completed.**
+5. **Documentation policy** — English authority, Italian derived status,
+   maintenance/synchronization rules and KEEP decision. **Completed.**
 
 ## Design rule
 
