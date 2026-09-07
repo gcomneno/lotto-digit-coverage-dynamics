@@ -82,7 +82,9 @@
       {:else if activeView === 'occurrences'}
         <OccurrenceExplorer {bridge} {locale} />
       {:else}
-        <ResearchReports {bridge} {locale} />
+        {#key locale}
+          <ResearchReports {bridge} {locale} />
+        {/key}
       {/if}
     {/if}
   </Surface>
