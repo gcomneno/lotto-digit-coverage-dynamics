@@ -10,15 +10,9 @@ from lotto_digit_coverage.application.historical_markov import (
     build_markov_residual_report,
     build_markov_validation_report,
 )
-from lotto_digit_coverage.application.historical_twins import (
-    build_twin_number_report,
-)
-from lotto_digit_coverage.infrastructure.historical_archives import (
-    load_draw_collection,
-)
-from lotto_digit_coverage.infrastructure.sqlite_lotto_repository import (
-    SQLiteLottoRepository,
-)
+from lotto_digit_coverage.application.historical_twins import build_twin_number_report
+from lotto_digit_coverage.infrastructure.historical_archives import load_draw_collection
+from lotto_digit_coverage.infrastructure.sqlite_lotto_repository import SQLiteLottoRepository
 
 
 HISTORICAL_DATABASE = Path("data/lotto-2025.sqlite3")
@@ -27,26 +21,26 @@ TWIN_DATABASE = Path("data/lotto-1871-2025.sqlite3")
 RESEARCH_CATALOG: tuple[dict[str, str], ...] = (
     {
         "id": "completion",
-        "title": "Completamento dei cicli",
-        "summary": "Probabilità one-step e distanza residua per stato di copertura.",
+        "title": "Cycle completion",
+        "summary": "One-step probability and residual distance by coverage state.",
         "interpretation": "descriptive",
     },
     {
         "id": "validation",
-        "title": "Calibrazione Markov",
-        "summary": "Confronto tra probabilità teoriche e completamenti osservati.",
+        "title": "Markov calibration",
+        "summary": "Comparison between theoretical probabilities and observed completions.",
         "interpretation": "descriptive-calibration",
     },
     {
         "id": "residuals",
-        "title": "Durata residua Markov",
-        "summary": "Confronto tra attesa residua teorica e durata residua osservata.",
+        "title": "Markov residual duration",
+        "summary": "Comparison between theoretical and observed residual duration.",
         "interpretation": "descriptive-validation",
     },
     {
         "id": "twins",
-        "title": "Numeri gemelli 11–88",
-        "summary": "Screen one-step contro il null esatto 1/18 con gate multipli.",
+        "title": "Twin numbers 11–88",
+        "summary": "One-step screen against the exact 1/18 null with multiple gates.",
         "interpretation": "exploratory-screen",
     },
 )
@@ -82,34 +76,34 @@ def _completion_payload(root: Path) -> dict[str, Any]:
     ]
     return {
         "id": "completion",
-        "title": "Completamento dei cicli",
+        "title": "Cycle completion",
         "interpretation": (
-            "Confronto descrittivo tra frequenze one-step osservate e probabilità "
-            "esatte dello stato. Il primo ciclo di ogni ruota resta escluso perché "
-            "censurato a sinistra."
+            "Descriptive comparison between observed one-step frequencies and exact "
+            "state probabilities. The first cycle of each wheel remains excluded because "
+            "it is left-censored."
         ),
         "source": str(HISTORICAL_DATABASE),
         "metrics": [
-            _metric("Stati incompleti", len(report.observations), "integer"),
-            _metric("Stati censurati a destra", report.right_censored_states, "integer"),
-            _metric("Soglia stati esatti", report.minimum_state_cases, "integer"),
+            _metric("Incomplete states", len(report.observations), "integer"),
+            _metric("Right-censored states", report.right_censored_states, "integer"),
+            _metric("Exact-state threshold", report.minimum_state_cases, "integer"),
         ],
         "tables": [
             {
-                "title": "Per numero di cifre mancanti",
+                "title": "By number of missing digits",
                 "columns": [
-                    _column("missing", "Mancanti", "integer"),
-                    _column("cases", "Casi", "integer"),
-                    _column("completions", "Chiusure", "integer"),
-                    _column("observed", "Osservato", "percentage"),
-                    _column("theoretical", "Teorico", "percentage"),
+                    _column("missing", "Missing", "integer"),
+                    _column("cases", "Cases", "integer"),
+                    _column("completions", "Completions", "integer"),
+                    _column("observed", "Observed", "percentage"),
+                    _column("theoretical", "Theoretical", "percentage"),
                     _column("delta", "Delta", "percentage-signed"),
                 ],
                 "rows": rows,
             }
         ],
         "notes": [
-            "Le frequenze storiche non modificano la probabilità teorica del prossimo evento."
+            "Historical frequencies do not change the theoretical probability of the next event."
         ],
     }
 
@@ -133,26 +127,26 @@ def _validation_payload(root: Path) -> dict[str, Any]:
     ]
     return {
         "id": "validation",
-        "title": "Calibrazione Markov",
+        "title": "Markov calibration",
         "interpretation": (
-            "Validazione descrittiva della calibrazione. Le osservazioni sono "
-            "sovrapposte e dipendenti: il report non è un test inferenziale."
+            "Descriptive calibration validation. Observations overlap and are dependent; "
+            "the report is not an inferential test."
         ),
         "source": str(HISTORICAL_DATABASE),
         "metrics": [
-            _metric("Osservazioni", len(report.observations), "integer"),
-            _metric("Orizzonti", ", ".join(str(value) for value in report.horizons)),
-            _metric("Soglia stati esatti", report.minimum_state_cases, "integer"),
+            _metric("Observations", len(report.observations), "integer"),
+            _metric("Horizons", ", ".join(str(value) for value in report.horizons)),
+            _metric("Exact-state threshold", report.minimum_state_cases, "integer"),
         ],
         "tables": [
             {
-                "title": "Calibrazione complessiva",
+                "title": "Overall calibration",
                 "columns": [
-                    _column("horizon", "Entro", "integer"),
-                    _column("cases", "Casi", "integer"),
-                    _column("completions", "Chiusure", "integer"),
-                    _column("observed", "Osservato", "percentage"),
-                    _column("predicted", "Previsto", "percentage"),
+                    _column("horizon", "Within", "integer"),
+                    _column("cases", "Cases", "integer"),
+                    _column("completions", "Completions", "integer"),
+                    _column("observed", "Observed", "percentage"),
+                    _column("predicted", "Predicted", "percentage"),
                     _column("delta", "Delta", "percentage-signed"),
                     _column("brier", "Brier", "decimal-4"),
                 ],
@@ -160,7 +154,7 @@ def _validation_payload(root: Path) -> dict[str, Any]:
             }
         ],
         "notes": [
-            "Una buona calibrazione descrive il modello; non costituisce un vantaggio predittivo sul gioco."
+            "Good calibration describes the model; it does not constitute a predictive gambling advantage."
         ],
     }
 
@@ -185,28 +179,28 @@ def _residual_payload(root: Path) -> dict[str, Any]:
     overall = report.overall
     return {
         "id": "residuals",
-        "title": "Durata residua Markov",
+        "title": "Markov residual duration",
         "interpretation": (
-            "Confronto descrittivo tra tempo residuo osservato e attesa Markov. "
-            "Sono inclusi soltanto stati il cui completamento successivo è osservabile."
+            "Descriptive comparison between observed residual time and Markov expectation. "
+            "Only states whose subsequent completion is observable are included."
         ),
         "source": str(HISTORICAL_DATABASE),
         "metrics": [
-            _metric("Stati", overall.states, "integer"),
-            _metric("Residuo reale", overall.actual_mean, "decimal-3"),
-            _metric("Residuo previsto", overall.predicted_mean, "decimal-3"),
+            _metric("States", overall.states, "integer"),
+            _metric("Actual residual", overall.actual_mean, "decimal-3"),
+            _metric("Predicted residual", overall.predicted_mean, "decimal-3"),
             _metric("Bias", overall.bias, "decimal-signed-3"),
             _metric("MAE", overall.mean_absolute_error, "decimal-3"),
             _metric("RMSE", overall.root_mean_square_error, "decimal-3"),
         ],
         "tables": [
             {
-                "title": "Per numero di cifre mancanti",
+                "title": "By number of missing digits",
                 "columns": [
-                    _column("missing", "Mancanti", "integer"),
-                    _column("states", "Stati", "integer"),
-                    _column("actual", "Reale", "decimal-3"),
-                    _column("predicted", "Previsto", "decimal-3"),
+                    _column("missing", "Missing", "integer"),
+                    _column("states", "States", "integer"),
+                    _column("actual", "Actual", "decimal-3"),
+                    _column("predicted", "Predicted", "decimal-3"),
                     _column("bias", "Bias", "decimal-signed-3"),
                     _column("mae", "MAE", "decimal-3"),
                     _column("rmse", "RMSE", "decimal-3"),
@@ -214,9 +208,7 @@ def _residual_payload(root: Path) -> dict[str, Any]:
                 "rows": rows,
             }
         ],
-        "notes": [
-            "Le osservazioni successive dello stesso ciclo non sono indipendenti."
-        ],
+        "notes": ["Subsequent observations from the same cycle are not independent."],
     }
 
 
@@ -242,41 +234,41 @@ def _twins_payload(root: Path) -> dict[str, Any]:
     ]
     return {
         "id": "twins",
-        "title": "Numeri gemelli 11–88",
+        "title": "Twin numbers 11–88",
         "interpretation": (
-            "Screen esplorativo one-step contro il null esatto 1/18. Uno stato "
-            "eventualmente candidato richiede comunque validazione cronologica "
-            "out-of-sample o forward prima di qualunque interpretazione predittiva."
+            "Exploratory one-step screen against the exact 1/18 null. Any candidate state "
+            "still requires chronological out-of-sample or forward validation before any "
+            "predictive interpretation."
         ),
         "source": str(TWIN_DATABASE),
         "metrics": [
-            _metric("Osservazioni", len(report.observations), "integer"),
-            _metric("Primo target", report.first_target_date),
-            _metric("Ultimo target", report.last_target_date),
-            _metric("Candidati esplorativi", report.candidate_count, "integer"),
+            _metric("Observations", len(report.observations), "integer"),
+            _metric("First target", report.first_target_date),
+            _metric("Last target", report.last_target_date),
+            _metric("Exploratory candidates", report.candidate_count, "integer"),
         ],
         "tables": [
             {
-                "title": "Screen per condizione e gemello",
+                "title": "Screen by condition and twin",
                 "columns": [
-                    _column("condition", "Condizione"),
-                    _column("twin", "Gemello", "lotto-number"),
-                    _column("cases", "Casi", "integer"),
-                    _column("hits", "Hit", "integer"),
-                    _column("expected", "Attesi", "decimal-2"),
-                    _column("observed", "Osservato", "percentage"),
+                    _column("condition", "Condition"),
+                    _column("twin", "Twin", "lotto-number"),
+                    _column("cases", "Cases", "integer"),
+                    _column("hits", "Hits", "integer"),
+                    _column("expected", "Expected", "decimal-2"),
+                    _column("observed", "Observed", "percentage"),
                     _column("lift", "Lift", "percentage-signed"),
                     _column("wilson_low", "CI95-", "percentage"),
                     _column("wilson_high", "CI95+", "percentage"),
                     _column("q", "q BH", "decimal-4"),
-                    _column("candidate", "Esito", "candidate"),
+                    _column("candidate", "Outcome", "candidate"),
                 ],
                 "rows": rows,
             }
         ],
         "notes": [
-            "Le ruote condividono il calendario e non sono trattate come repliche indipendenti.",
-            "La GUI non promuove uno screen storico a trigger operativo."
+            "Wheels share the calendar and are not treated as independent replicates.",
+            "The GUI does not promote a historical screen to an operational trigger.",
         ],
     }
 
@@ -293,5 +285,5 @@ def load_research_payload(root: Path, report_id: str) -> dict[str, Any]:
     try:
         loader = _LOADERS[report_id]
     except KeyError as error:
-        raise ValueError(f"Report di ricerca sconosciuto: {report_id}") from error
+        raise ValueError(f"Unknown research report: {report_id}") from error
     return loader(root)
