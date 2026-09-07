@@ -18,12 +18,25 @@ from lotto_digit_coverage.application.reporting import (
     occurrence_group_report_to_dict,
 )
 from lotto_digit_coverage.domain.draws import DrawSnapshot
+from lotto_digit_coverage.infrastructure.giadaware_ai_translation import (
+    build_default_dynamic_presentation_translator,
+)
 from lotto_digit_coverage.infrastructure.sqlite_lotto_repository import (
     SQLiteLottoRepository,
 )
 from lotto_digit_coverage.interfaces.gui.research import (
     load_research_payload,
     research_catalog,
+)
+from lotto_digit_coverage.interfaces.gui.research_translation import (
+    DynamicResearchPresentation,
+    localize_research_catalog,
+    localize_research_payload,
+)
+from lotto_digit_coverage.interfaces.localization import (
+    CANONICAL_LOCALE,
+    SUPPORTED_LOCALES,
+    DynamicPresentationTranslator,
 )
 from strategies.current_coverage_signal import (
     DEFAULT_HISTORICAL_SUMMARY,
@@ -36,6 +49,7 @@ DEFAULT_DATABASE = Path("data/lotto-current.sqlite3")
 PayloadLoader = Callable[..., dict[str, Any]]
 ResearchLoader = Callable[[Path, str], dict[str, Any]]
 CatalogLoader = Callable[[], list[dict[str, str]]]
+DynamicTranslatorFactory = Callable[[], DynamicPresentationTranslator]
 
 
 def _resolve_path(root: Path, value: str | Path) -> Path:
@@ -158,16 +172,37 @@ class LottoGuiApi:
         occurrence_loader: PayloadLoader = load_occurrence_payload,
         research_loader: ResearchLoader = load_research_payload,
         catalog_loader: CatalogLoader = research_catalog,
+        dynamic_translator_factory: DynamicTranslatorFactory = (
+            build_default_dynamic_presentation_translator
+        ),
     ) -> None:
         self._root = root
         self._current_loader = current_loader
         self._occurrence_loader = occurrence_loader
         self._research_loader = research_loader
         self._catalog_loader = catalog_loader
+        self._dynamic_translator_factory = dynamic_translator_factory
 
     @staticmethod
     def _success(data: Any) -> dict[str, Any]:
         return {"ok": True, "data": data, "error": None}
+
+    @staticmethod
+    def _research_success(
+        data: Any,
+        presentation: DynamicResearchPresentation,
+    ) -> dict[str, Any]:
+        return {
+            "ok": True,
+            "data": data,
+            "error": None,
+            "presentation": {
+                "requested_locale": presentation.requested_locale,
+                "resolved_locale": presentation.resolved_locale,
+                "fell_back": presentation.fell_back,
+                "fallback_reason": presentation.fallback_reason,
+            },
+        }
 
     @staticmethod
     def _failure(error: Exception) -> dict[str, Any]:
@@ -179,6 +214,14 @@ class LottoGuiApi:
                 "message": str(error),
             },
         }
+
+    def _dynamic_translator(self, locale: str) -> DynamicPresentationTranslator | None:
+        if locale == CANONICAL_LOCALE or locale not in SUPPORTED_LOCALES:
+            return None
+        try:
+            return self._dynamic_translator_factory()
+        except Exception:
+            return None
 
     def get_capabilities(self) -> dict[str, Any]:
         return self._success(
@@ -233,15 +276,32 @@ class LottoGuiApi:
         except Exception as error:  # pywebview boundary: convert to stable envelope
             return self._failure(error)
 
-    def get_research_catalog(self) -> dict[str, Any]:
+    def get_research_catalog(self, locale: str = CANONICAL_LOCALE) -> dict[str, Any]:
         try:
-            return self._success({"reports": self._catalog_loader()})
+            presentation = localize_research_catalog(
+                self._catalog_loader(),
+                locale=locale,
+                translator=self._dynamic_translator(locale),
+            )
+            return self._research_success(
+                {"reports": presentation.payload},
+                presentation,
+            )
         except Exception as error:
             return self._failure(error)
 
-    def get_research_report(self, report_id: str) -> dict[str, Any]:
+    def get_research_report(
+        self,
+        report_id: str,
+        locale: str = CANONICAL_LOCALE,
+    ) -> dict[str, Any]:
         try:
-            payload = self._research_loader(self._root, report_id)
-            return self._success(payload)
+            canonical_payload = self._research_loader(self._root, report_id)
+            presentation = localize_research_payload(
+                canonical_payload,
+                locale=locale,
+                translator=self._dynamic_translator(locale),
+            )
+            return self._research_success(presentation.payload, presentation)
         except Exception as error:  # expensive reports are explicitly on demand
             return self._failure(error)
