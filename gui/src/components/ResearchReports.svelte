@@ -7,13 +7,14 @@
     ResearchReport,
     ResearchTable
   } from '../lib/bridge';
+  import { text, type Locale } from '../lib/localization';
   import {
     filterResearchRows,
     formatResearchValue,
     uniqueResearchValues
   } from '../lib/research';
 
-  let { bridge }: { bridge: LottoBridge } = $props();
+  let { bridge, locale }: { bridge: LottoBridge; locale: Locale } = $props();
 
   let catalog = $state<ResearchCatalogItem[]>([]);
   let report = $state<ResearchReport | null>(null);
@@ -32,7 +33,7 @@
 
     if (!response.ok || !response.data) {
       catalog = [];
-      errorMessage = response.error?.message ?? 'Catalogo ricerca non disponibile.';
+      errorMessage = response.error?.message ?? text('research.catalog_unavailable', locale);
     } else {
       catalog = response.data.reports;
     }
@@ -51,7 +52,7 @@
 
     const response = await bridge.researchReport(reportId);
     if (!response.ok || !response.data) {
-      errorMessage = response.error?.message ?? 'Report di ricerca non disponibile.';
+      errorMessage = response.error?.message ?? text('research.report_unavailable', locale);
     } else {
       report = response.data;
     }
@@ -76,6 +77,13 @@
     return uniqueResearchValues(table.rows, 'twin');
   }
 
+  function displayResearchValue(value: string | number | boolean | null, valueFormat: string): string {
+    if (valueFormat === 'candidate' && value === true) {
+      return text('research.candidate', locale);
+    }
+    return formatResearchValue(value, valueFormat);
+  }
+
   onMount(() => {
     void loadCatalog();
   });
@@ -83,27 +91,23 @@
 
 <div class="page-heading">
   <div>
-    <p class="eyebrow">Analisi storiche</p>
-    <h1>Research reports</h1>
+    <p class="eyebrow">{text('research.eyebrow', locale)}</p>
+    <h1>{text('research.title', locale)}</h1>
   </div>
 </div>
 
-<PageIntro>
-  I report vengono calcolati on demand dagli stessi application service usati dal
-  laboratorio. La GUI visualizza risultati strutturati e non esegue o interpreta
-  output CLI. Ogni scheda mantiene la propria natura descrittiva o esplorativa.
-</PageIntro>
+<PageIntro>{text('research.intro', locale)}</PageIntro>
 
 {#if errorMessage}
   <div class="error" role="alert">{errorMessage}</div>
 {/if}
 
 {#if loadingCatalog}
-  <p aria-live="polite">Caricamento del catalogo di ricerca…</p>
+  <p aria-live="polite">{text('research.loading_catalog', locale)}</p>
 {:else}
   <div class="research-layout">
-    <aside class="research-sidebar" aria-label="Catalogo report">
-      <h2>Catalogo</h2>
+    <aside class="research-sidebar" aria-label={text('research.catalog_label', locale)}>
+      <h2>{text('research.catalog', locale)}</h2>
       <div class="research-catalog">
         {#each catalog as item (item.id)}
           <article class:selected-research={selectedId === item.id} class="research-card">
@@ -117,7 +121,11 @@
               disabled={loadingReport}
               onclick={() => void loadReport(item.id)}
             >
-              {loadingReport && selectedId === item.id ? 'Calcolo…' : selectedId === item.id ? 'Ricalcola' : 'Apri'}
+              {loadingReport && selectedId === item.id
+                ? text('research.calculating', locale)
+                : selectedId === item.id
+                  ? text('research.recalculate', locale)
+                  : text('research.open', locale)}
             </Button>
           </article>
         {/each}
@@ -127,19 +135,19 @@
     <section class="research-workspace" aria-live="polite">
       {#if loadingReport}
         <div class="research-placeholder">
-          <strong>Calcolo in corso…</strong>
-          <span>Il report viene costruito nel core Python.</span>
+          <strong>{text('research.calculation_in_progress', locale)}</strong>
+          <span>{text('research.calculation_core', locale)}</span>
         </div>
       {:else if report}
         <Panel title={report.title}>
           <PageIntro>{report.interpretation}</PageIntro>
-          <p class="source-line">Sorgente: <code>{report.source}</code></p>
+          <p class="source-line">{text('research.source', locale)}: <code>{report.source}</code></p>
 
           <div class="research-metrics">
             {#each report.metrics as metric (`${metric.label}-${metric.format}`)}
               <div class="research-metric">
                 <span>{metric.label}</span>
-                <strong>{formatResearchValue(metric.value, metric.format)}</strong>
+                <strong>{displayResearchValue(metric.value, metric.format)}</strong>
               </div>
             {/each}
           </div>
@@ -148,11 +156,11 @@
         {#each report.tables as table (table.title)}
           <Panel title={table.title}>
             {#if report.id === 'twins'}
-              <div class="research-filters" aria-label="Filtri tabella gemelli">
+              <div class="research-filters" aria-label={text('research.twins_filters', locale)}>
                 <label class="field-stack">
-                  <span class="field-label">Condizione</span>
+                  <span class="field-label">{text('research.condition', locale)}</span>
                   <select bind:value={conditionFilter}>
-                    <option value="">Tutte</option>
+                    <option value="">{text('research.all_feminine', locale)}</option>
                     {#each conditions(table) as condition}
                       <option value={String(condition)}>{condition}</option>
                     {/each}
@@ -160,9 +168,9 @@
                 </label>
 
                 <label class="field-stack">
-                  <span class="field-label">Gemello</span>
+                  <span class="field-label">{text('research.twin', locale)}</span>
                   <select bind:value={twinFilter}>
-                    <option value="">Tutti</option>
+                    <option value="">{text('research.all_masculine', locale)}</option>
                     {#each twins(table) as twin}
                       <option value={String(twin)}>{formatResearchValue(twin, 'lotto-number')}</option>
                     {/each}
@@ -171,11 +179,11 @@
 
                 <label class="checkbox-field">
                   <input type="checkbox" bind:checked={candidatesOnly} />
-                  <span>Solo candidati esplorativi</span>
+                  <span>{text('research.candidates_only', locale)}</span>
                 </label>
 
                 <p class="filter-count">
-                  {visibleRows(table).length} righe visualizzate su {table.rows.length}
+                  {visibleRows(table).length} {text('research.rows_shown_out_of', locale)} {table.rows.length}
                 </p>
               </div>
             {/if}
@@ -195,11 +203,11 @@
                       {#each table.columns as column, columnIndex (column.key)}
                         {#if columnIndex === 0}
                           <th scope="row">
-                            {formatResearchValue(row[column.key] ?? null, column.format)}
+                            {displayResearchValue(row[column.key] ?? null, column.format)}
                           </th>
                         {:else}
                           <td class:candidate-cell={column.format === 'candidate' && row[column.key] === true}>
-                            {formatResearchValue(row[column.key] ?? null, column.format)}
+                            {displayResearchValue(row[column.key] ?? null, column.format)}
                           </td>
                         {/if}
                       {/each}
@@ -210,13 +218,13 @@
             </section>
 
             {#if visibleRows(table).length === 0}
-              <p class="empty-state">Nessuna riga corrisponde ai filtri selezionati.</p>
+              <p class="empty-state">{text('research.no_filtered_rows', locale)}</p>
             {/if}
           </Panel>
         {/each}
 
         {#if report.notes.length}
-          <Panel title="Interpretazione e limiti">
+          <Panel title={text('research.interpretation_limits', locale)}>
             <ul class="plain-list">
               {#each report.notes as note}
                 <li>{note}</li>
@@ -226,8 +234,8 @@
         {/if}
       {:else}
         <div class="research-placeholder">
-          <strong>Scegli un report dal catalogo</strong>
-          <span>Il calcolo parte soltanto quando lo richiedi.</span>
+          <strong>{text('research.choose_report', locale)}</strong>
+          <span>{text('research.on_demand', locale)}</span>
         </div>
       {/if}
     </section>
