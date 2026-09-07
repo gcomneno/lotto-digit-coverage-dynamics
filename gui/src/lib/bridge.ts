@@ -3,10 +3,18 @@ export type GuiError = {
   message: string;
 };
 
+export type PresentationMetadata = {
+  requested_locale: string;
+  resolved_locale: string;
+  fell_back: boolean;
+  fallback_reason: string | null;
+};
+
 export type Envelope<T> = {
   ok: boolean;
   data: T | null;
   error: GuiError | null;
+  presentation?: PresentationMetadata | null;
 };
 
 export type CurrentState = {
@@ -240,8 +248,8 @@ export type PywebviewApi = {
     requested_draw_number?: number | null,
     occurrence_limit?: number | null
   ): Promise<Envelope<OccurrenceContract>>;
-  get_research_catalog(): Promise<Envelope<ResearchCatalog>>;
-  get_research_report(report_id: string): Promise<Envelope<ResearchReport>>;
+  get_research_catalog(locale?: string): Promise<Envelope<ResearchCatalog>>;
+  get_research_report(report_id: string, locale?: string): Promise<Envelope<ResearchReport>>;
 };
 
 export type LottoBridge = {
@@ -252,8 +260,8 @@ export type LottoBridge = {
     requestedDrawNumber?: number | null,
     occurrenceLimit?: number | null
   ): Promise<Envelope<OccurrenceContract>>;
-  researchCatalog(): Promise<Envelope<ResearchCatalog>>;
-  researchReport(reportId: string): Promise<Envelope<ResearchReport>>;
+  researchCatalog(locale?: string): Promise<Envelope<ResearchCatalog>>;
+  researchReport(reportId: string, locale?: string): Promise<Envelope<ResearchReport>>;
 };
 
 function withTimeout<T>(
@@ -306,10 +314,10 @@ export function createBridge(api: PywebviewApi): LottoBridge {
         15_000,
         'Occorrenze'
       ),
-    researchCatalog: () =>
-      withTimeout(api.get_research_catalog(), 10_000, 'Catalogo ricerca'),
-    researchReport: (reportId) =>
-      withTimeout(api.get_research_report(reportId), 120_000, 'Report di ricerca')
+    researchCatalog: (locale = 'en') =>
+      withTimeout(api.get_research_catalog(locale), 10_000, 'Catalogo ricerca'),
+    researchReport: (reportId, locale = 'en') =>
+      withTimeout(api.get_research_report(reportId, locale), 120_000, 'Report di ricerca')
   };
 }
 
