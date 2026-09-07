@@ -175,7 +175,7 @@
         <div class="group-meta">
           <span>
             {text('occurrence.reference', locale)} <strong>{group.reference.draw_number}</strong>
-            {text('occurrence.date', locale).toLowerCase()} {group.reference.draw_date} — {text('occurrence.excluded_from_counts', locale)}
+            · {group.reference.draw_date} — {text('occurrence.excluded_from_counts', locale)}
           </span>
           <span>{group.actual_size} {text('occurrence.draws_counted', locale)}</span>
         </div>
