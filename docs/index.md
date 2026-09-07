@@ -2,6 +2,7 @@
 
 **English** | [Italiano](it/index.md)
 
+English documentation is authoritative. Italian documentation is derived presentation and may temporarily lag; see the [documentation localization policy](documentation-localization-policy.md).
 
 ## Start here
 
