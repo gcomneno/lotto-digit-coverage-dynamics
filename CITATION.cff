@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+message: "If you use this software or its published data in research, please cite it using the metadata below."
+title: "Lotto Digit Coverage Dynamics"
+type: software
+authors:
+  - family-names: "Comneno"
+    given-names: "Giancarlo Cicellyn"
+repository-code: "https://github.com/gcomneno/lotto-digit-coverage-dynamics"
+url: "https://github.com/gcomneno/lotto-digit-coverage-dynamics"
+license: MIT
+version: "1.2.0"
+date-released: "2026-09-19"
+keywords:
+  - Italian Lotto
+  - finite-state model
+  - Markov chain
+  - reproducibility
+  - historical data
+  - SQLite
+abstract: >-
+  Exact finite-state modelling and reproducible historical analysis of decimal
+  digit coverage in Italian Lotto draws, including deterministic mathematical
+  artifacts, historical SQLite archives and read-only semantic query tooling.

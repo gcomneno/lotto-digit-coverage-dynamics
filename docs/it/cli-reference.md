@@ -22,10 +22,12 @@ Tutti gli script originali restano direttamente eseguibili.
 
 | Comando | Eseguibile sottostante | Scopo |
 |:---|:---|:---|
-| `current` | `analyze_current_coverage.py` | Classifica Markov corrente, riga trasversale e anomalie attive |
+| `current` | `analyze_current_consensus.py` | Classifica Markov corrente, riga trasversale e anomalie attive |
 | `update` | `update_lotto_database.py` | Aggiornamento prudente del database corrente |
 | `db update` | `update_lotto_databases.py` | Orchestrazione sicura per anno, intervallo e rollover |
 | `db` | `view_lotto_database.sh` | Esplorazione del database da terminale |
+| `db ask` | pipeline semantica read-query | Query in linguaggio naturale sui dati Lotto dichiarati |
+| `gui` | `lotto_digit_coverage/interfaces/gui/launcher.py` | Applicazione locale/offline basata su GIADA UI |
 | `anomalies` | `analyze_coverage_anomalies.py` | Analisi storica delle anomalie A1–A4 |
 | `completion` | `analyze_coverage_completion.py` | Analisi del completamento dei cicli naturali |
 | `residuals` | `analyze_coverage_markov_residuals.py` | Confronto dei tempi residui teorici e osservati |
@@ -33,6 +35,7 @@ Tutti gli script originali restano direttamente eseguibili.
 | `digit-coverage` | `analyze_digit_coverage.py` | Copertura delle cifre su finestre mobili |
 | `rolling-frequency` | `analyze_rolling_frequency.py` | Backtest walk-forward delle frequenze rolling contro rose casuali equivalenti |
 | `coverage-hits` | `analyze_coverage_hit_statistics.py` | Statistiche recenti delle quasi-chiusure per quantità TOP e Mancanti |
+| `twins` | `analyze_twin_numbers.py` | Analisi ex ante dei numeri gemelli rispetto al null dichiarato |
 | `return-times` | `analyze_digit_return_times.py` | Analisi dei tempi di ritorno delle cifre |
 | `cycles` | `analyze_historical_cycle_distribution.py` | Confronto storico delle durate dei cicli |
 | `symmetry-history` | `analyze_historical_symmetry_classes.py` | Analisi storica delle classi strutturali |
@@ -48,9 +51,41 @@ Alias:
 - `digits` → `digit-coverage`;
 - `rolling` → `rolling-frequency`;
 - `hits` → `coverage-hits`;
+- `gemelli` → `twins`;
 - `returns` → `return-times`;
 - `cycle-distribution` → `cycles`;
 - `symmetry` → `symmetry-history`.
+
+## Query del database in linguaggio naturale
+
+`db ask` accetta richieste libere in italiano o inglese sul contesto semantico
+versionato di Cifrolotto.
+
+Installare la dipendenza GiadaWare AI fissata a commit:
+
+```bash
+python3 -m pip install -r requirements-ai.txt
+```
+
+Esempio riproducibile con un database storico tracciato:
+
+```bash
+./lotto.py db ask \
+  --database data/lotto-2025.sqlite3 \
+  "Cos'è uscito su Napoli nell'ultima estrazione?"
+```
+
+Senza `--database` viene usato il database mutabile e ignorato
+`data/lotto-current.sqlite3`, che deve prima essere creato o aggiornato
+localmente.
+
+GiadaWare AI interpreta la richiesta ma non concede autorità SQL. La query
+candidata deve superare indipendentemente l'authority strutturale Cifrolotto e
+l'esecuzione SQLite in sola lettura.
+
+La qualificazione dei modelli reali è separata e opt-in. Le valutazioni di
+riferimento attualmente registrate per `qwen2.5:1.5b-instruct` e
+`qwen3.5:2b-q4_K_M` risultano entrambe **NOT QUALIFIED**.
 
 ## Backtest delle frequenze rolling
 

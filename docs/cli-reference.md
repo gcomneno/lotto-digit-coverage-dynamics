@@ -22,10 +22,12 @@ All original scripts remain directly executable.
 
 | Command | Underlying executable | Purpose |
 |:---|:---|:---|
-| `current` | `analyze_current_coverage.py` | Current Markov ranking, transversal row and active anomalies |
+| `current` | `analyze_current_consensus.py` | Current Markov ranking, transversal row and active anomalies |
 | `update` | `update_lotto_database.py` | Conservative current-database update |
 | `db update` | `update_lotto_databases.py` | Safe single-year, range and rollover orchestration |
 | `db` | `view_lotto_database.sh` | Terminal database browser |
+| `db ask` | semantic read-query pipeline | Natural-language read-only queries over declared Lotto data |
+| `gui` | `lotto_digit_coverage/interfaces/gui/launcher.py` | Local/offline GIADA UI application |
 | `anomalies` | `analyze_coverage_anomalies.py` | Historical A1–A4 anomaly analysis |
 | `completion` | `analyze_coverage_completion.py` | Natural-cycle completion analysis |
 | `residuals` | `analyze_coverage_markov_residuals.py` | Theoretical and observed residual-time comparison |
@@ -33,6 +35,7 @@ All original scripts remain directly executable.
 | `digit-coverage` | `analyze_digit_coverage.py` | Digit coverage over moving windows |
 | `rolling-frequency` | `analyze_rolling_frequency.py` | Walk-forward rolling-frequency backtest against equal-size random sets |
 | `coverage-hits` | `analyze_coverage_hit_statistics.py` | Recent near-closure statistics by TOP and missing-digit counts |
+| `twins` | `analyze_twin_numbers.py` | Ex-ante twin-number analysis against the declared null |
 | `return-times` | `analyze_digit_return_times.py` | Digit return-time analysis |
 | `cycles` | `analyze_historical_cycle_distribution.py` | Historical cycle-duration comparison |
 | `symmetry-history` | `analyze_historical_symmetry_classes.py` | Historical structural-class analysis |
@@ -48,9 +51,47 @@ Aliases:
 - `digits` → `digit-coverage`;
 - `rolling` → `rolling-frequency`;
 - `hits` → `coverage-hits`;
+- `gemelli` → `twins`;
 - `returns` → `return-times`;
 - `cycle-distribution` → `cycles`;
 - `symmetry` → `symmetry-history`.
+
+## Natural-language database queries
+
+`db ask` accepts free Italian or English read requests over the versioned
+Cifrolotto semantic context.
+
+Install the pinned GiadaWare AI dependency:
+
+```bash
+python3 -m pip install -r requirements-ai.txt
+```
+
+Use a tracked historical database for a reproducible repository-only example:
+
+```bash
+./lotto.py db ask \
+  --database data/lotto-2025.sqlite3 \
+  "Cos'è uscito su Napoli nell'ultima estrazione?"
+
+./lotto.py db ask \
+  --database data/lotto-2025.sqlite3 \
+  --language en \
+  "Show Milan draws containing 18."
+```
+
+Without `--database`, the command selects the mutable ignored
+`data/lotto-current.sqlite3`, which must first be created or updated locally.
+
+GiadaWare AI provides semantic interpretation only. Candidate SQL is untrusted
+and must independently pass Cifrolotto's structural SQL authority and read-only
+SQLite execution boundary.
+
+Real-model qualification is opt-in and model-specific. The currently recorded
+reference evaluations for `qwen2.5:1.5b-instruct` and
+`qwen3.5:2b-q4_K_M` are both **NOT QUALIFIED** for this capability.
+Deterministic CI therefore uses controlled backends and does not claim that a
+locally available model is semantically qualified.
 
 ## Rolling-frequency backtest
 
