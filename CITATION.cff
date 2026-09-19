@@ -7,6 +7,7 @@ authors:
     given-names: "Giancarlo Cicellyn"
 repository-code: "https://github.com/gcomneno/lotto-digit-coverage-dynamics"
 url: "https://github.com/gcomneno/lotto-digit-coverage-dynamics"
+doi: "10.5281/zenodo.22844683"
 license: MIT
 version: "1.2.0"
 date-released: "2026-09-19"

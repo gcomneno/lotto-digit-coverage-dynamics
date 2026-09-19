@@ -2,6 +2,8 @@
 
 [English](README.md) | **Italiano**
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22844682.svg)](https://doi.org/10.5281/zenodo.22844682)
+
 Un modello esatto a stati finiti della copertura delle cifre decimali nelle
 estrazioni del Lotto italiano.
 
@@ -344,6 +346,14 @@ Le valutazioni di riferimento attualmente registrate a monte per
 `qwen2.5:1.5b-instruct` e `qwen3.5:2b-q4_K_M` risultano entrambe
 **NOT QUALIFIED**. I gate Cifrolotto di autorizzazione ed esecuzione rimangono
 indipendenti e fail-closed.
+
+## Citazione
+
+DOI persistente per tutte le versioni: [`10.5281/zenodo.22844682`](https://doi.org/10.5281/zenodo.22844682).
+
+DOI della release `v1.2.0`: [`10.5281/zenodo.22844683`](https://doi.org/10.5281/zenodo.22844683).
+
+I metadati di citazione machine-readable sono disponibili in [`CITATION.cff`](CITATION.cff).
 
 ## Licenza
 
