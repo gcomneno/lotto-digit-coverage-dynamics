@@ -154,8 +154,9 @@ Vedere il
 
 ## Interfaccia unificata da riga di comando
 
-I 16 strumenti eseguibili restano utilizzabili autonomamente, mentre `lotto.py`
-li espone attraverso un unico dispatcher facilmente esplorabile:
+I 20 strumenti principali restano utilizzabili autonomamente. `lotto.py`
+li espone attraverso un unico dispatcher, mentre `db ask` è un ulteriore
+comando annidato per interrogazioni storiche in linguaggio naturale:
 
 ```bash
 ./lotto.py list
@@ -194,7 +195,9 @@ Eseguire l’intera suite automatizzata:
 python3 -m unittest discover -v
 ```
 
-La suite corrente contiene 242 test.
+Al checkpoint release candidate del 19 settembre 2026 la suite esegue 465
+test; 2 test di integrazione vengono saltati quando il relativo database
+esterno non è disponibile.
 
 Verificare indipendentemente il kernel esatto:
 
@@ -269,7 +272,7 @@ una raccomandazione di gioco.
 ├── generated/                    artefatti matematici deterministici
 ├── strategies/                   implementazioni di riferimento
 ├── tests/                        test matematici e dei dati
-├── lotto.py                      dispatcher unico per tutti i 16 CLI
+├── lotto.py                      20 tool principali più il comando db ask
 ├── analyze_*.py                  analisi storiche e dello stato corrente
 ├── generate_state_atlas.py       atlante completo dei 1.023 stati
 ├── generate_structural_analysis.py
@@ -311,6 +314,36 @@ sei database SQLite consolidati. I rapporti precedenti conservano i campioni
 originariamente dichiarati; le nuove analisi devono specificare database,
 cutoff e trattamento dei cambiamenti di regime storico prima di valutare i
 risultati.
+
+## Query storiche in linguaggio naturale
+
+`db ask` interpreta richieste libere in italiano o inglese attraverso il
+contratto pubblico di GiadaWare AI, ma l'output del modello non acquisisce mai
+autorità SQL.
+
+Installare la dipendenza AI fissata a commit:
+
+```bash
+python3 -m pip install -r requirements-ai.txt
+```
+
+Per una prova basata esclusivamente su dati tracciati nel repository:
+
+```bash
+./lotto.py db ask \
+    --database data/lotto-2025.sqlite3 \
+    "Cos'è uscito su Napoli nell'ultima estrazione?"
+```
+
+Senza `--database`, il comando usa `data/lotto-current.sqlite3`, archivio
+corrente mutabile e intenzionalmente escluso da Git. Va quindi creato o
+aggiornato localmente con `./lotto.py db update`.
+
+La disponibilità di un modello reale non equivale a qualificazione semantica.
+Le valutazioni di riferimento attualmente registrate a monte per
+`qwen2.5:1.5b-instruct` e `qwen3.5:2b-q4_K_M` risultano entrambe
+**NOT QUALIFIED**. I gate Cifrolotto di autorizzazione ed esecuzione rimangono
+indipendenti e fail-closed.
 
 ## Licenza
 

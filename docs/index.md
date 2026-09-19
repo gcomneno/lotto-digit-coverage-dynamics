@@ -11,6 +11,8 @@ English documentation is authoritative. Italian documentation is derived present
 - [Limitations](limitations.md)
 - [Reproducibility](reproducibility.md)
 - [Command-line reference](cli-reference.md)
+- [Release history](../CHANGELOG.md)
+- [Citation metadata](../CITATION.cff)
 - [Glossary](glossary.md)
 
 ## Mathematical model

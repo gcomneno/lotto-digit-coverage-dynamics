@@ -148,8 +148,9 @@ See the complete
 
 ## Unified command-line interface
 
-The 17 executable tools remain independently usable, while `lotto.py` exposes
-them through one discoverable dispatcher:
+The 20 top-level tools remain independently usable. `lotto.py` exposes them
+through one discoverable dispatcher, while `db ask` is an additional nested
+natural-language read-query command:
 
 ```bash
 ./lotto.py list
@@ -186,7 +187,9 @@ Run the complete automated suite:
 python3 -m unittest discover -v
 ```
 
-The current suite contains 242 tests.
+At the 19 September 2026 release-candidate checkpoint, the suite runs 465
+tests; 2 integration tests are skipped when their external database fixture is
+not available.
 
 Verify the exact transition kernel independently:
 
@@ -295,7 +298,7 @@ recommendation.
 ├── generated/                    deterministic mathematical artifacts
 ├── strategies/                   reference model implementations
 ├── tests/                        automated mathematical and data tests
-├── lotto.py                      unified dispatcher for all 18 CLI tools
+├── lotto.py                      dispatcher for 20 top-level tools plus db ask
 ├── analyze_*.py                  historical and current-state analyses
 ├── generate_state_atlas.py       complete 1,023-state atlas
 ├── generate_structural_analysis.py
@@ -354,18 +357,36 @@ Install the pinned GiadaWare AI dependency in an isolated Python environment:
 python3 -m pip install -r requirements-ai.txt
 ```
 
-Examples:
+Examples using a database tracked in the repository:
 
 ```bash
-./lotto.py db ask "Cos'è uscito su Napoli nell'ultima estrazione?"
-./lotto.py db ask --language en "Show Milan draws containing 18."
+./lotto.py db ask \
+    --database data/lotto-2025.sqlite3 \
+    "Cos'è uscito su Napoli nell'ultima estrazione?"
+
+./lotto.py db ask \
+    --database data/lotto-2025.sqlite3 \
+    --language en \
+    "Show Milan draws containing 18."
 ```
+
+Without `--database`, `db ask` uses `data/lotto-current.sqlite3`. That mutable
+current-year database is intentionally ignored by Git; create/update it locally
+with `./lotto.py db update` before relying on the default path.
 
 Italian is the default request and presentation language for `db ask` only. The repository-wide canonical locale remains English.
 
 GiadaWare AI interpretation does not grant SQL execution authority. Candidate queries are independently authorized and executed through SQLite read-only controls.
 
-Real-model availability is not semantic qualification. Deterministic CI uses controlled backends and does not require Ollama.
+Real-model availability is not semantic qualification. Deterministic CI uses
+controlled backends and does not require Ollama.
+
+The default local model name is an infrastructure convenience, not a statement
+of qualification. The reference evaluations currently recorded upstream for
+`qwen2.5:1.5b-instruct` and `qwen3.5:2b-q4_K_M` are both **NOT QUALIFIED** for
+the semantic read-query capability. The Cifrolotto authorization and execution
+boundary remains valid independently and fails closed when interpretation does
+not satisfy the contract.
 
 
 ### Opt-in real-runtime qualification

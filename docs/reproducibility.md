@@ -10,16 +10,30 @@ artifacts are tracked under `generated/`.
 
 ## Automated suite
 
+Install the pinned GiadaWare AI dependency, then run the Python suite:
+
 ```bash
+python3 -m pip install -r requirements-ai.txt
 python3 -m unittest discover -v
 ```
 
-At the July 2026 publication checkpoint, the pruned source of truth contains 170
-passing tests.
+At the 19 September 2026 release-candidate checkpoint, 465 tests run; 2
+integration tests are skipped when their external database fixture is not
+available.
+
+The GUI has an independent validation gate:
+
+```bash
+cd gui
+npm ci --no-audit --no-fund
+npm run validate
+cd ..
+```
 
 ## Unified dispatcher
 
-List the 15 executable tools and inspect any underlying help page:
+List the 20 top-level tools, including discovery of the nested `db ask`
+command, and inspect any help page:
 
 ```bash
 ./lotto.py list
@@ -188,11 +202,31 @@ The final `TUTTE` row uses wheels with positive current-cycle age. Its
 most-present set is the union across all active wheels, while its missing set
 is the union only across active wheels tied for the maximum one-draw completion
 probability. It then reports their intersection and the valid ordered
-two-digit encodings of distinct intersecting digits. This row is descriptive
+two-digit encodings of intersecting digits, with repeated digits allowed.
+This row is descriptive
 and does not define an altered probability model.
 
 Current states and active anomalies are expected to change as new draws are
 imported.
+
+## Semantic read-query boundary
+
+The semantic query capability is reproducible deterministically without a real
+LLM because CI uses controlled backends.
+
+For a repository-contained database:
+
+```bash
+./lotto.py db ask \
+  --database data/lotto-2025.sqlite3 \
+  "Cos'è uscito su Napoli nell'ultima estrazione?"
+```
+
+A real Ollama run is an optional qualification exercise, not part of the
+deterministic release proof. A reachable model must not be described as
+qualified unless it passes the documented semantic corpus. The currently
+recorded reference evaluations for `qwen2.5:1.5b-instruct` and
+`qwen3.5:2b-q4_K_M` are **NOT QUALIFIED**.
 
 ## Database integrity and update
 

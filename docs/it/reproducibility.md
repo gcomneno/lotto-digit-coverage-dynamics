@@ -9,16 +9,31 @@ deterministici destinati alla pubblicazione sono tracciati sotto `generated/`.
 
 ## Suite automatizzata
 
+Installare la dipendenza GiadaWare AI fissata a commit, quindi eseguire la
+suite Python:
+
 ```bash
+python3 -m pip install -r requirements-ai.txt
 python3 -m unittest discover -v
 ```
 
-Al checkpoint di pubblicazione di luglio 2026, la fonte di verità potata contiene
-170 test superati.
+Al checkpoint release candidate del 19 settembre 2026 vengono eseguiti 465
+test; 2 test di integrazione vengono saltati quando il relativo database
+esterno non è disponibile.
+
+La GUI possiede un gate di validazione indipendente:
+
+```bash
+cd gui
+npm ci --no-audit --no-fund
+npm run validate
+cd ..
+```
 
 ## Dispatcher unificato
 
-Elencare i 15 strumenti eseguibili e consultare l’help di qualunque tool:
+Elencare i 20 strumenti principali, compresa la scoperta del comando
+annidato `db ask`, e consultare l'help:
 
 ```bash
 ./lotto.py list
@@ -188,11 +203,31 @@ L’insieme delle cifre più presenti è l’unione su tutte le ruote attive, me
 l’insieme delle cifre mancanti è l’unione soltanto sulle ruote attive a pari
 merito per la massima probabilità di completamento entro una estrazione.
 Mostra quindi la loro intersezione e le codifiche valide di due cifre ordinate
-e distinte appartenenti all’intersezione. La riga è descrittiva e non definisce
+appartenenti all'intersezione, ammettendo anche cifre ripetute. La riga è
+descrittiva e non definisce
 un modello probabilistico alterato.
 
 Gli stati correnti e le anomalie attive cambiano con l’importazione di nuove
 estrazioni.
+
+## Boundary delle query semantiche
+
+La capability semantica è riproducibile deterministicamente senza un LLM reale,
+perché la CI usa backend controllati.
+
+Per un database contenuto nel repository:
+
+```bash
+./lotto.py db ask \
+  --database data/lotto-2025.sqlite3 \
+  "Cos'è uscito su Napoli nell'ultima estrazione?"
+```
+
+L'esecuzione reale tramite Ollama è una qualificazione opzionale e non fa parte
+della prova deterministica della release. Un modello raggiungibile non deve
+essere dichiarato qualificato se non supera il corpus semantico documentato.
+Le valutazioni di riferimento attuali per `qwen2.5:1.5b-instruct` e
+`qwen3.5:2b-q4_K_M` risultano **NOT QUALIFIED**.
 
 ## Integrità e aggiornamento del database
 
