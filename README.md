@@ -2,6 +2,8 @@
 
 **English** | [Italiano](README.it.md)
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22844682.svg)](https://doi.org/10.5281/zenodo.22844682)
+
 
 An exact finite-state model of decimal digit coverage in Italian Lotto draws.
 
@@ -340,6 +342,14 @@ The repository now tracks the complete annual archive from 1871 through
 2025 and six consolidated SQLite databases. Earlier reports retain their
 original declared samples; new analyses must state their databases, cutoffs
 and treatment of historical regime changes before results are evaluated.
+
+## Citation
+
+Persistent DOI for all versions: [`10.5281/zenodo.22844682`](https://doi.org/10.5281/zenodo.22844682).
+
+DOI for release `v1.2.0`: [`10.5281/zenodo.22844683`](https://doi.org/10.5281/zenodo.22844683).
+
+Machine-readable citation metadata is provided in [`CITATION.cff`](CITATION.cff).
 
 ## License
 
