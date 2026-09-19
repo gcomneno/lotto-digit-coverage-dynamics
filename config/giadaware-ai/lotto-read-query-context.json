@@ -1,0 +1,208 @@
+{
+  "context_id": "cifrolotto.lotto.read-query",
+  "revision": "2026-09-19.1",
+  "dialect": "sqlite",
+  "languages": [
+    "it",
+    "en"
+  ],
+  "domain_description": "Historical Italian Lotto draw data from the SQLite database selected by the Cifrolotto consumer. Each draw has a draw number and civil date. Each wheel result contains five ordered extracted numbers. The domain supports descriptive historical read queries only. Prediction, betting advice, mutation, administration and information outside Lotto draw data are outside the domain.",
+  "relations": [
+    {
+      "name": "v_draw_numbers",
+      "kind": "view",
+      "description": "Canonical readable Lotto view. Each row represents one extracted number at one position for one wheel in one draw.",
+      "columns": [
+        {
+          "name": "draw_number",
+          "data_type": "INTEGER",
+          "description": "Positive draw or contest number within the archive year."
+        },
+        {
+          "name": "draw_date",
+          "data_type": "TEXT",
+          "description": "Civil draw date stored as ISO-8601 YYYY-MM-DD."
+        },
+        {
+          "name": "wheel",
+          "data_type": "TEXT",
+          "description": "Canonical Italian Lotto wheel name."
+        },
+        {
+          "name": "wheel_order",
+          "data_type": "INTEGER",
+          "description": "Canonical display order of Lotto wheels."
+        },
+        {
+          "name": "position",
+          "data_type": "INTEGER",
+          "description": "Position from 1 through 5 of the extracted number within one wheel result."
+        },
+        {
+          "name": "value",
+          "data_type": "INTEGER",
+          "description": "Extracted Lotto number from 1 through 90."
+        }
+      ]
+    }
+  ],
+  "concepts": [
+    {
+      "name": "draw",
+      "description": "One historical Lotto extraction event identified by draw number and draw date.",
+      "synonyms": [
+        "estrazione",
+        "concorso",
+        "draw",
+        "drawing"
+      ]
+    },
+    {
+      "name": "wheel",
+      "description": "One official Italian Lotto wheel.",
+      "synonyms": [
+        "ruota",
+        "wheel"
+      ]
+    },
+    {
+      "name": "draw_number",
+      "description": "The positive number identifying a draw within the archive year.",
+      "synonyms": [
+        "numero di estrazione",
+        "numero del concorso",
+        "numero concorso",
+        "draw number",
+        "contest number"
+      ]
+    },
+    {
+      "name": "draw_date",
+      "description": "The civil calendar date on which a draw occurred.",
+      "synonyms": [
+        "data",
+        "data di estrazione",
+        "draw date",
+        "date"
+      ]
+    },
+    {
+      "name": "extracted_number",
+      "description": "A Lotto number from 1 through 90 extracted on a wheel.",
+      "synonyms": [
+        "numero",
+        "numero estratto",
+        "estratto",
+        "number",
+        "drawn number"
+      ]
+    },
+    {
+      "name": "latest_draw",
+      "description": "The chronologically latest draw available in the selected database.",
+      "synonyms": [
+        "ultima estrazione",
+        "estrazione più recente",
+        "ultimo concorso",
+        "latest draw",
+        "most recent draw"
+      ]
+    },
+    {
+      "name": "frequency",
+      "description": "Historical count of occurrences satisfying the requested filters.",
+      "synonyms": [
+        "frequenza",
+        "quante volte",
+        "occorrenze",
+        "frequency",
+        "how many times",
+        "occurrences"
+      ]
+    },
+    {
+      "name": "year",
+      "description": "Calendar year derived from draw_date.",
+      "synonyms": [
+        "anno",
+        "year"
+      ]
+    },
+    {
+      "name": "together",
+      "description": "Specified numbers occurring in the same wheel result of the same draw.",
+      "synonyms": [
+        "insieme",
+        "assieme",
+        "nella stessa estrazione",
+        "together",
+        "in the same draw"
+      ]
+    }
+  ],
+  "relationships": [],
+  "limits": {
+    "max_result_rows": 500,
+    "max_relations": 1
+  },
+  "semantic_rules": [
+    "Only data represented by the declared Lotto relation and columns belongs to this context.",
+    "A Lotto draw is identified by draw_number and draw_date; each wheel result contains exactly five extracted values ordered by position.",
+    "Draw dates use the ISO-8601 YYYY-MM-DD civil-date representation.",
+    "The latest draw means the chronologically latest draw actually present in the selected database, ordered by draw_date and then draw_number; it never means a future or predicted draw.",
+    "If a resolved civil date contains no draw, the correct historical result is empty; another date must never be substituted silently.",
+    "Relative temporal terms are resolved against a current civil date supplied deterministically by the Cifrolotto consumer; provider time and an inferred current date must not be used.",
+    "Oggi and today mean the current civil date supplied deterministically by the Cifrolotto consumer.",
+    "Ieri and yesterday mean the civil date immediately preceding the current civil date supplied deterministically by the Cifrolotto consumer.",
+    "In a Lotto draw-date request, sera and evening refer to the draw associated with that civil date and do not introduce a separate time-of-day filter because the declared schema has no time-of-day field.",
+    "A request for all specified numbers means every specified value must occur in the same wheel result of the same draw.",
+    "A request for any specified number means at least one specified value must occur in the same wheel result of the same draw.",
+    "A request excluding a specified number means that value must not occur in the selected wheel result of the selected draw.",
+    "Frequency of a number means the historical count of wheel-result occurrences containing that value within all requested filters.",
+    "Together means that all referenced numbers occur in the same wheel result of the same draw.",
+    "Grouping by year means grouping by the four-digit calendar year derived from draw_date.",
+    "Comparisons between wheels compare historical observations within the selected database and never imply prediction, advice or recommended numbers.",
+    "If no wheel is specified and the requested result is meaningful across all wheels, all wheels are in scope; if a wheel is materially required and cannot be determined, the request is ambiguous.",
+    "Canonical database wheel values are Bari, Cagliari, Firenze, Genova, Milano, Napoli, Palermo, Roma, Torino, Venezia and Nazionale.",
+    "English wheel names map to canonical database values as follows: Bari=Bari, Cagliari=Cagliari, Florence=Firenze, Genoa=Genova, Milan=Milano, Naples=Napoli, Palermo=Palermo, Rome=Roma, Turin=Torino, Venice=Venezia, National=Nazionale.",
+    "Prediction, betting advice, recommended numbers, mutation, database administration and generic chat are unsupported even when another clause of the request concerns historical Lotto data.",
+    "No material clause of an accepted request may be ignored or approximated."
+  ],
+  "accepted_examples": [
+    "Cos'è uscito su Napoli nell'ultima estrazione?",
+    "Cos'è uscito a Milano ieri sera?",
+    "Quante volte sono usciti insieme 18 e 81 a Roma?",
+    "Mostrami le estrazioni di Napoli contenenti 18 ma non 81.",
+    "Confronta la frequenza del 18 tra Napoli e Milano negli ultimi dieci anni.",
+    "What came out on the Naples wheel in the latest draw?",
+    "How many times did 18 and 81 occur together on the Rome wheel?",
+    "Compare the frequency of 18 between Naples and Milan during the last ten years."
+  ],
+  "rejected_examples": [
+    "Che poesia è stata scritta a Napoli nel 1923?",
+    "Quali numeri devo giocare domani?",
+    "Cancella le estrazioni errate.",
+    "What numbers should I play tomorrow?",
+    "Delete the incorrect draws."
+  ],
+  "allowed_query_features": [
+    "select",
+    "where",
+    "distinct",
+    "comparison",
+    "boolean_and",
+    "boolean_or",
+    "boolean_not",
+    "in",
+    "between",
+    "order_by",
+    "limit",
+    "group_by",
+    "having",
+    "count",
+    "count_distinct",
+    "min",
+    "max",
+    "year_from_draw_date"
+  ]
+}

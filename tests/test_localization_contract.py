@@ -7,12 +7,6 @@ import unittest
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 
-from lotto_digit_coverage.application.natural_query import (
-    DrawHistoryIntent,
-    DrawHistoryRow,
-    NaturalQueryError,
-    execute_draw_history,
-)
 from lotto_digit_coverage.interfaces.cli.natural_query_command import main as natural_query_main
 from lotto_digit_coverage.interfaces.localization import (
     CANONICAL_LOCALE,
@@ -22,30 +16,28 @@ from lotto_digit_coverage.interfaces.localization import (
 )
 
 
-VALID_INTENT = {
-    "operation": "draw_history",
-    "wheel": "Napoli",
-    "numbers": [18, 81],
-    "digits": [],
-    "order": "descending",
-    "highlight": True,
-    "limit": 2,
-    "from_draw": None,
-    "to_draw": None,
+VALID_READ_QUERY = {
+    "status": "accepted",
+    "normalized_interpretation": "Return Napoli historical rows.",
+    "candidate_query": (
+        "SELECT draw_number, draw_date, wheel, value "
+        "FROM v_draw_numbers "
+        "WHERE wheel = :wheel "
+        "LIMIT 2"
+    ),
+    "parameters": [
+        {"name": "wheel", "value": "Napoli"},
+    ],
+    "grounding": [
+        {
+            "query_fragment": "wheel = :wheel",
+            "field": "wheel",
+            "source_kind": "request",
+            "source_reference": "Napoli",
+        },
+    ],
+    "reason": None,
 }
-
-
-class RecordingRepository:
-    def __init__(self) -> None:
-        self.calls: list[tuple[str, int | None, int | None]] = []
-
-    def load_wheel_history(self, wheel, *, from_draw, to_draw):
-        self.calls.append((wheel, from_draw, to_draw))
-        return (
-            DrawHistoryRow(1, "2026-01-01", (1, 2, 3, 4, 5)),
-            DrawHistoryRow(3, "2026-01-03", (6, 7, 8, 9, 10)),
-            DrawHistoryRow(2, "2026-01-02", (11, 12, 13, 14, 15)),
-        )
 
 
 class FakeBackend:
@@ -96,36 +88,8 @@ class LocalizationContractTests(unittest.TestCase):
         with self.assertRaises(KeyError):
             DEFAULT_PRESENTATION_CATALOG.resolve("does.not.exist", "it")
 
-    def test_locale_resolution_does_not_enter_application_semantics(self):
-        intent = DrawHistoryIntent.from_mapping(VALID_INTENT)
-        outcomes = []
-        repository_calls = []
-
-        for locale in SUPPORTED_LOCALES:
-            presentation = DEFAULT_PRESENTATION_CATALOG.resolve(
-                "common.error_prefix", locale
-            )
-            repository = RecordingRepository()
-            rows = execute_draw_history(intent, repository)
-            outcomes.append(
-                (
-                    [row.draw_number for row in rows],
-                    intent,
-                    presentation.requested_locale,
-                )
-            )
-            repository_calls.append(repository.calls)
-
-        self.assertEqual(outcomes[0][0], outcomes[1][0])
-        self.assertEqual(outcomes[0][1], outcomes[1][1])
-        self.assertEqual(repository_calls[0], repository_calls[1])
-        self.assertEqual(repository_calls[0], [("Napoli", None, None)])
-        self.assertNotEqual(outcomes[0][2], outcomes[1][2])
-
     def test_locale_resolution_cannot_change_validation_or_cli_exit_status(self):
-        invalid_intent = dict(VALID_INTENT)
-        invalid_intent["numbers"] = [91]
-        validation_outcomes = []
+        invalid_response = {"status": "accepted"}
         exit_statuses = []
 
         with tempfile.TemporaryDirectory() as directory:
@@ -145,25 +109,29 @@ class LocalizationContractTests(unittest.TestCase):
             for locale in SUPPORTED_LOCALES:
                 DEFAULT_PRESENTATION_CATALOG.resolve("common.error_prefix", locale)
 
-                try:
-                    DrawHistoryIntent.from_mapping(invalid_intent)
-                except NaturalQueryError as error:
-                    validation_outcomes.append((type(error), str(error)))
-                else:
-                    self.fail("invalid intent unexpectedly passed validation")
-
                 with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
                     success_status = natural_query_main(
-                        ["--database", str(database), "show Napoli"],
-                        backend=FakeBackend(VALID_INTENT),
+                        [
+                            "--database",
+                            str(database),
+                            "--language",
+                            locale,
+                            "show Napoli",
+                        ],
+                        backend=FakeBackend(VALID_READ_QUERY),
                     )
                     failure_status = natural_query_main(
-                        ["--database", str(database), "invalid request"],
-                        backend=FakeBackend(invalid_intent),
+                        [
+                            "--database",
+                            str(database),
+                            "--language",
+                            locale,
+                            "invalid request",
+                        ],
+                        backend=FakeBackend(invalid_response),
                     )
                 exit_statuses.append((success_status, failure_status))
 
-        self.assertEqual(validation_outcomes[0], validation_outcomes[1])
         self.assertEqual(exit_statuses, [(0, 1), (0, 1)])
 
 

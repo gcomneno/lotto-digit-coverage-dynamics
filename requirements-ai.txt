@@ -1,0 +1,1 @@
+giadaware-ai @ git+https://github.com/gcomneno/giadaware-ai.git@36a1bb751ec3851d3ceb0a38abe052747984ce5e
