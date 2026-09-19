@@ -23,6 +23,9 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Install AI dependency
+        run: python3 -m pip install -r requirements-ai.txt
+
       - name: Run test suite
         run: python3 -m unittest discover -v
 

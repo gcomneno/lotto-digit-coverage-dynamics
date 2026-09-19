@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from lotto_digit_coverage.infrastructure.giadaware_ai_query import (
+from lotto_digit_coverage.infrastructure.giadaware_ai_read_query import (
     build_default_giadaware_backend,
 )
 

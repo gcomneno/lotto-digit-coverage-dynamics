@@ -118,6 +118,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                 + occurrence_text("help_occurrence_limit", locale)
                 + "\n  --language {en,it}  "
                 + occurrence_text("language_help", locale)
+                + "\n\nComando annidato:"
+                + "\n  db ask  Interroga lo storico Lotto in linguaggio naturale."
             )
         return 0
 

@@ -89,6 +89,7 @@ def print_usage() -> None:
     print("  ./lotto.py update")
     print("  ./lotto.py twins")
     print("  ./lotto.py db update --from-year 2021 --to-year 2026")
+    print("  ./lotto.py db ask \"Cos\'è uscito su Napoli nell\'ultima estrazione?\"")
     print("  ./lotto.py anomalies --help")
     print()
     print("Usa './lotto.py list' per vedere tutti i comandi.")
@@ -112,6 +113,15 @@ def print_tools() -> None:
             display_command = "db update" if tool.command == "db-update" else tool.command
             print(f"{display_command:<18} {tool.description}")
             print(f"{'':18} → {tool.script}{aliases}")
+            if tool.command == "db":
+                print(
+                    f"{'db ask':<18} "
+                    "Interroga lo storico Lotto in linguaggio naturale."
+                )
+                print(
+                    f"{'':18} "
+                    "→ semantic read-query pipeline"
+                )
 
 
 def command_line(tool: Tool, forwarded_arguments: Sequence[str]) -> list[str]:
@@ -230,12 +240,28 @@ def main(argv: Sequence[str] | None = None) -> int:
         if not arguments:
             print_usage()
             return 0
-        if len(arguments) >= 2 and arguments[0] == "db" and arguments[1] == "update":
+
+        if (
+            len(arguments) >= 2
+            and arguments[0] == "db"
+            and arguments[1] == "update"
+        ):
             del arguments[:2]
             first = "db-update"
+            arguments.insert(0, "--help")
+
+        elif (
+            len(arguments) >= 2
+            and arguments[0] == "db"
+            and arguments[1] == "ask"
+        ):
+            del arguments[:2]
+            first = "db"
+            arguments[:0] = ["ask", "--help"]
+
         else:
             first = arguments.pop(0)
-        arguments.insert(0, "--help")
+            arguments.insert(0, "--help")
     elif first == "db" and arguments and arguments[0] == "update":
         arguments.pop(0)
         first = "db-update"
